@@ -42,6 +42,16 @@ const FOOT = [
   ["/lien-he/", "Liên hệ"],
 ];
 
+// Ảnh xem trước khi chia sẻ link (Zalo, Facebook, TikTok…): ảnh món nếu có, không thì ảnh mặc định của web 1200×630.
+export const OG_MAC_DINH = { path: "/assets/og-mac-dinh.png", w: 1200, h: 630 };
+function ogTags(site, p) {
+  const img = p.ogImage || site.site_url + OG_MAC_DINH.path;
+  const size = p.ogImage ? "" : `\n<meta property="og:image:width" content="${OG_MAC_DINH.w}">\n<meta property="og:image:height" content="${OG_MAC_DINH.h}">`;
+  return `<meta property="og:image" content="${esc(img)}">${size}
+<meta property="og:image:alt" content="${esc(p.ogImage ? p.title : site.site_name)}">
+<meta name="twitter:card" content="summary_large_image">`;
+}
+
 /** @param p { path, title, description, body, page, jsonld[], crumbs[[name,path]], noindex, ogType, ogImage } */
 export function layout(site, p) {
   const url = site.site_url + p.path;
@@ -77,7 +87,7 @@ ${p.noindex ? '<meta name="robots" content="noindex">' : ""}
 <meta property="og:url" content="${esc(url)}">
 <meta property="og:site_name" content="${esc(site.site_name)}">
 <meta property="og:locale" content="vi_VN">
-${p.ogImage ? `<meta property="og:image" content="${esc(p.ogImage)}">` : ""}
+${ogTags(site, p)}
 <meta name="theme-color" content="#faf8f5" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#1d1a17" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="/manifest.webmanifest">

@@ -228,7 +228,7 @@ ${rs.length ? filterBar(rs) + grid(rs, true) : emptyState("Danh mục đang đư
     const ld = {
       "@context": "https://schema.org", "@type": "Recipe", name: r.ten, description: r.tom_tat,
       ...(r.img ? { image: [r.img] } : {}),
-      author: { "@type": "Organization", name: site.site_name },
+      author: { "@type": "Organization", name: site.site_name, url: site.site_url, logo: `${site.site_url}/assets/icons/icon-512.png` },
       ...(r.cap_nhat ? { datePublished: r.cap_nhat } : {}),
       ...(r.prep ? { prepTime: iso(r.prep) } : {}), ...(r.cook ? { cookTime: iso(r.cook) } : {}), ...(r.total ? { totalTime: iso(r.total) } : {}),
       recipeYield: `${r.serv} người`, recipeCategory: r.cat.ten, recipeCuisine: "Việt Nam", keywords: r.tagList.join(", "),
