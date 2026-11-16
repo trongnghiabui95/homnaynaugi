@@ -1,0 +1,72 @@
+[
+ {
+  "batchcomplete": true,
+  "query": {
+   "pages": [
+    {
+     "ns": 6,
+     "title": "File:Thit kho thu.jpg",
+     "imagerepository": "local",
+     "imageinfo": [
+      {
+       "thumburl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Thit_kho_thu.jpg/1280px-Thit_kho_thu.jpg",
+       "url": "https://upload.wikimedia.org/wikipedia/commons/a/ab/Thit_kho_thu.jpg",
+       "descriptionurl": "https://commons.wikimedia.org/wiki/File:Thit_kho_thu.jpg",
+       "extmetadata": {
+        "LicenseShortName": {
+         "value": "CC BY-SA 4.0"
+        },
+        "Artist": {
+         "value": "<a href=\"//commons.wikimedia.org/wiki/User:Thu\" title=\"User:Thu\">Tác giả thử</a>"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "ns": 6,
+     "title": "File:Buoc kho thu.jpg",
+     "imagerepository": "local",
+     "imageinfo": [
+      {
+       "thumburl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bc/Buoc_kho_thu.jpg/1280px-Buoc_kho_thu.jpg",
+       "url": "https://upload.wikimedia.org/wikipedia/commons/b/bc/Buoc_kho_thu.jpg",
+       "descriptionurl": "https://commons.wikimedia.org/wiki/File:Buoc_kho_thu.jpg",
+       "extmetadata": {
+        "LicenseShortName": {
+         "value": "CC BY 4.0"
+        },
+        "Artist": {
+         "value": "Người &amp; bếp thử"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "ns": 6,
+     "title": "File:Canh thu.jpg",
+     "imagerepository": "local",
+     "imageinfo": [
+      {
+       "thumburl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Canh_thu.jpg/1280px-Canh_thu.jpg",
+       "url": "https://upload.wikimedia.org/wikipedia/commons/c/cd/Canh_thu.jpg",
+       "descriptionurl": "https://commons.wikimedia.org/wiki/File:Canh_thu.jpg",
+       "extmetadata": {
+        "LicenseShortName": {
+         "value": "Public domain"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "ns": 6,
+     "title": "File:Anh da xoa thu.jpg",
+     "missing": true,
+     "known": false
+    }
+   ]
+  }
+ }
+]

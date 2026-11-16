@@ -23,10 +23,10 @@ async def main():
         b = await p.chromium.launch(**({"executable_path": os.environ["CHROME"]} if os.environ.get("CHROME") else {}))
         ctx = await b.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, locale="vi-VN")
         await ctx.grant_permissions(["clipboard-read", "clipboard-write"], origin=B)
-        # Ảnh Drive và ảnh bìa YouTube trong fixtures là link giả: trả về một ảnh thật để kiểm thử ảnh tải được
+        # Ảnh Drive, ảnh Commons và ảnh bìa YouTube trong fixtures là link giả: trả về một ảnh thật để kiểm thử ảnh tải được
         PNG = open(os.path.join(DIST, "assets", "og-mac-dinh.png"), "rb").read()
         async def anh_that(route): await route.fulfill(status=200, content_type="image/png", body=PNG)
-        for host in ("lh3.googleusercontent.com", "i.ytimg.com"):
+        for host in ("lh3.googleusercontent.com", "i.ytimg.com", "upload.wikimedia.org"):
             await ctx.route(f"https://{host}/**", anh_that)
         pg = await ctx.new_page()
         pg.on("pageerror", lambda e: errs.append(str(e)))
@@ -110,6 +110,19 @@ async def main():
         check("video Shorts hiện khung dọc", await pg.eval_on_selector("[data-player]", "e=>e.classList.contains('vertical')"))
         await pg.click("[data-timer]"); await pg.wait_for_timeout(1200)
         check("hẹn giờ hiện trên màn hình", await pg.is_visible(".timer"))
+        # Ảnh Wikimedia Commons (trả lời API mẫu: tests/fixtures/commons.json): ảnh cỡ vừa, tự ghi tác giả + giấy phép
+        await pg.goto(B + "/mon/thit-kho-trung/"); await pg.wait_for_timeout(400)
+        cm = await pg.evaluate("""()=>{const q=(s)=>document.querySelector(s);return [q('.hero-img')?.getAttribute('src'), q('.media .credit')?.textContent, q('.media .credit a')?.href, q('.step-fig .step-img')?.getAttribute('src'), q('.step-fig .credit')?.textContent]}""")
+        check("ảnh Commons: ảnh món cỡ 1280px, ghi tác giả, giấy phép, link trang ảnh", cm[:3] == ["https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Thit_kho_thu.jpg/1280px-Thit_kho_thu.jpg", "Ảnh: Tác giả thử, CC BY-SA 4.0 · Nguồn ảnh", "https://commons.wikimedia.org/wiki/File:Thit_kho_thu.jpg"], str(cm))
+        check("ảnh Commons ở bước: dùng link upload.wikimedia.org, có ghi nguồn", cm[3:] == ["https://upload.wikimedia.org/wikipedia/commons/thumb/b/bc/Buoc_kho_thu.jpg/1280px-Buoc_kho_thu.jpg", "Ảnh: Người & bếp thử, CC BY 4.0 · Nguồn ảnh"], str(cm))
+        h = open(os.path.join(DIST, "mon", "thit-kho-trung", "index.html"), encoding="utf-8").read()
+        check("ảnh Commons làm og:image", 'og:image" content="https://upload.wikimedia.org/' in h)
+        await pg.goto(B + "/mon/rau-muong-xao-toi/")
+        check("ảnh Commons không tra được (đã xoá): không hiện ảnh, không hiện ghi nguồn", not await pg.query_selector(".hero-img") and not await pg.query_selector(".credit"))
+        await pg.goto(B + "/danh-muc/mon-canh/")
+        check("ảnh danh mục từ Commons có ghi nguồn", (await pg.text_content(".cat-head .credit") or "") == "Ảnh: Public domain · Nguồn ảnh")
+        await pg.goto(B + "/mon/thit-kho-trung/"); await pg.wait_for_timeout(300)
+        await pg.screenshot(path=f"{OUT}/8-anh-commons.png")
         r = await pg.goto(B + "/mon/mon-thu-nhap/")
         check("món chưa duyệt không xuất bản", r.status == 404)
 
@@ -139,7 +152,7 @@ async def main():
         # Vòng quay ưu tiên món có ảnh; ảnh hỏng link tự về khung trung tính (ngữ cảnh riêng, chặn ảnh)
         c2 = await b.new_context(viewport={"width": 390, "height": 844}, locale="vi-VN")
         async def anh_hong(route): await route.abort()
-        for host in ("lh3.googleusercontent.com", "i.ytimg.com"):
+        for host in ("lh3.googleusercontent.com", "i.ytimg.com", "upload.wikimedia.org"):
             await c2.route(f"https://{host}/**", anh_hong)
         p2 = await c2.new_page()
         p2.on("pageerror", lambda e: errs.append(str(e)))
@@ -154,6 +167,9 @@ async def main():
         check("ảnh hỏng link: thẻ món về khung trung tính", hong == [False, True], str(hong))
         await p2.goto(B + "/mon/mon-thu-video/"); await p2.wait_for_timeout(600)
         check("ảnh hỏng link ở trang món: bỏ ảnh, hiện video", await p2.evaluate("!document.querySelector('.hero-img') && !document.querySelector('.media .credit') && !document.querySelector('[data-media-panel=video]').hidden"))
+        await p2.goto(B + "/mon/thit-kho-trung/"); await p2.wait_for_timeout(300)
+        await p2.evaluate("document.querySelector('.step-fig').scrollIntoView()"); await p2.wait_for_timeout(600)
+        check("ảnh bước hỏng link: bỏ cả ảnh lẫn dòng ghi nguồn", await p2.evaluate("!document.querySelector('.step-fig') && !document.querySelector('.credit')"))
         await c2.close()
 
         # Danh mục: lọc và sắp xếp

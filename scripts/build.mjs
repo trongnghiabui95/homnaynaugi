@@ -7,6 +7,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseCSV, esc, fold, md, isSlug, imgUrl, parseYouTube } from "./lib.mjs";
+import { commonsFile, resolveCommons, creditText } from "./commons.mjs";
 import { layout, adSlot, emptyState, ytThumb, icon, recipeCard } from "./templates.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -55,6 +56,14 @@ export function qtyText(q) {
 }
 
 const pages = [];
+// Ghi công ảnh có giấy phép: "Tên tác giả, CC BY-SA 4.0 https://link-trang-ảnh"
+function photoCredit(t, tag = "figcaption", attr = "") {
+  const raw = String(t || "").trim();
+  if (!raw) return "";
+  const link = raw.match(/https?:\/\/\S+/);
+  const txt = raw.replace(/https?:\/\/\S+/, "").replace(/[\s,;·–-]+$/, "").trim();
+  return `<${tag} class="credit"${attr}>Ảnh: ${esc(txt || "xem nguồn")}${link ? ` · <a href="${esc(link[0])}" rel="noopener" target="_blank">Nguồn ảnh</a>` : ""}</${tag}>`;
+}
 async function write(rel, content) {
   const file = path.join(DIST, rel);
   await fs.mkdir(path.dirname(file), { recursive: true });
@@ -75,9 +84,22 @@ async function main() {
   site.site_url = (process.env.SITE_URL || site.site_url || "https://example.com").replace(/\/+$/, "");
   site.build_id = Date.now().toString(36);
 
+  // Ảnh Wikimedia Commons: tra link ảnh, tác giả, giấy phép một lần cho cả web.
+  const dataDir = SHEET_ID ? "" : process.env.DATA_DIR || path.join(ROOT, "data", "sample");
+  const commons = await resolveCommons([...raw.recipes, ...raw.steps, ...raw.categories].map((x) => commonsFile(x.anh)), dataDir);
+  if (commons.error) report.warnings.push(`không lấy được thông tin ảnh từ Wikimedia Commons (${commons.error}) – tạm ẩn các ảnh Commons`);
+  // Một ô `anh` → { src, credit }. Ảnh Commons tự kèm dòng ghi nguồn; tra không được thì bỏ ảnh, không hiện ảnh thiếu nguồn.
+  const pic = (u, where) => {
+    const f = commonsFile(u);
+    if (!f) return { src: imgUrl(u), credit: "" };
+    const c = commons.info.get(f);
+    if (c.why) { if (!commons.error) report.warnings.push(`${where}: ảnh "${f}" ${c.why} – bỏ ảnh`); return { src: "", credit: "" }; }
+    return { src: c.src, credit: creditText(c) };
+  };
+
   // ----- Dữ liệu -----
   const cats = raw.categories.filter((c) => (isSlug(c.slug) ? true : (skip("categories", c, "slug không hợp lệ"), false))).sort(byOrder)
-    .map((c) => ({ ...c, img: imgUrl(c.anh) }));
+    .map((c) => { const p = pic(c.anh, `categories ${c.slug}`); return { ...c, img: p.src, credit: p.src ? c.anh_nguon || p.credit : "" }; });
   const catBySlug = Object.fromEntries(cats.map((c) => [c.slug, c]));
   const ingBy = groupMap(raw.ingredients.filter((i) => i.ten), "recipe_slug");
   const stepBy = groupMap(raw.steps.filter((s) => s.noi_dung), "recipe_slug");
@@ -91,9 +113,10 @@ async function main() {
     const vraw = r.video || r.youtube_id || "";
     const yt = parseYouTube(vraw);
     if (vraw && !yt) report.warnings.push(`recipes ${r.slug}: video "${vraw}" không phải link/mã YouTube hợp lệ, bỏ video`);
-    const anh = imgUrl(r.anh);
+    const p = pic(r.anh, `recipes ${r.slug}`), anh = p.src;
+    const stepPics = steps.map((s) => { const q = pic(s.anh, `steps ${r.slug} bước ${s.buoc}`); return { ...s, img: q.src, credit: q.src ? s.anh_nguon || q.credit : "" }; });
     recipes.push({
-      ...r, ings, steps: steps.map((s) => ({ ...s, img: imgUrl(s.anh) })), cat: catBySlug[r.danh_muc], yt, anh,
+      ...r, anh_nguon: r.anh_nguon || p.credit, ings, steps: stepPics, cat: catBySlug[r.danh_muc], yt, anh,
       serv: num(r.khau_phan, 2) || 2, prep: num(r.phut_chuan_bi), cook: num(r.phut_nau), total: num(r.phut_chuan_bi) + num(r.phut_nau),
       cal: num(r.calo), cost: num(r.chi_phi), bua: list(r.bua).map(fold), tagList: list(r.tags), anKem: list(r.an_kem),
       img: anh || (yt ? ytThumb(yt.id) : ""),
@@ -212,7 +235,7 @@ ${quick.length ? `<section><div class="sec-head"><h2>Nhanh gọn dưới 20 phú
     await page(site, {
       path: `/danh-muc/${c.slug}/`, page: "list", noindex: rs.length < MIN_MON_DANH_MUC, title: `${c.ten} – công thức dễ làm`, crumbs: [["Danh mục", "/danh-muc/"], [c.ten, `/danh-muc/${c.slug}/`]],
       description: c.mo_ta || `Công thức ${c.ten} có video hướng dẫn.`,
-      body: `<header class="cat-head">${c.img ? `<img src="${esc(c.img)}" alt="" width="96" height="96">` : `<span class="cat-emoji big" aria-hidden="true">${esc(c.bieu_tuong || "🍽️")}</span>`}<div><h1>${esc(c.ten)}</h1><p class="lead">${esc(c.mo_ta)}</p></div></header>
+      body: `<header class="cat-head">${c.img ? `<img src="${esc(c.img)}" alt="" width="96" height="96">` : `<span class="cat-emoji big" aria-hidden="true">${esc(c.bieu_tuong || "🍽️")}</span>`}<div><h1>${esc(c.ten)}</h1><p class="lead">${esc(c.mo_ta)}</p>${c.img ? photoCredit(c.credit, "p") : ""}</div></header>
 ${rs.length ? filterBar(rs) + grid(rs, true) : emptyState("Danh mục đang được bổ sung", "Công thức mới sẽ sớm có ở đây.")}`,
     });
   }
@@ -230,7 +253,7 @@ ${rs.length ? filterBar(rs) + grid(rs, true) : emptyState("Danh mục đang đư
         r.yt && sec >= 0 ? `<button class="mini" type="button" data-seek="${sec}">${icon("play")} Xem đoạn ${mmss(sec)}</button>` : "",
         tmin ? `<button class="mini" type="button" data-timer="${tmin}" data-label="${esc(s.tieu_de || `Bước ${i + 1}`)}">${icon("timer")} Hẹn giờ ${qtyText(tmin)} phút</button>` : "",
       ].join("");
-      return `<li data-step id="buoc-${i + 1}">${s.tieu_de ? `<h3>${esc(s.tieu_de)}</h3>` : ""}<p>${esc(s.noi_dung)}</p>${s.img ? `<img class="step-img" src="${esc(s.img)}" alt="${esc(s.tieu_de || `Bước ${i + 1}`)}" loading="lazy" width="800" height="600">` : ""}${tools ? `<div class="step-tools">${tools}</div>` : ""}</li>`;
+      return `<li data-step id="buoc-${i + 1}">${s.tieu_de ? `<h3>${esc(s.tieu_de)}</h3>` : ""}<p>${esc(s.noi_dung)}</p>${s.img ? `<figure class="step-fig"><img class="step-img" src="${esc(s.img)}" alt="${esc(s.tieu_de || `Bước ${i + 1}`)}" loading="lazy" width="800" height="600">${photoCredit(s.credit)}</figure>` : ""}${tools ? `<div class="step-tools">${tools}</div>` : ""}</li>`;
     }).join("");
 
     // Món ăn kèm: lấy từ cột an_kem, thiếu thì gợi ý theo mâm cơm (mặn ↔ canh, rau)
@@ -266,17 +289,9 @@ ${rs.length ? filterBar(rs) + grid(rs, true) : emptyState("Danh mục đang đư
     const videoBox = r.yt ? `<div class="player-box${r.yt.shorts ? " vertical" : ""}" data-player data-id="${esc(r.yt.id)}">
       <button class="lite-yt" type="button" data-play aria-label="Phát video hướng dẫn ${esc(r.ten)}"><img src="${thumbMax}" onerror="this.onerror=null;this.src='${ytThumb(r.yt.id)}'" alt="" width="1280" height="720"><span class="play" aria-hidden="true"></span></button>
     </div>` : "";
-    // Ghi công ảnh có giấy phép: "Tên tác giả, CC BY-SA 4.0 https://link-trang-ảnh"
-    const photoCredit = (t) => {
-      const raw = String(t || "").trim();
-      if (!raw) return "";
-      const link = raw.match(/https?:\/\/\S+/);
-      const txt = raw.replace(/https?:\/\/\S+/, "").replace(/[\s,;·–-]+$/, "").trim();
-      return `<figcaption class="credit" data-media-panel="photo">Ảnh: ${esc(txt || "xem nguồn")}${link ? ` · <a href="${esc(link[0])}" rel="noopener" target="_blank">Nguồn ảnh</a>` : ""}</figcaption>`;
-    };
     const media = r.yt || r.anh ? `<figure class="media">
   ${r.yt && r.anh ? `<div class="seg small" role="tablist" aria-label="Ảnh hoặc video"><button type="button" role="tab" data-media="photo" aria-selected="true">Ảnh món</button><button type="button" role="tab" data-media="video" aria-selected="false">${icon("play")} Video</button></div>` : ""}
-  ${r.anh ? `<img class="hero-img" data-media-panel="photo" src="${esc(r.anh)}" alt="${esc(r.ten)}" width="1200" height="900">${photoCredit(r.anh_nguon)}` : ""}
+  ${r.anh ? `<img class="hero-img" data-media-panel="photo" src="${esc(r.anh)}" alt="${esc(r.ten)}" width="1200" height="900">${photoCredit(r.anh_nguon, "figcaption", ' data-media-panel="photo"')}` : ""}
   ${r.yt ? `<div data-media-panel="video"${r.anh ? " hidden" : ""}>${videoBox}<figcaption>Video: ${r.kenh ? `kênh <strong>${esc(r.kenh)}</strong>` : "YouTube"} · <a href="${watch}" rel="noopener" target="_blank">Xem trên YouTube</a></figcaption></div>` : ""}
 </figure>` : "";
 

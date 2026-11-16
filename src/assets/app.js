@@ -80,7 +80,7 @@ function photoBad(img) {
     $$('[data-media-panel="photo"]', fig).forEach((e) => e.remove());
     const v = $('[data-media-panel="video"]', fig);
     if (v) { v.hidden = false; $(".seg", fig)?.remove(); } else fig?.remove();
-  } else img.remove();
+  } else (img.closest(".step-fig") || img).remove();
 }
 document.addEventListener("load", (e) => e.target.matches?.(PHOTO) && photoOk(e.target), true);
 document.addEventListener("error", (e) => e.target.matches?.(PHOTO) && photoBad(e.target), true);

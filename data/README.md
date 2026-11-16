@@ -27,6 +27,12 @@ Muốn một bước có nút "Xem đoạn này": ghi số giây của đoạn �
 2. Tải ảnh lên, bấm chuột phải vào ảnh → **Chia sẻ → Sao chép đường liên kết**.
 3. Dán nguyên link vào cột `anh` (món, bước hoặc danh mục). Web tự đổi sang link ảnh tải nhanh.
 
+## Ảnh từ Wikimedia Commons
+1. Tìm ảnh trên [commons.wikimedia.org](https://commons.wikimedia.org/wiki/Category:Cuisine_of_Vietnam), mở trang của ảnh (địa chỉ có dạng `.../wiki/File:Ten_anh.jpg`).
+2. Sao chép địa chỉ trang đó, dán vào cột `anh` (món, bước hoặc danh mục). Cũng nhận link ảnh `upload.wikimedia.org/...` hoặc chỉ `File:Ten_anh.jpg`.
+3. Khi build, web tự lấy ảnh cỡ vừa (1280px) và **tự ghi** tác giả, giấy phép, link trang ảnh dưới ảnh. Không cần tải ảnh về, không cần điền `anh_nguon`. Nếu điền `anh_nguon` thì web dùng phần bạn ghi.
+4. Ảnh bị xoá, sai tên hoặc thiếu thông tin giấy phép thì web **không hiện ảnh đó** và ghi cảnh báo trong log build. Lúc build không kết nối được Commons thì các ảnh Commons tạm ẩn, lần build sau tự hiện lại.
+
 ## Các tab
 | Tab | Một dòng là | Cột |
 | --- | --- | --- |
@@ -45,4 +51,4 @@ Muốn một bước có nút "Xem đoạn này": ghi số giây của đoạn �
 
 Ảnh không phải tự chụp phải có giấy phép rõ và ghi vào cột `anh_nguon`, ví dụ:
 `Nguyễn Văn A, CC BY-SA 4.0 https://commons.wikimedia.org/wiki/File:Ten_anh.jpg`
-Web hiện dòng "Ảnh: … · Nguồn ảnh" ngay dưới ảnh món. Xem thêm `ops/NGUON-NOI-DUNG.md`.
+Web hiện dòng "Ảnh: … · Nguồn ảnh" ngay dưới ảnh món. Ảnh Wikimedia Commons dán link trang ảnh thì web tự ghi nguồn (xem mục trên). Xem thêm `ops/NGUON-NOI-DUNG.md`.

@@ -7,7 +7,7 @@
 - Chi phí máy chủ 0đ: GitHub + GitHub Pages/Cloudflare Pages + Google Sheets + Google Drive (ảnh).
 
 ## Kiến trúc
-Google Sheets → `scripts/build.mjs` (chỉ lấy món đã duyệt, đổi link Drive/YouTube) → `dist/` HTML tĩnh + `data/recipes.json` → GitHub Pages (xem thử) / Cloudflare Pages (chạy thật). Không dùng Next.js để không cần máy chủ; web tĩnh tải nhanh tương đương.
+Google Sheets → `scripts/build.mjs` (chỉ lấy món đã duyệt, đổi link Drive/YouTube, tra ảnh Wikimedia Commons kèm tác giả + giấy phép) → `dist/` HTML tĩnh + `data/recipes.json` → GitHub Pages (xem thử) / Cloudflare Pages (chạy thật). Không dùng Next.js để không cần máy chủ; web tĩnh tải nhanh tương đương.
 
 ## Giao diện
 Phong cách tạp chí ẩm thực: nền kem `#FAF8F5`, thẻ trắng đổ bóng mềm, màu nhấn cam đất `#D95D39` (chữ và nút dùng bản đậm `#C2492A` cho đủ tương phản), xanh thảo mộc `#4A7C59`, chữ `#2D2A26`. Tiêu đề Lora, nội dung Be Vietnam Pro. Ảnh 4:3 bo góc, phóng nhẹ khi rê chuột; thời gian và độ khó nằm dưới tên món. Thẻ món và ngăn quay có viền trên màu theo độ khó: Dễ xanh `#4A7C59`, Vừa vàng đất `#96610F`, Khó cam đậm `#C2492A`. Mâm cơm 3 món hiện thành 3 ô nằm ngang trong một khay.
