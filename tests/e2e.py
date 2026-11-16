@@ -124,6 +124,18 @@ async def main():
         await pg.screenshot(path=f"{OUT}/6-di-cho.png", full_page=True)
         await pg.goto(B + "/da-luu/"); await pg.wait_for_timeout(400)
         check("sổ tay hiện món đã lưu", len(await pg.query_selector_all("[data-saved-grid] .rcard")) == 1)
+        # Vùng bấm ≥ 44px và chữ ≥ 13px trên các trang chính (bỏ qua link nằm trong đoạn văn và link "Bỏ qua đến nội dung")
+        DO = """()=>{
+          const vis=e=>{const r=e.getBoundingClientRect(),cs=getComputedStyle(e);return r.width>0&&r.height>0&&cs.visibility!='hidden'&&cs.display!='none'};
+          const inText=e=>e.tagName=='A'&&e.closest('p,li,figcaption,small')&&!e.closest('.footer-links,.crumbs,.tags,.kicker');
+          const nho=[...document.querySelectorAll('a,button,select,input:not([type=checkbox]),label:has(input[type=checkbox])')].filter(e=>vis(e)&&!inText(e)&&!e.classList.contains('skip')&&e.getBoundingClientRect().height<43.5).map(e=>(e.innerText||e.getAttribute('aria-label')||e.tagName).trim().slice(0,20)+' '+Math.round(e.getBoundingClientRect().height)+'px');
+          const chu=[...document.querySelectorAll('body *')].filter(e=>vis(e)&&!e.closest('.ad-slot')&&[...e.childNodes].some(n=>n.nodeType==3&&n.textContent.trim())&&parseFloat(getComputedStyle(e).fontSize)<12.95).map(e=>e.innerText.trim().slice(0,15)+' '+getComputedStyle(e).fontSize);
+          return [[...new Set(nho)],[...new Set(chu)]]}"""
+        for u in ["/", "/mon/trung-chien-hanh/", "/mon/mon-thu-video/", "/danh-muc/", "/danh-muc/mon-man/", "/tim-kiem/", "/video/", "/di-cho/", "/da-luu/", "/gioi-thieu/"]:
+            await pg.goto(B + u); await pg.wait_for_timeout(300)
+            nho, chu = await pg.evaluate(DO)
+            check(f"vùng bấm ≥ 44px, chữ ≥ 13px: {u}", not nho and not chu, f"{nho[:4]} {chu[:4]}")
+
         await pg.goto(B + "/mon/thit-kho-trung/"); await pg.click('[data-toggle="theme"]'); await pg.wait_for_timeout(300)
         await pg.screenshot(path=f"{OUT}/7-dem.png")
         await b.close()
