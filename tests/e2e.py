@@ -23,6 +23,11 @@ async def main():
         b = await p.chromium.launch(**({"executable_path": os.environ["CHROME"]} if os.environ.get("CHROME") else {}))
         ctx = await b.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, locale="vi-VN")
         await ctx.grant_permissions(["clipboard-read", "clipboard-write"], origin=B)
+        # Ảnh Drive và ảnh bìa YouTube trong fixtures là link giả: trả về một ảnh thật để kiểm thử ảnh tải được
+        PNG = open(os.path.join(DIST, "assets", "og-mac-dinh.png"), "rb").read()
+        async def anh_that(route): await route.fulfill(status=200, content_type="image/png", body=PNG)
+        for host in ("lh3.googleusercontent.com", "i.ytimg.com"):
+            await ctx.route(f"https://{host}/**", anh_that)
         pg = await ctx.new_page()
         pg.on("pageerror", lambda e: errs.append(str(e)))
         pg.on("console", lambda m: errs.append(m.text) if m.type == "error" and "Failed to load resource" not in m.text else None)
@@ -117,6 +122,36 @@ async def main():
         check("món có ảnh: og:image và Recipe.image là ảnh món", 'og:image" content="https://lh3.googleusercontent.com/d/' in h and '"image":["https://lh3.googleusercontent.com/d/' in h)
         h = open(os.path.join(DIST, "mon", "trung-chien-hanh", "index.html"), encoding="utf-8").read()
         check("món chưa có ảnh: dùng ảnh mặc định để chia sẻ, Recipe không gắn ảnh không phải món", "og-mac-dinh.png" in h and '"@type":"Recipe"' in h and '"image"' not in h.split('"@type":"Recipe"')[1].split("</script>")[0])
+
+        # Món chưa có ảnh: khung trung tính có tên món, không còn emoji lớn; món có ảnh xếp trước
+        await pg.goto(B + "/"); await pg.wait_for_timeout(600)
+        check("không còn emoji lớn thay ảnh món", await pg.evaluate("!document.querySelector('.rcard-emoji') && ![...document.querySelectorAll('.rcard-img, .slot-img')].some(e=>/\\p{Extended_Pictographic}/u.test(e.textContent))"))
+        moi = await pg.evaluate("""()=>{const g=[...document.querySelectorAll('section')].find(s=>s.querySelector('h2')?.textContent==='Công thức mới');return [...g.querySelectorAll('.rcard')].map(c=>[c.querySelector('strong').textContent,!!c.querySelector('.rcard-img img')])}""")
+        check("trang chủ: món có ảnh xếp trước món chưa có ảnh", moi[0] == ["Món thử có video", True] and not any(co for _, co in moi[1:]), str(moi[:3]))
+        co = await pg.evaluate("""()=>{const i=document.querySelector('.rcard[href$="/mon/mon-thu-video/"] .rcard-img img');return i&&[i.classList.contains('ok'),getComputedStyle(i).opacity,i.loading]}""")
+        check("món có ảnh: ảnh tải lười, hiện rõ sau khi tải", co == [True, "1", "lazy"], str(co))
+        kh = await pg.evaluate("""()=>{const c=document.querySelector('.rcard[href$="/mon/trung-chien-hanh/"] .rcard-img');return [!!c.querySelector('img'),c.querySelector('.ph').textContent,getComputedStyle(c.querySelector('.ph')).fontFamily.includes('Lora')]}""")
+        check("món không ảnh: khung trung tính ghi tên món chữ Lora", kh == [False, "Trứng chiên hành", True], str(kh))
+        await pg.screenshot(path=f"{OUT}/8-khung-trung-tinh.png")
+        await pg.goto(B + "/danh-muc/mon-man/"); await pg.wait_for_timeout(300)
+        check("danh mục: không emoji lớn, có khung trung tính", await pg.evaluate("!document.querySelector('.rcard-emoji') && document.querySelectorAll('.rcard .ph').length === document.querySelectorAll('.rcard').length"))
+        # Vòng quay ưu tiên món có ảnh; ảnh hỏng link tự về khung trung tính (ngữ cảnh riêng, chặn ảnh)
+        c2 = await b.new_context(viewport={"width": 390, "height": 844}, locale="vi-VN")
+        async def anh_hong(route): await route.abort()
+        for host in ("lh3.googleusercontent.com", "i.ytimg.com"):
+            await c2.route(f"https://{host}/**", anh_hong)
+        p2 = await c2.new_page()
+        p2.on("pageerror", lambda e: errs.append(str(e)))
+        await p2.add_init_script("Math.random = () => 0")
+        await p2.goto(B + "/"); await p2.wait_for_timeout(500)
+        await p2.click('[data-spin-mode="one"]'); await p2.click("[data-spin-go]")
+        await p2.wait_for_selector("[data-spin-go]:not([disabled])")
+        check("vòng quay ưu tiên món có ảnh", await p2.text_content('[data-slot="one"] strong') == "Món thử có video")
+        hong = await p2.evaluate("""()=>{const c=document.querySelector('.rcard[href$="/mon/mon-thu-video/"] .rcard-img');return [!!c.querySelector('img'),c.querySelector('.ph').offsetHeight>0]}""")
+        check("ảnh hỏng link: thẻ món về khung trung tính", hong == [False, True], str(hong))
+        await p2.goto(B + "/mon/mon-thu-video/"); await p2.wait_for_timeout(600)
+        check("ảnh hỏng link ở trang món: bỏ ảnh, hiện video", await p2.evaluate("!document.querySelector('.hero-img') && !document.querySelector('.media .credit') && !document.querySelector('[data-media-panel=video]').hidden"))
+        await c2.close()
 
         # Danh mục: lọc và sắp xếp
         await pg.goto(B + "/danh-muc/mon-man/"); await pg.wait_for_timeout(400)

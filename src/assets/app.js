@@ -68,9 +68,28 @@ const IC = {
   lock: svg('<rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8.5 11V8a3.5 3.5 0 0 1 7 0v3"/>'),
   unlock: svg('<rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8.5 11V8a3.5 3.5 0 0 1 6.8-1.2"/>'),
 };
+/** Khung trung tính khi món chưa có ảnh hoặc ảnh hỏng link (giống noPhoto() lúc build). */
+const noPhoto = (ten) => `<span class="ph" aria-hidden="true"><span>${esc(ten)}</span></span>`;
+// Ảnh món: hiện mờ dần khi tải xong; hỏng link thì gỡ ảnh để lộ khung trung tính bên dưới.
+// Ảnh bìa YouTube của video không tồn tại vẫn tải được nhưng chỉ rộng 120px: coi như hỏng.
+const PHOTO = ".rcard-img img, .slot-img img, .hero-img, .step-img";
+const photoOk = (img) => { if (/ytimg\.com/.test(img.src) && img.naturalWidth <= 120) photoBad(img); else img.classList.add("ok"); };
+function photoBad(img) {
+  if (img.classList.contains("hero-img")) {
+    const fig = img.closest(".media");
+    $$('[data-media-panel="photo"]', fig).forEach((e) => e.remove());
+    const v = $('[data-media-panel="video"]', fig);
+    if (v) { v.hidden = false; $(".seg", fig)?.remove(); } else fig?.remove();
+  } else img.remove();
+}
+document.addEventListener("load", (e) => e.target.matches?.(PHOTO) && photoOk(e.target), true);
+document.addEventListener("error", (e) => e.target.matches?.(PHOTO) && photoBad(e.target), true);
+const scanPhotos = (root = document) => $$(PHOTO, root).forEach((i) => i.complete && (i.naturalWidth ? photoOk(i) : photoBad(i)));
+scanPhotos();
+
 /** Thẻ món phía trình duyệt, giống recipeCard() lúc build. */
 function cardHTML(r, extra = "") {
-  return `<a class="rcard" href="${BASE}/mon/${r.s}/"><div class="rcard-img">${r.img ? `<img src="${esc(r.img)}" alt="" loading="lazy" width="480" height="360">` : `<span class="rcard-emoji" aria-hidden="true">${esc(r.e || "🍽️")}</span>`}
+  return `<a class="rcard" href="${BASE}/mon/${r.s}/"><div class="rcard-img">${noPhoto(r.t)}${r.img ? `<img src="${esc(r.img)}" alt="" loading="lazy" decoding="async" width="480" height="360">` : ""}
   ${r.v ? `<span class="badge-video">${IC.play} Video</span>` : ""}
   <span class="badges">${r.m ? `<span>${IC.clock} ${r.m} phút</span>` : ""}${r.k ? `<span>${esc(r.k)}</span>` : ""}${r.cal ? `<span>${r.cal} kcal</span>` : ""}</span></div>
   <div class="rcard-body"><small class="rcard-cat">${esc(r.cn)}</small><strong>${esc(r.t)}</strong>${extra}</div></a>`;
@@ -159,7 +178,9 @@ async function pageHome() {
   const goBtn = $("[data-spin-go]", box), goText = $("span", goBtn);
   const rand = (a) => a[(Math.random() * a.length) | 0];
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-  const pic = (r) => (r.img ? `<img src="${esc(r.img)}" alt="" width="240" height="180">` : esc(r.e || "🍽️"));
+  const pic = (r) => noPhoto(r.t) + (r.img ? `<img src="${esc(r.img)}" alt="" width="240" height="180">` : "");
+  // Ưu tiên món có ảnh: món có ảnh có 3 phần cơ hội, món chưa có ảnh 1 phần (vẫn ra để mâm cơm đa dạng).
+  const pickFin = (p) => rand([...p].sort((a, b) => !!b.img - !!a.img).flatMap((r) => (r.img ? [r, r, r] : [r])));
   const slotHTML = (d) => {
     const r = bySlug[st.picks[d.key]];
     if (!r) return `<div class="slot empty-slot" data-slot="${d.key}"><div><div class="slot-label">${esc(d.label)}</div><p>Bấm “Quay món” để nhận gợi ý</p></div></div>`;
@@ -216,7 +237,7 @@ async function pageHome() {
     for (const d of defs) {
       const p = pool(d);
       if (!p.length) { delete st.picks[d.key]; empties.push(d); continue; }
-      rolls.push({ d, p, fin: rand(p.length > 1 ? p.filter((r) => r.s !== st.picks[d.key]) : p) });
+      rolls.push({ d, p, fin: pickFin(p.length > 1 ? p.filter((r) => r.s !== st.picks[d.key]) : p) });
     }
     if (matchMedia("(prefers-reduced-motion: reduce)").matches || !rolls.length) {
       rolls.forEach(({ d, fin }) => (st.picks[d.key] = fin.s));
