@@ -150,11 +150,12 @@ export const noPhoto = (ten) => `<span class="ph" aria-hidden="true"><span>${esc
 /** Thẻ món: ảnh 4:3 có badge thời gian, độ khó, calo, video. attrs = thêm data-* để lọc/sắp xếp phía trình duyệt. */
 export function recipeCard(r, attrs = false) {
   const data = attrs ? ` data-k="${esc((r.do_kho || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase())}" data-m="${r.total || 0}" data-cal="${r.cal || 0}" data-d="${esc(r.cap_nhat || "")}"` : "";
-  return `<a class="rcard" href="/mon/${r.slug}/"${data}>
+  const k = (r.do_kho || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  return `<a class="rcard${["de", "vua", "kho"].includes(k) ? ` k-${k}` : ""}" href="/mon/${r.slug}/"${data}>
   <div class="rcard-img">${noPhoto(r.ten)}${r.img ? `<img src="${esc(r.img)}" alt="" loading="lazy" decoding="async" width="480" height="360">` : ""}
     ${r.yt ? `<span class="badge-video">${icon("play")} Video</span>` : ""}
-    <span class="badges">${r.total ? `<span>${icon("clock")} ${r.total} phút</span>` : ""}${r.do_kho ? `<span>${esc(r.do_kho)}</span>` : ""}${r.cal ? `<span>${r.cal} kcal</span>` : ""}</span>
   </div>
-  <div class="rcard-body"><small class="rcard-cat">${esc(r.cat?.ten || "")}</small><strong>${esc(r.ten)}</strong></div>
+  <div class="rcard-body"><small class="rcard-cat">${esc(r.cat?.ten || "")}</small><strong>${esc(r.ten)}</strong>
+    <span class="rcard-meta"><span>${r.total ? `${icon("clock")} ${r.total} phút` : ""}</span>${r.do_kho ? `<b>${esc(r.do_kho)}</b>` : ""}</span></div>
 </a>`;
 }
