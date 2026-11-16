@@ -14,6 +14,7 @@ Web tiếng Việt "Hôm Nay Nấu Gì" (homnaynaugi): gợi ý món và mâm c�
 ## Lệnh
 - `node scripts/build.mjs --sample` – build bằng dữ liệu mẫu
 - `DATA_DIR=tests/fixtures node scripts/build.mjs && python3 tests/e2e.py` – kiểm thử trên trình duyệt; mọi dòng phải là `OK` và `errors: []`
+- `node --test tests/commons.test.mjs` – kiểm thử phần ảnh Wikimedia Commons (không cần mạng; trả lời API mẫu ở `tests/fixtures/commons.json`)
 
 ## Quy tắc nội dung
 - Món chỉ lên web khi `trang_thai` = `duyệt`, có danh mục hợp lệ, ít nhất 1 nguyên liệu và 1 bước. Không nới lỏng cổng này.

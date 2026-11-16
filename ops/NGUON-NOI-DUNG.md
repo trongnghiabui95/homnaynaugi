@@ -9,7 +9,7 @@ Mục tiêu: mỗi món có ảnh thật, công thức tự viết, số liệu 
 | **Ảnh tự chụp** khi nấu thử | Của mình, không cần ghi nguồn. Tốt nhất cho AdSense và Google Tìm kiếm. | Tải lên Google Drive, chia sẻ "Bất kỳ ai có đường liên kết", dán link vào cột `anh`. |
 | **Ảnh thu nhỏ của video được nhúng** | Chỉ dùng kèm chính video đó. | Tự động: điền cột `video`, để trống cột `anh`. |
 | **Pexels, Unsplash, Pixabay** | Miễn phí, dùng thương mại được, không bắt buộc ghi nguồn. Ít ảnh món cơm nhà Việt. Đọc trang giấy phép của từng trang trước khi dùng. | Tải ảnh về, đưa lên Drive, dán link. Nên ghi tên người chụp vào `anh_nguon`. |
-| **Wikimedia Commons** (mục "Cuisine of Vietnam") | Mỗi ảnh một giấy phép riêng (thường CC BY hoặc CC BY-SA): **bắt buộc** ghi tên tác giả, giấy phép và link trang ảnh. | Tải về, đưa lên Drive, điền `anh_nguon`. Không nên dán thẳng link ảnh của Wikimedia vì ảnh có thể bị đổi hoặc xoá. |
+| **Wikimedia Commons** (mục "Cuisine of Vietnam") | Mỗi ảnh một giấy phép riêng (thường CC BY hoặc CC BY-SA): **bắt buộc** ghi tên tác giả, giấy phép và link trang ảnh. | Dán link trang ảnh (`commons.wikimedia.org/wiki/File:…`) vào cột `anh`. Build tự lấy ảnh và tự ghi tác giả, giấy phép. Ảnh bị xoá hoặc thiếu giấy phép thì web tự bỏ ảnh. Trước khi dán, mở trang ảnh xem có đúng món và ảnh có rõ nét không. |
 
 Không dùng: ảnh lấy từ Google Hình ảnh, Facebook, Cookpad, báo, web nấu ăn khác; ảnh chụp màn hình video; ảnh do AI tạo ra giả làm ảnh món thật.
 
