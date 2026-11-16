@@ -284,6 +284,25 @@ select { min-height: 46px; padding: 0 12px; border: 1px solid var(--line); borde
 .shop-recipes .chip button { border: 0; background: none; cursor: pointer; font-size: 18px; min-width: 44px; min-height: 44px; padding: 0; color: var(--muted); }
 
 .empty { text-align: center; padding: 32px 18px; border: 2px dashed var(--line); border-radius: var(--radius); color: var(--muted); margin: 18px 0; }
+/* Video: nút phát rõ trên thẻ món, dải video trang chủ, trình xem liên tiếp */
+.rcard-img:has(.badge-video)::after { content: ""; position: absolute; inset: 0 0 26px; margin: auto; width: 48px; height: 48px; border-radius: 50%; background: rgba(0, 0, 0, .58) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 6.5v11l9-5.5z' fill='%23fff'/%3E%3C/svg%3E") center / 28px no-repeat; box-shadow: 0 0 0 2px rgba(255, 255, 255, .85); pointer-events: none; }
+.vstrip { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x proximity; padding: 2px 18px 12px; margin: 0 -18px; scrollbar-width: none; }
+.vcard { flex: none; width: 190px; scroll-snap-align: center; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+.vcard:not(.doc) { width: 290px; }
+.vcard-media { aspect-ratio: 16/9; background: #000; }
+.vcard.doc .vcard-media { aspect-ratio: 9/16; }
+.vcard-media iframe { width: 100%; height: 100%; border: 0; display: block; }
+.vcard.playing { border-color: var(--accent); }
+.vcard-body { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px 6px; flex: 1; }
+.vcard-body strong { font-family: var(--serif); line-height: 1.3; }
+.vcard-body small { color: var(--muted); font-size: 13px; }
+.vcard-body p { margin: 2px 0; color: var(--muted); font-size: .88em; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; overflow: hidden; }
+.vcard-link { margin-top: auto; display: inline-flex; align-items: center; min-height: 44px; font-weight: 600; text-decoration: none; }
+.vstage { margin: 8px 0 28px; }
+.vstage .player-box.vertical { max-width: min(360px, calc(50vh * 9 / 16)); }
+.vstage h2 { margin: 2px 0 4px; }
+.vnav { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; margin: 12px 0 8px; }
+.vnav .btn { justify-content: center; padding: 0 12px; white-space: nowrap; }
 .empty-title { font-weight: 600; color: var(--text); }
 .prose { max-width: 720px; }
 .prose h2 { margin-top: 1.5em; }

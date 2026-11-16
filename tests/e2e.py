@@ -125,6 +125,38 @@ async def main():
         check("lọc danh mục ≤ 15 phút", vis == ["Trứng chiên hành"], str(vis))
         await pg.screenshot(path=f"{OUT}/4-danh-muc.png", full_page=True)
 
+        # Video: khối trang chủ phát tại chỗ, mục Video ở thanh dưới, trang /video/ xem liên tiếp
+        await pg.goto(B + "/"); await pg.wait_for_timeout(400)
+        vc = await pg.evaluate("[...document.querySelectorAll('[data-vstrip] [data-vcard]')].map(c=>[c.querySelector('strong').textContent, c.classList.contains('doc')])")
+        check("trang chủ có khối video: 1 Shorts dọc, 1 video ngang", sorted(vc) == [["Món thử có video", True], ["Món thử video ngang", False]], str(vc))
+        await pg.click('[data-vcard][data-id="abcdefghijk"] [data-vplay]'); await pg.wait_for_timeout(200)
+        src = await pg.get_attribute('[data-vcard][data-id="abcdefghijk"] iframe', "src")
+        check("bấm thẻ video là phát tại chỗ, nhúng youtube-nocookie", bool(src) and src.startswith("https://www.youtube-nocookie.com/embed/abcdefghijk?autoplay=1"), str(src))
+        await pg.screenshot(path=f"{OUT}/9-video-trang-chu.png")
+        await pg.click('[data-vcard][data-id="NGANGthu001"] [data-vplay]'); await pg.wait_for_timeout(200)
+        check("mỗi lúc chỉ một video chạy", await pg.evaluate("document.querySelectorAll('[data-vstrip] iframe').length === 1 && !!document.querySelector('[data-vcard][data-id=\"abcdefghijk\"] [data-vplay]')"))
+        credit = await pg.evaluate("(()=>{const c=document.querySelector('[data-vcard][data-id=\"abcdefghijk\"]');return [c.querySelector('small').textContent, c.querySelector('small a').href, c.querySelector('.vcard-link').getAttribute('href')]})()")
+        check("thẻ video ghi kênh, link YouTube, link công thức", credit == ["Video: kênh Kênh thử · Xem trên YouTube", "https://www.youtube.com/shorts/abcdefghijk", "/mon/mon-thu-video/"], str(credit))
+        tab = await pg.eval_on_selector_all(".tabbar a", "els=>els.map(e=>e.textContent.trim())")
+        check("thanh dưới có mục Video, tối đa 5 mục", "Video" in tab and len(tab) == 5 and await pg.query_selector('.footer-links a[href$="/danh-muc/"]') is not None, str(tab))
+        check("thẻ món có video có nút phát giữa ảnh", await pg.evaluate("(()=>{const e=document.querySelector('.rcard-img:has(.badge-video)');const s=getComputedStyle(e,'::after');return s.content!=='none'&&parseFloat(s.width)>=48})()"))
+        await pg.click('.tabbar a[href$="/video/"]'); await pg.wait_for_timeout(400)
+        check("trang video: mục Video đang chọn, chưa tự phát", await pg.get_attribute('.tabbar a[href$="/video/"]', "aria-current") == "page" and not await pg.query_selector("[data-vbox] iframe"))
+        t1 = await pg.text_content("[data-vtitle]")
+        await pg.click("[data-vstart]"); await pg.wait_for_timeout(200)
+        s1 = await pg.get_attribute("[data-vbox] iframe", "src")
+        await pg.click("[data-vnext]"); await pg.wait_for_timeout(200)
+        t2, s2, pos = await pg.text_content("[data-vtitle]"), await pg.get_attribute("[data-vbox] iframe", "src"), await pg.text_content("[data-vpos]")
+        href = await pg.get_attribute("[data-vrecipe]", "href")
+        ids = {"Món thử có video": ("abcdefghijk", "mon-thu-video"), "Món thử video ngang": ("NGANGthu001", "mon-thu-video-ngang")}
+        check("phát video rồi chuyển video kế: tự phát video kế", t1 != t2 and ids[t1][0] in s1 and ids[t2][0] in s2 and pos == "Video 2/2", f"{t1} {t2} {s2} {pos}")
+        check("nút Xem công thức về đúng trang món", href.endswith(f"/mon/{ids[t2][1]}/"), href)
+        check("khung dọc cho Shorts, khung ngang cho video thường", await pg.eval_on_selector("[data-vbox]", "e=>e.classList.contains('vertical')") == (t2 == "Món thử có video"))
+        await pg.evaluate("""()=>{const s=document.querySelector('[data-vstage]');const t=(n,x)=>s.dispatchEvent(new TouchEvent(n,{bubbles:true,touches:n==='touchend'?[]:[new Touch({identifier:1,target:s,clientX:x,clientY:300})],changedTouches:[new Touch({identifier:1,target:s,clientX:x,clientY:300})]}));t('touchstart',300);t('touchend',80)}""")
+        await pg.wait_for_timeout(200)
+        check("vuốt ngang sang video kế", await pg.text_content("[data-vtitle]") == t1)
+        await pg.screenshot(path=f"{OUT}/10-video-lien-tiep.png")
+
         # Tủ lạnh có gì
         await pg.goto(B + "/tim-kiem/?mode=nl"); await pg.wait_for_timeout(500)
         for v in ["trung ga", "hanh la"]:
