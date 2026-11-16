@@ -98,6 +98,16 @@ async def main():
         r = await pg.goto(B + "/mon/mon-thu-nhap/")
         check("món chưa duyệt không xuất bản", r.status == 404)
 
+        # Ảnh xem trước khi chia sẻ: mọi trang có og:image là URL tuyệt đối
+        import glob, re
+        thieu = [f for f in glob.glob(os.path.join(DIST, "**", "index.html"), recursive=True)
+                 if not re.search(r'<meta property="og:image" content="https?://', open(f, encoding="utf-8").read())]
+        check("mọi trang có og:image tuyệt đối", not thieu, str(thieu[:3]))
+        h = open(os.path.join(DIST, "mon", "mon-thu-video", "index.html"), encoding="utf-8").read()
+        check("món có ảnh: og:image và Recipe.image là ảnh món", 'og:image" content="https://lh3.googleusercontent.com/d/' in h and '"image":["https://lh3.googleusercontent.com/d/' in h)
+        h = open(os.path.join(DIST, "mon", "trung-chien-hanh", "index.html"), encoding="utf-8").read()
+        check("món chưa có ảnh: dùng ảnh mặc định để chia sẻ, Recipe không gắn ảnh không phải món", "og-mac-dinh.png" in h and '"@type":"Recipe"' in h and '"image"' not in h.split('"@type":"Recipe"')[1].split("</script>")[0])
+
         # Danh mục: lọc và sắp xếp
         await pg.goto(B + "/danh-muc/mon-man/"); await pg.wait_for_timeout(400)
         await pg.click('[data-f="m"] [data-v="15"]')
@@ -124,16 +134,6 @@ async def main():
         await pg.screenshot(path=f"{OUT}/6-di-cho.png", full_page=True)
         await pg.goto(B + "/da-luu/"); await pg.wait_for_timeout(400)
         check("sổ tay hiện món đã lưu", len(await pg.query_selector_all("[data-saved-grid] .rcard")) == 1)
-        # Ảnh xem trước khi chia sẻ: mọi trang có og:image là URL tuyệt đối
-        import glob, re
-        thieu = [f for f in glob.glob(os.path.join(DIST, "**", "index.html"), recursive=True)
-                 if not re.search(r'<meta property="og:image" content="https?://', open(f, encoding="utf-8").read())]
-        check("mọi trang có og:image tuyệt đối", not thieu, str(thieu[:3]))
-        h = open(os.path.join(DIST, "mon", "mon-thu-video", "index.html"), encoding="utf-8").read()
-        check("món có ảnh: og:image và Recipe.image là ảnh món", 'og:image" content="https://lh3.googleusercontent.com/d/' in h and '"image":["https://lh3.googleusercontent.com/d/' in h)
-        h = open(os.path.join(DIST, "mon", "trung-chien-hanh", "index.html"), encoding="utf-8").read()
-        check("món chưa có ảnh: dùng ảnh mặc định để chia sẻ, Recipe không gắn ảnh không phải món", "og-mac-dinh.png" in h and '"@type":"Recipe"' in h and '"image"' not in h.split('"@type":"Recipe"')[1].split("</script>")[0])
-
         await pg.goto(B + "/mon/thit-kho-trung/"); await pg.click('[data-toggle="theme"]'); await pg.wait_for_timeout(300)
         await pg.screenshot(path=f"{OUT}/7-dem.png")
         await b.close()
