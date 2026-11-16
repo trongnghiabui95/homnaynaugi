@@ -1,0 +1,23 @@
+name: Cập nhật nội dung từ Google Sheets
+# Chạy mỗi ngày 6:10 sáng giờ Việt Nam (23:10 UTC) và khi bấm tay ở tab Actions.
+on:
+  schedule:
+    - cron: "10 23 * * *"
+  workflow_dispatch:
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Kiểm tra dữ liệu Sheet
+        env: { SHEET_ID: "${{ secrets.SHEET_ID }}" }
+        run: |
+          if [ -z "$SHEET_ID" ]; then echo "Chưa có secret SHEET_ID – dùng dữ liệu mẫu."; fi
+          node scripts/build.mjs
+      - name: Yêu cầu Cloudflare dựng lại web
+        env: { HOOK: "${{ secrets.CF_DEPLOY_HOOK }}" }
+        run: |
+          if [ -z "$HOOK" ]; then echo "Chưa có secret CF_DEPLOY_HOOK – bỏ qua."; exit 0; fi
+          curl -fsS -X POST "$HOOK" >/dev/null && echo "Đã gửi yêu cầu dựng lại."
