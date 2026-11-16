@@ -29,7 +29,15 @@ async def main():
 
         # Hôm nay nấu gì: mâm cơm 3 món đúng ngăn, khoá giữ món
         await pg.goto(B + "/"); await pg.wait_for_timeout(500)
-        await pg.click("[data-spin-go]"); await pg.wait_for_timeout(900)
+        async def quay():
+            await pg.click("[data-spin-go]")
+            await pg.wait_for_selector("[data-spin-go]:not([disabled])"); await pg.wait_for_timeout(60)
+        await pg.click("[data-spin-go]"); await pg.wait_for_timeout(250)
+        dang = await pg.evaluate("[document.querySelectorAll('.slot.rolling .reel').length, document.querySelector('[data-spin-go]').disabled]")
+        check("đang quay: 3 ngăn cuộn, nút bị khoá", dang == [3, True], str(dang))
+        await pg.screenshot(path=f"{OUT}/1a-dang-quay.png")
+        await pg.wait_for_selector("[data-spin-go]:not([disabled])")
+        check("quay xong: ngăn nảy, không còn dải cuộn", await pg.evaluate("document.querySelectorAll('.slot.landed').length === 3 && !document.querySelector('.reel')"))
         names = await pg.eval_on_selector_all("[data-spin-slots] .slot strong", "els=>els.map(e=>e.textContent)")
         labels = await pg.eval_on_selector_all("[data-spin-slots] .slot-label", "els=>els.map(e=>e.textContent)")
         check("mâm cơm có đủ 3 ngăn mặn/canh/rau", len(names) == 3 and labels == ["Món mặn", "Món canh", "Món rau / xào"], f"{labels} {names}")
@@ -39,12 +47,12 @@ async def main():
         locked = names[0]
         same = True
         for _ in range(4):
-            await pg.click("[data-spin-go]"); await pg.wait_for_timeout(800)
+            await quay()
             same &= (await pg.text_content('[data-slot="m0"] strong')) == locked
         check("khoá giữ nguyên món khi quay lại", same)
         await pg.screenshot(path=f"{OUT}/1-trang-chu.png", full_page=True)
         await pg.select_option('[data-spin-f="b"]', "sang")
-        await pg.click('[data-spin-mode="one"]'); await pg.click("[data-spin-go]"); await pg.wait_for_timeout(900)
+        await pg.click('[data-spin-mode="one"]'); await quay()
         one = await pg.text_content('[data-slot="one"] strong')
         check("gợi ý 1 món theo bữa sáng", one in ["Bánh mì ốp la", "Sinh tố bơ"], one)
         await pg.click("[data-spin-shop]"); await pg.wait_for_timeout(300)
