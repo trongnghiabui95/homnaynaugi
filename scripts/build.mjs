@@ -62,6 +62,9 @@ async function main() {
 
   const site = { site_name: "Kiến thức làm mẹ", tagline: "", site_url: "https://kienthuclamme.pages.dev" };
   for (const r of raw.settings) if (r.key) site[r.key] = r.value;
+  // BASE_PATH: chạy trong thư mục con (GitHub Pages: /kienthuclamme). SITE_URL: ghi đè địa chỉ web khi deploy nơi khác.
+  site.base = (process.env.BASE_PATH || "").replace(/\/+$/, "");
+  if (process.env.SITE_URL) site.site_url = process.env.SITE_URL.replace(/\/+$/, "");
   site.build_id = Date.now().toString(36);
 
   const stages = raw.stages.filter((r) => (isSlug(r.slug) ? true : (skip("stages", r, `slug "${r.slug}" không hợp lệ`), false))).sort(byOrder);
@@ -275,7 +278,8 @@ ${md(a.noi_dung)}</article>${adSlot(site, "bottom")}${sourcesBlock(parseSources(
   await write("robots.txt", `User-agent: *\nAllow: /\nSitemap: ${base}/sitemap.xml\n`);
   if (site.adsense_client) await write("ads.txt", `google.com, ${site.adsense_client.replace(/^ca-/, "")}, DIRECT, f08c47fec0942fa0\n`);
   const sw = await fs.readFile(path.join(DIST, "sw.js"), "utf8");
-  await write("sw.js", sw.replace("__BUILD_ID__", site.build_id));
+  await write("sw.js", sw.replace("__BUILD_ID__", site.build_id).replace("__BASE__", site.base));
+  if (site.base) await rebase(site.base);
 
   console.log(`Xong: ${pages.length} trang → dist/  (nguồn: ${process.env.SHEET_ID && !process.argv.includes("--sample") ? "Google Sheets" : process.env.DATA_DIR || "data/sample"})`);
   console.log(`Đã xuất bản: ${stages.length} giai đoạn, ${prep.length} món chuẩn bị, ${vaccines.length} mũi tiêm, ${milestones.length} mốc, ${diseases.length} bệnh, ${articles.length} bài, ${videos.length} video.`);
@@ -283,6 +287,29 @@ ${md(a.noi_dung)}</article>${adSlot(site, "bottom")}${sourcesBlock(parseSources(
 }
 
 // ---------- Hỗ trợ ----------
+/** Thêm đường dẫn gốc vào mọi link nội bộ ("/x" → "/kienthuclamme/x") trong HTML, manifest và chỉ mục tìm kiếm. */
+async function rebase(base) {
+  const walk = async (dir) => {
+    const out = [];
+    for (const e of await fs.readdir(dir, { withFileTypes: true })) {
+      const p = path.join(dir, e.name);
+      out.push(...(e.isDirectory() ? await walk(p) : [p]));
+    }
+    return out;
+  };
+  for (const f of await walk(DIST)) {
+    if (f.endsWith(".html")) {
+      const s = await fs.readFile(f, "utf8");
+      await fs.writeFile(f, s.replace(/(\s(?:href|src|action)=")\/(?!\/)/g, `$1${base}/`).replace('<html lang="vi">', `<html lang="vi" data-base="${base}">`));
+    }
+  }
+  const mf = path.join(DIST, "manifest.webmanifest");
+  const m = JSON.parse(await fs.readFile(mf, "utf8"));
+  m.start_url = base + m.start_url; m.scope = base + "/";
+  m.icons = m.icons.map((i) => ({ ...i, src: base + i.src }));
+  await fs.writeFile(mf, JSON.stringify(m, null, 2));
+}
+
 function groupBy(list, key) {
   const m = new Map();
   for (const x of list) { const k = x[key] || ""; if (!m.has(k)) m.set(k, []); m.get(k).push(x); }

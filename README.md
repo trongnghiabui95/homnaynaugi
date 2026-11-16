@@ -13,6 +13,11 @@ python3 -m http.server 8080 -d dist
 ```
 Mở http://localhost:8080.
 
+## Bản xem thử trên GitHub Pages
+Link: https://trongnghiabui95.github.io/kienthuclamme/
+
+Bật một lần: repo → **Settings → Pages → Build and deployment → Source: GitHub Actions**. Sau đó web tự cập nhật mỗi khi `main` thay đổi và mỗi sáng. Đây là bản xem thử: AdSense không duyệt tên miền `github.io`, nên khi chạy thật hãy dùng domain riêng (qua Cloudflare Pages bên dưới).
+
 ## Deploy lên Cloudflare Pages
 Workers & Pages → Create → Pages → Connect to Git → chọn repo này.
 - Build command: `node scripts/build.mjs`

@@ -5,7 +5,8 @@ Web tiếng Việt về chăm sóc sức khoẻ bé, từ lúc chuẩn bị sinh
 ## Ngăn xếp (không đổi khi chưa được chủ dự án đồng ý)
 - Web tĩnh HTML/CSS/JS thuần, **không framework, không bước bundle**. Node ≥ 20 chỉ dùng để build.
 - Nội dung nằm trong **Google Sheets**; `scripts/build.mjs` tải Sheet (biến `SHEET_ID`) hoặc CSV trong `data/sample/`, kiểm tra, rồi sinh `dist/`.
-- Deploy: Cloudflare Pages, build command `node scripts/build.mjs`, output `dist`.
+- Deploy: bản xem thử trên GitHub Pages (`.github/workflows/github-pages.yml`, chạy trong thư mục con nhờ `BASE_PATH=/kienthuclamme`); bản chạy thật trên Cloudflare Pages, build command `node scripts/build.mjs`, output `dist`.
+- Link nội bộ trong HTML viết bắt đầu bằng `/`; build tự thêm `BASE_PATH`. Trong `app.js` luôn ghép `BASE` vào trước đường dẫn.
 - PWA: `src/sw.js`, `src/manifest.webmanifest`. Sau này đóng gói Android bằng Capacitor từ chính `dist/`.
 - Dữ liệu của bé chỉ lưu trên máy người dùng (IndexedDB trong `src/assets/app.js`). **Không bao giờ gửi dữ liệu bé ra ngoài.**
 

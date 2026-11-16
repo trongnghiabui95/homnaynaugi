@@ -4,6 +4,8 @@ const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const fold = (s) => String(s ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").toLowerCase();
 const DAY = 864e5;
+// Đường dẫn gốc khi web chạy trong thư mục con (ví dụ GitHub Pages: /kienthuclamme).
+const BASE = document.documentElement.dataset.base || "";
 
 // ---------- Lưu trữ: IndexedDB, dự phòng localStorage, dự phòng bộ nhớ tạm ----------
 const store = (() => {
@@ -104,7 +106,7 @@ function bindKindLabel(form) {
 
 // ---------- Lịch tiêm cá nhân ----------
 async function vaccinePlan(b) {
-  const list = await getJSON("/data/vaccines.json");
+  const list = await getJSON(BASE + "/data/vaccines.json");
   const done = await store.get("vx:" + b.id, {});
   const dob = parseDate(b.date), t = today();
   return list.map((v) => {
@@ -139,16 +141,16 @@ async function pageHome() {
     const b = await activeBaby();
     if (!b) { bindKindLabel($("[data-form=quick-baby]")); return; }
     const days = ageDays(b), age = ageLabel(b);
-    const stages = await getJSON("/data/stages.json");
+    const stages = await getJSON(BASE + "/data/stages.json");
     const st = stages.find((s) => days >= s.tu && days <= s.den);
-    const ms = st ? (await getJSON("/data/milestones.json")).filter((m) => m.stage_slug === st.slug).slice(0, 3) : [];
+    const ms = st ? (await getJSON(BASE + "/data/milestones.json")).filter((m) => m.stage_slug === st.slug).slice(0, 3) : [];
     const plan = b.kind === "born" ? (await vaccinePlan(b)).filter((v) => !v.isDone).slice(0, 2) : [];
     const items = [];
-    if (st) items.push(`<li><strong>Giai đoạn: ${esc(st.ten)}</strong>${esc(st.tom_tat)} <a href="/giai-doan/${st.slug}/">Xem chi tiết →</a></li>`);
-    if (b.kind === "expecting") items.push(`<li><strong>Chuẩn bị đi sinh</strong>Kiểm tra danh sách đồ cần mang. <a href="/chuan-bi-di-sinh/">Mở danh sách →</a></li>`);
+    if (st) items.push(`<li><strong>Giai đoạn: ${esc(st.ten)}</strong>${esc(st.tom_tat)} <a href="${BASE}/giai-doan/${st.slug}/">Xem chi tiết →</a></li>`);
+    if (b.kind === "expecting") items.push(`<li><strong>Chuẩn bị đi sinh</strong>Kiểm tra danh sách đồ cần mang. <a href="${BASE}/chuan-bi-di-sinh/">Mở danh sách →</a></li>`);
     for (const m of ms) items.push(`<li><strong>${esc(m.linh_vuc)}</strong>${esc(m.mo_ta)}</li>`);
-    for (const v of plan) items.push(`<li><strong>Mũi tiêm: ${esc(v.ten_vaccine)} ${stBadge(v.status)}</strong>Dự kiến ${fmt(v.due)}. <a href="/lich-tiem-chung/">Lịch tiêm →</a></li>`);
-    box.innerHTML = `<div class="today-head"><h2>${esc(b.name)}</h2><a class="small" href="/be-cua-toi/">Đổi bé</a></div>
+    for (const v of plan) items.push(`<li><strong>Mũi tiêm: ${esc(v.ten_vaccine)} ${stBadge(v.status)}</strong>Dự kiến ${fmt(v.due)}. <a href="${BASE}/lich-tiem-chung/">Lịch tiêm →</a></li>`);
+    box.innerHTML = `<div class="today-head"><h2>${esc(b.name)}</h2><a class="small" href="${BASE}/be-cua-toi/">Đổi bé</a></div>
       <p class="today-age">${esc(age.big)}</p>${age.small ? `<p class="muted">${esc(age.small)}</p>` : ""}
       <ul class="today-list">${items.join("") || "<li>Nội dung cho giai đoạn này đang được biên soạn.</li>"}</ul>`;
   };
@@ -181,8 +183,8 @@ async function pageChecklist() {
 // ---------- Trang: Tiêm chủng ----------
 async function pageVaccines() {
   const b = await activeBaby(), box = $("#my-vaccines");
-  if (!b) { box.hidden = false; box.innerHTML = `<p>Thêm bé ở <a href="/be-cua-toi/">Bé của tôi</a> để xem ngày tiêm dự kiến của riêng bé.</p>`; return; }
-  if (b.kind === "expecting") { box.hidden = false; box.innerHTML = `<p>Sau khi bé chào đời, cập nhật ngày sinh ở <a href="/be-cua-toi/">Bé của tôi</a> để tính lịch tiêm.</p>`; return; }
+  if (!b) { box.hidden = false; box.innerHTML = `<p>Thêm bé ở <a href="${BASE}/be-cua-toi/">Bé của tôi</a> để xem ngày tiêm dự kiến của riêng bé.</p>`; return; }
+  if (b.kind === "expecting") { box.hidden = false; box.innerHTML = `<p>Sau khi bé chào đời, cập nhật ngày sinh ở <a href="${BASE}/be-cua-toi/">Bé của tôi</a> để tính lịch tiêm.</p>`; return; }
   const render = async () => {
     const plan = await vaccinePlan(b);
     box.hidden = false;
@@ -249,7 +251,7 @@ async function pageMyBaby() {
 
 // ---------- Trang: Tra cứu ----------
 async function pageSearch() {
-  const idx = await getJSON("/data/search.json");
+  const idx = await getJSON(BASE + "/data/search.json");
   const input = $("#q"), out = $("[data-results]");
   const run = () => {
     const terms = fold(input.value).split(/\s+/).filter(Boolean);
@@ -259,7 +261,7 @@ async function pageSearch() {
       const title = fold(o.t);
       return { o, score: terms.reduce((s, t) => s + (title.includes(t) ? 2 : 1), 0) };
     }).filter(Boolean).sort((a, b) => b.score - a.score).slice(0, 30);
-    out.innerHTML = hits.length ? hits.map(({ o }) => `<li><a href="${o.u}"><small>${esc(o.k)}</small><strong>${esc(o.t)}</strong><span>${esc(o.d)}</span></a></li>`).join("") : `<li class="muted">Không tìm thấy. Thử từ khác ngắn hơn.</li>`;
+    out.innerHTML = hits.length ? hits.map(({ o }) => `<li><a href="${BASE}${o.u}"><small>${esc(o.k)}</small><strong>${esc(o.t)}</strong><span>${esc(o.d)}</span></a></li>`).join("") : `<li class="muted">Không tìm thấy. Thử từ khác ngắn hơn.</li>`;
   };
   input.addEventListener("input", run);
   const q = new URLSearchParams(location.search).get("q");
@@ -291,4 +293,4 @@ $('[data-toggle="big"]')?.addEventListener("click", () => {
 // ---------- Khởi động ----------
 const PAGES = { home: pageHome, checklist: pageChecklist, vaccines: pageVaccines, mybaby: pageMyBaby, search: pageSearch };
 PAGES[document.body.dataset.page]?.();
-if ("serviceWorker" in navigator && location.hostname !== "localhost") navigator.serviceWorker.register("/sw.js").catch(() => {});
+if ("serviceWorker" in navigator && location.hostname !== "localhost") navigator.serviceWorker.register(BASE + "/sw.js", { scope: BASE + "/" }).catch(() => {});

@@ -1,6 +1,7 @@
 // Service worker: trang HTML lấy mạng trước, mất mạng thì dùng bản đã lưu; tài nguyên tĩnh dùng bản lưu và cập nhật ngầm.
 const CACHE = "klm-__BUILD_ID__";
-const PRECACHE = ["/", "/chuan-bi-di-sinh/", "/lich-tiem-chung/", "/be-cua-toi/", "/assets/style.css", "/assets/app.js", "/data/stages.json", "/data/vaccines.json", "/data/milestones.json", "/assets/icons/icon.svg"];
+const BASE = "__BASE__";
+const PRECACHE = ["/", "/chuan-bi-di-sinh/", "/lich-tiem-chung/", "/be-cua-toi/", "/assets/style.css", "/assets/app.js", "/data/stages.json", "/data/vaccines.json", "/data/milestones.json", "/assets/icons/icon.svg"].map((p) => BASE + p);
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(PRECACHE)).then(() => self.skipWaiting()));
@@ -17,7 +18,7 @@ self.addEventListener("fetch", (e) => {
       const copy = res.clone();
       caches.open(CACHE).then((c) => c.put(req, copy));
       return res;
-    }).catch(() => caches.match(req).then((r) => r || caches.match("/"))));
+    }).catch(() => caches.match(req).then((r) => r || caches.match(BASE + "/"))));
     return;
   }
   e.respondWith(caches.match(req, { ignoreSearch: true }).then((cached) => {
