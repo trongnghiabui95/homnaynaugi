@@ -1,6 +1,6 @@
-# Bếp Nhà Mình
+# Hôm Nay Nấu Gì
 
-Web công thức nấu ăn tiếng Việt, có video YouTube hướng dẫn từng bước. Web tĩnh dựng từ Google Sheets, dùng được như app trên điện thoại (PWA).
+Web "hôm nay nấu gì?": gợi ý món và mâm cơm 3 món, công thức có video YouTube/Shorts hướng dẫn từng bước. Web tĩnh dựng từ Google Sheets, dùng được như app trên điện thoại (PWA).
 
 - **Thêm, sửa món:** trong Google Sheets, xem [data/README.md](data/README.md)
 - **Đặc tả:** [ops/DAC-TA.md](ops/DAC-TA.md) · **Bộ máy vận hành:** [ops/BO-MAY.md](ops/BO-MAY.md) · **Quy tắc cho Claude:** [CLAUDE.md](CLAUDE.md)

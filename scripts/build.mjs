@@ -1,13 +1,13 @@
 #!/usr/bin/env node
-// Dựng web công thức nấu ăn tĩnh từ Google Sheets (hoặc CSV mẫu) ra thư mục dist/.
+// Dựng web "Hôm Nay Nấu Gì" tĩnh từ Google Sheets (hoặc CSV mẫu) ra thư mục dist/.
 //   node scripts/build.mjs            → đọc Google Sheet nếu có SHEET_ID, không thì đọc data/sample
 //   node scripts/build.mjs --sample   → luôn đọc data/sample
 // Biến môi trường: SHEET_ID, DATA_DIR (thư mục CSV), BASE_PATH (chạy trong thư mục con), SITE_URL.
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { parseCSV, esc, fold, md, isSlug } from "./lib.mjs";
-import { layout, adSlot, emptyState, ytThumb, icon } from "./templates.mjs";
+import { parseCSV, esc, fold, md, isSlug, imgUrl, parseYouTube } from "./lib.mjs";
+import { layout, adSlot, emptyState, ytThumb, icon, recipeCard } from "./templates.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const SRC = path.join(ROOT, "src");
@@ -16,6 +16,10 @@ const TABS = ["settings", "categories", "recipes", "ingredients", "steps"];
 const report = { skipped: [], warnings: [], errors: [] };
 const skip = (tab, r, why) => report.skipped.push(`${tab} dòng ${r._row}${r.slug ? ` (${r.slug})` : ""}: ${why}`);
 const sampleOnly = process.argv.includes("--sample");
+// Gia vị coi như nhà nào cũng có: không tính khi so "tủ lạnh có gì".
+const PANTRY = ["muoi", "duong", "nuoc mam", "tieu", "tieu xay", "dau an", "hat nem", "nuoc", "bot ngot", "nuoc tuong", "dau o liu", "da vien", "nuoc loc"];
+// Ba ngăn của mâm cơm: slug danh mục cho từng ngăn.
+const MAM = [["mon-man", "Món mặn"], ["mon-canh", "Món canh"], ["mon-rau-xao", "Món rau / xào"]];
 
 async function loadTab(tab) {
   const sheetId = sampleOnly ? "" : process.env.SHEET_ID || "";
@@ -31,9 +35,10 @@ async function loadTab(tab) {
 
 const num = (v, d = 0) => (v === "" || v == null || isNaN(Number(String(v).replace(",", "."))) ? d : Number(String(v).replace(",", ".")));
 const byOrder = (a, b) => num(a.thu_tu, 999) - num(b.thu_tu, 999);
+const list = (s) => String(s || "").split(",").map((x) => x.trim()).filter(Boolean);
 const iso = (m) => `PT${Math.round(m)}M`;
 const mmss = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
-/** 0.5 → "½", 1.5 → "1½", 0.25 → "¼" */
+const money = (v) => `${Math.round(v).toLocaleString("vi-VN")}đ`;
 export function qtyText(q) {
   if (!q) return "";
   const whole = Math.floor(q), frac = Math.round((q - whole) * 100) / 100;
@@ -57,14 +62,15 @@ async function main() {
   const raw = {};
   for (const t of TABS) raw[t] = await loadTab(t);
 
-  const site = { site_name: "Bếp Nhà Mình", tagline: "", site_url: "" };
+  const site = { site_name: "Hôm Nay Nấu Gì", tagline: "", site_url: "" };
   for (const r of raw.settings) if (r.key) site[r.key] = r.value;
   site.base = (process.env.BASE_PATH || "").replace(/\/+$/, "");
   site.site_url = (process.env.SITE_URL || site.site_url || "https://example.com").replace(/\/+$/, "");
   site.build_id = Date.now().toString(36);
 
   // ----- Dữ liệu -----
-  const cats = raw.categories.filter((c) => (isSlug(c.slug) ? true : (skip("categories", c, "slug không hợp lệ"), false))).sort(byOrder);
+  const cats = raw.categories.filter((c) => (isSlug(c.slug) ? true : (skip("categories", c, "slug không hợp lệ"), false))).sort(byOrder)
+    .map((c) => ({ ...c, img: imgUrl(c.anh) }));
   const catBySlug = Object.fromEntries(cats.map((c) => [c.slug, c]));
   const ingBy = groupMap(raw.ingredients.filter((i) => i.ten), "recipe_slug");
   const stepBy = groupMap(raw.steps.filter((s) => s.noi_dung), "recipe_slug");
@@ -75,150 +81,208 @@ async function main() {
     if (!catBySlug[r.danh_muc]) { skip("recipes", r, `danh mục "${r.danh_muc}" không có trong tab categories`); continue; }
     const ings = ingBy.get(r.slug) || [], steps = (stepBy.get(r.slug) || []).sort((a, b) => num(a.buoc) - num(b.buoc));
     if (!ings.length || !steps.length) { skip("recipes", r, "cần ít nhất 1 nguyên liệu và 1 bước"); continue; }
-    if (r.youtube_id && !/^[\w-]{11}$/.test(r.youtube_id)) { report.warnings.push(`recipes ${r.slug}: youtube_id "${r.youtube_id}" không hợp lệ, bỏ video`); r.youtube_id = ""; }
+    const vraw = r.video || r.youtube_id || "";
+    const yt = parseYouTube(vraw);
+    if (vraw && !yt) report.warnings.push(`recipes ${r.slug}: video "${vraw}" không phải link/mã YouTube hợp lệ, bỏ video`);
+    const anh = imgUrl(r.anh);
     recipes.push({
-      ...r, ings, steps, cat: catBySlug[r.danh_muc],
-      serv: num(r.khau_phan, 2) || 2, prep: num(r.phut_chuan_bi), cook: num(r.phut_nau),
-      total: num(r.phut_chuan_bi) + num(r.phut_nau),
-      tagList: (r.tags || "").split(",").map((t) => t.trim()).filter(Boolean),
-      img: r.anh || (r.youtube_id ? ytThumb(r.youtube_id) : ""),
+      ...r, ings, steps: steps.map((s) => ({ ...s, img: imgUrl(s.anh) })), cat: catBySlug[r.danh_muc], yt, anh,
+      serv: num(r.khau_phan, 2) || 2, prep: num(r.phut_chuan_bi), cook: num(r.phut_nau), total: num(r.phut_chuan_bi) + num(r.phut_nau),
+      cal: num(r.calo), cost: num(r.chi_phi), bua: list(r.bua).map(fold), tagList: list(r.tags), anKem: list(r.an_kem),
+      img: anh || (yt ? ytThumb(yt.id) : ""),
     });
   }
-  for (const [tab, list, key] of [["categories", cats, "slug"], ["recipes", recipes, "slug"]]) {
-    const seen = new Set();
-    for (const r of list) { if (seen.has(r[key])) report.errors.push(`${tab}: trùng ${key} "${r[key]}" (dòng ${r._row})`); seen.add(r[key]); }
-  }
+  const seen = new Set();
+  for (const r of recipes) { if (seen.has(r.slug)) report.errors.push(`recipes: trùng slug "${r.slug}" (dòng ${r._row})`); seen.add(r.slug); }
   if (report.errors.length) { console.error("LỖI:\n- " + report.errors.join("\n- ")); process.exit(1); }
   recipes.sort((a, b) => (b.cap_nhat || "").localeCompare(a.cap_nhat || "") || a.ten.localeCompare(b.ten, "vi"));
+  const bySlug = Object.fromEntries(recipes.map((r) => [r.slug, r]));
 
   await fs.rm(DIST, { recursive: true, force: true });
   await fs.cp(SRC, DIST, { recursive: true });
 
-  // Chỉ mục cho tìm kiếm, đi chợ, đã lưu (phía trình duyệt)
+  // Chỉ mục cho vòng quay, tìm kiếm, tủ lạnh, đi chợ, đã lưu (phía trình duyệt)
   const index = recipes.map((r) => ({
-    s: r.slug, t: r.ten, d: r.tom_tat, c: r.danh_muc, cn: r.cat.ten, m: r.total, k: r.do_kho, img: r.img, v: r.youtube_id ? 1 : 0,
-    f: fold([r.ten, r.tom_tat, r.cat.ten, r.tags].join(" ")),
-    g: r.ings.map((i) => fold(i.ten)),
+    s: r.slug, t: r.ten, c: r.danh_muc, cn: r.cat.ten, e: r.cat.bieu_tuong || "", m: r.total, k: r.do_kho, img: r.img, v: r.yt ? 1 : 0,
+    cal: r.cal || 0, b: r.bua, n: r.nguyen_lieu_chinh || "", d: r.cap_nhat || "", tg: r.tagList.map(fold),
+    f: fold([r.ten, r.tom_tat, r.cat.ten, r.tags, r.nguyen_lieu_chinh].join(" ")),
+    g: r.ings.filter((i) => !PANTRY.includes(fold(i.ten))).map((i) => fold(i.ten)),
+    sv: r.serv, ig: r.ings.map((i) => [i.ten, num(i.so_luong, 0), i.don_vi]),
   }));
   await write("data/recipes.json", JSON.stringify(index));
 
-  const card = (r) => `<a class="rcard" href="/mon/${r.slug}/">
-  <div class="rcard-img">${r.img ? `<img src="${esc(r.img)}" alt="" loading="lazy" width="480" height="360">` : `<span class="rcard-emoji" aria-hidden="true">${esc(r.cat.bieu_tuong || "🍽️")}</span>`}${r.youtube_id ? `<span class="has-video">${icon("play")} Video</span>` : ""}</div>
-  <div class="rcard-body"><strong>${esc(r.ten)}</strong><span class="meta">${icon("clock")} ${r.total} phút · ${esc(r.do_kho || "")}</span></div>
-</a>`;
-  const grid = (list) => `<div class="rgrid">${list.map(card).join("")}</div>`;
+  const grid = (rs, attrs = false) => `<div class="rgrid">${rs.map((r) => recipeCard(r, attrs)).join("")}</div>`;
+  const mains = [...new Set(recipes.map((r) => r.nguyen_lieu_chinh).filter(Boolean))].sort((a, b) => a.localeCompare(b, "vi"));
+  const themes = list(site.chu_de).filter((t) => recipes.some((r) => r.tagList.map(fold).includes(fold(t))));
+  const fridge = topIngredients(recipes, 24);
 
   // ----- Trang chủ -----
-  const quick = recipes.filter((r) => r.total && r.total <= 30).slice(0, 6);
+  const quick = recipes.filter((r) => r.total && r.total <= 20).slice(0, 6);
   await page(site, {
     path: "/", page: "home", title: site.site_name,
-    description: `${site.tagline}. ${recipes.length} công thức món Việt, món Á, món Âu, bánh và đồ uống, kèm video hướng dẫn.`,
+    description: `${site.tagline}. ${recipes.length} công thức có hướng dẫn từng bước, gợi ý mâm cơm 3 món mỗi ngày.`,
     jsonld: [{ "@context": "https://schema.org", "@type": "WebSite", name: site.site_name, url: site.site_url,
       potentialAction: { "@type": "SearchAction", target: `${site.site_url}/tim-kiem/?q={q}`, "query-input": "required name=q" } }],
     body: `
 <section class="hero">
-  <h1>${esc(site.tagline || site.site_name)}</h1>
-  <form class="search big" action="/tim-kiem/" role="search">${icon("search")}<label class="sr-only" for="hq">Tìm món</label><input id="hq" name="q" type="search" placeholder="Hôm nay nấu gì? Ví dụ: trứng, gà, chay…"></form>
-  <a class="by-ing" href="/tim-kiem/?mode=nl">Tủ lạnh còn gì? Tìm món theo nguyên liệu →</a>
+  <h1>Hôm nay nấu gì?</h1>
+  ${site.tagline ? `<p class="lead">${esc(site.tagline)}</p>` : ""}
+  <form class="search big" action="/tim-kiem/" role="search">${icon("search")}<label class="sr-only" for="hq">Tìm món</label><input id="hq" name="q" type="search" placeholder="Tìm món, nguyên liệu: gà, cá, trứng…"></form>
+  ${themes.length ? `<nav class="chips" aria-label="Chủ đề">${themes.map((t) => `<a class="chip" href="/tim-kiem/?tag=${encodeURIComponent(t)}">${esc(t)}</a>`).join("")}</nav>` : ""}
 </section>
-<nav class="chips" aria-label="Danh mục">${cats.map((c) => `<a class="chip" href="/danh-muc/${c.slug}/"><span aria-hidden="true">${esc(c.bieu_tuong || "")}</span> ${esc(c.ten)}</a>`).join("")}</nav>
-<section data-saved-home hidden><h2 class="section-title">Món bạn đã lưu</h2><div class="rgrid" data-saved-grid></div></section>
-${quick.length ? `<section><h2 class="section-title">Nhanh dưới 30 phút</h2>${grid(quick)}</section>` : ""}
-<section><h2 class="section-title">Mới thêm</h2>${recipes.length ? grid(recipes.slice(0, 12)) : emptyState("Chưa có công thức", "Thêm công thức trong Google Sheets, web sẽ tự cập nhật.")}</section>
-${recipes.length > 12 ? `<p class="center"><a class="btn ghost" href="/mon/">Xem tất cả ${recipes.length} món</a></p>` : ""}`,
+
+<section class="spin card" data-spin aria-labelledby="spin-title">
+  <h2 id="spin-title">Quay món cho hôm nay</h2>
+  <div class="seg" role="tablist" aria-label="Kiểu gợi ý">
+    <button type="button" role="tab" data-spin-mode="one" aria-selected="false">Gợi ý 1 món</button>
+    <button type="button" role="tab" data-spin-mode="mam" aria-selected="true">Mâm cơm 3 món</button>
+  </div>
+  <div class="spin-filters">
+    <label><span>Bữa</span><select data-spin-f="b"><option value="">Bữa nào cũng được</option><option value="sang">Bữa sáng</option><option value="trua">Bữa trưa</option><option value="toi">Bữa tối</option></select></label>
+    <label><span>Thời gian</span><select data-spin-f="m"><option value="">Không giới hạn</option><option value="15">Dưới 15 phút</option><option value="30">Dưới 30 phút</option><option value="45">Dưới 45 phút</option></select></label>
+    <label><span>Nguyên liệu chính</span><select data-spin-f="n"><option value="">Gì cũng được</option>${mains.map((n) => `<option>${esc(n)}</option>`).join("")}</select></label>
+  </div>
+  <div class="spin-slots" data-spin-slots data-mam='${esc(JSON.stringify(MAM))}'></div>
+  <div class="row"><button class="btn big" type="button" data-spin-go>${icon("dice")}<span>Quay món</span></button><button class="btn ghost" type="button" data-spin-shop hidden>${icon("cart")}<span>Thêm cả mâm vào Đi chợ</span></button></div>
+  <p class="muted small">Bấm ổ khoá để giữ món đã ưng, lần quay sau chỉ đổi các món còn lại.</p>
+</section>
+${adSlot(site, "home")}
+
+<section>
+  <div class="sec-head"><h2>Chọn theo loại món</h2><a href="/danh-muc/">Tất cả</a></div>
+  <div class="cat-row">${cats.map((c) => catCard(c, recipes)).join("")}</div>
+</section>
+
+<section class="fridge-cta card">
+  <div><h2>Tủ lạnh có gì?</h2><p class="muted">Chọn nguyên liệu bạn đang có, web gợi ý món nấu được ngay.</p></div>
+  <a class="btn" href="/tim-kiem/?mode=nl">Chọn nguyên liệu</a>
+</section>
+
+<section data-saved-home hidden><div class="sec-head"><h2>Sổ tay món ngon của tôi</h2><a href="/da-luu/">Xem hết</a></div><div class="rgrid" data-saved-grid></div></section>
+${quick.length ? `<section><div class="sec-head"><h2>Nhanh gọn dưới 20 phút</h2></div>${grid(quick)}</section>` : ""}
+<section><div class="sec-head"><h2>Công thức mới</h2><a href="/mon/">Tất cả ${recipes.length} món</a></div>${recipes.length ? grid(recipes.slice(0, 12)) : emptyState("Chưa có công thức", "Thêm công thức trong Google Sheets, web sẽ tự cập nhật.")}</section>`,
   });
 
   // ----- Tất cả món, danh mục -----
+  const filterBar = (rs) => `<div class="filters" data-filters>
+  <div class="chips" data-f="k" aria-label="Độ khó"><button type="button" class="chip" data-v="" aria-pressed="true">Mọi độ khó</button>${["Dễ", "Vừa", "Khó"].filter((k) => rs.some((r) => fold(r.do_kho) === fold(k))).map((k) => `<button type="button" class="chip" data-v="${fold(k)}" aria-pressed="false">${k}</button>`).join("")}</div>
+  <div class="chips" data-f="m" aria-label="Thời gian"><button type="button" class="chip" data-v="" aria-pressed="true">Mọi thời gian</button><button type="button" class="chip" data-v="15" aria-pressed="false">≤ 15 phút</button><button type="button" class="chip" data-v="30" aria-pressed="false">≤ 30 phút</button><button type="button" class="chip" data-v="60" aria-pressed="false">≤ 60 phút</button></div>
+  ${rs.some((r) => r.cal) ? `<div class="chips" data-f="cal" aria-label="Calo"><button type="button" class="chip" data-v="" aria-pressed="true">Mọi mức calo</button><button type="button" class="chip" data-v="300" aria-pressed="false">≤ 300 kcal</button><button type="button" class="chip" data-v="500" aria-pressed="false">≤ 500 kcal</button></div>` : ""}
+  <label class="sort"><span>Sắp xếp</span><select data-sort><option value="new">Mới nhất</option><option value="fast">Nấu nhanh nhất</option></select></label>
+</div><p class="muted small" data-fcount></p>`;
   await page(site, {
-    path: "/mon/", title: "Tất cả công thức", crumbs: [["Tất cả món", "/mon/"]],
-    description: `Tất cả ${recipes.length} công thức nấu ăn, sắp xếp theo món mới thêm.`,
-    body: `<h1>Tất cả công thức</h1>${recipes.length ? grid(recipes) : emptyState("Chưa có công thức")}`,
+    path: "/mon/", page: "list", title: "Tất cả công thức", crumbs: [["Tất cả món", "/mon/"]],
+    description: `Tất cả ${recipes.length} công thức nấu ăn, lọc theo độ khó, thời gian nấu.`,
+    body: `<h1>Tất cả công thức</h1>${recipes.length ? filterBar(recipes) + grid(recipes, true) : emptyState("Chưa có công thức")}`,
   });
   await page(site, {
     path: "/danh-muc/", title: "Danh mục món ăn", crumbs: [["Danh mục", "/danh-muc/"]],
-    description: "Tìm công thức theo danh mục: món Việt, món Á, món Âu, bánh ngọt, đồ uống, món chay.",
-    body: `<h1>Danh mục</h1><div class="cat-grid">${cats.map((c) => {
-      const n = recipes.filter((r) => r.danh_muc === c.slug).length;
-      return `<a class="cat-card" href="/danh-muc/${c.slug}/"><span class="cat-emoji" aria-hidden="true">${esc(c.bieu_tuong || "🍽️")}</span><strong>${esc(c.ten)}</strong><span>${n} món</span></a>`;
-    }).join("")}</div>`,
+    description: "Chọn món theo loại: món mặn, món canh, rau xào, bữa sáng, cơm bún mì, ăn vặt, đồ uống.",
+    body: `<h1>Danh mục</h1><div class="cat-grid">${cats.map((c) => catCard(c, recipes)).join("")}</div>`,
   });
   for (const c of cats) {
-    const list = recipes.filter((r) => r.danh_muc === c.slug);
+    const rs = recipes.filter((r) => r.danh_muc === c.slug);
     await page(site, {
-      path: `/danh-muc/${c.slug}/`, title: `Công thức ${c.ten}`, crumbs: [["Danh mục", "/danh-muc/"], [c.ten, `/danh-muc/${c.slug}/`]],
+      path: `/danh-muc/${c.slug}/`, page: "list", title: `${c.ten} – công thức dễ làm`, crumbs: [["Danh mục", "/danh-muc/"], [c.ten, `/danh-muc/${c.slug}/`]],
       description: c.mo_ta || `Công thức ${c.ten} có video hướng dẫn.`,
-      body: `<h1>${esc(c.bieu_tuong || "")} ${esc(c.ten)}</h1><p class="lead">${esc(c.mo_ta)}</p>${list.length ? grid(list) : emptyState("Danh mục đang được bổ sung", "Công thức mới sẽ sớm có ở đây.")}`,
+      body: `<header class="cat-head">${c.img ? `<img src="${esc(c.img)}" alt="" width="96" height="96">` : `<span class="cat-emoji big" aria-hidden="true">${esc(c.bieu_tuong || "🍽️")}</span>`}<div><h1>${esc(c.ten)}</h1><p class="lead">${esc(c.mo_ta)}</p></div></header>
+${rs.length ? filterBar(rs) + grid(rs, true) : emptyState("Danh mục đang được bổ sung", "Công thức mới sẽ sớm có ở đây.")}`,
     });
   }
 
   // ----- Trang công thức -----
   for (const r of recipes) {
     const groups = groupMap(r.ings, "nhom");
-    const ingHTML = [...groups].map(([g, list]) => `${g ? `<h3>${esc(g)}</h3>` : ""}<ul class="ings">${list.map((i, j) => {
+    const ingHTML = [...groups].map(([g, gl]) => `${g ? `<h3>${esc(g)}</h3>` : ""}<ul class="ings">${gl.map((i) => {
       const q = num(i.so_luong, 0);
-      return `<li><label><input type="checkbox"><span><b class="qty" data-q="${q || ""}">${qtyText(q)}</b> ${esc(i.don_vi)} <strong>${esc(i.ten)}</strong>${i.ghi_chu ? ` <small>(${esc(i.ghi_chu)})</small>` : ""}</span></label></li>`;
+      return `<li><label><input type="checkbox" aria-label="Cần mua ${esc(i.ten)}"><span><b class="qty" data-q="${q || ""}">${qtyText(q)}</b> <span class="unit">${esc(i.don_vi)}</span> <strong>${esc(i.ten)}</strong>${i.ghi_chu ? ` <small>(${esc(i.ghi_chu)})</small>` : ""}</span></label></li>`;
     }).join("")}</ul>`).join("");
     const stepHTML = r.steps.map((s, i) => {
       const sec = num(s.giay_video, -1), tmin = num(s.hen_gio_phut, 0);
       const tools = [
-        r.youtube_id && sec >= 0 ? `<button class="mini" type="button" data-seek="${sec}">${icon("play")} Xem đoạn ${mmss(sec)}</button>` : "",
-        tmin ? `<button class="mini" type="button" data-timer="${tmin}" data-label="Bước ${i + 1}">${icon("timer")} Hẹn giờ ${qtyText(tmin)} phút</button>` : "",
+        r.yt && sec >= 0 ? `<button class="mini" type="button" data-seek="${sec}">${icon("play")} Xem đoạn ${mmss(sec)}</button>` : "",
+        tmin ? `<button class="mini" type="button" data-timer="${tmin}" data-label="${esc(s.tieu_de || `Bước ${i + 1}`)}">${icon("timer")} Hẹn giờ ${qtyText(tmin)} phút</button>` : "",
       ].join("");
-      return `<li data-step><p>${esc(s.noi_dung)}</p>${tools ? `<div class="step-tools">${tools}</div>` : ""}</li>`;
+      return `<li data-step id="buoc-${i + 1}">${s.tieu_de ? `<h3>${esc(s.tieu_de)}</h3>` : ""}<p>${esc(s.noi_dung)}</p>${s.img ? `<img class="step-img" src="${esc(s.img)}" alt="${esc(s.tieu_de || `Bước ${i + 1}`)}" loading="lazy" width="800" height="600">` : ""}${tools ? `<div class="step-tools">${tools}</div>` : ""}</li>`;
     }).join("");
-    const related = recipes.filter((x) => x.danh_muc === r.danh_muc && x.slug !== r.slug).slice(0, 4);
-    const watch = r.youtube_id ? `https://www.youtube.com/watch?v=${r.youtube_id}` : "";
+
+    // Món ăn kèm: lấy từ cột an_kem, thiếu thì gợi ý theo mâm cơm (mặn ↔ canh, rau)
+    let pair = r.anKem.map((s) => bySlug[s]).filter(Boolean);
+    if (pair.length < 3) {
+      const want = MAM.map(([s]) => s).filter((s) => s !== r.danh_muc);
+      for (const s of want) { const x = recipes.find((y) => y.danh_muc === s && y.slug !== r.slug && !pair.includes(y)); if (x) pair.push(x); }
+    }
+    pair = pair.slice(0, 3);
+    const related = recipes.filter((x) => x.danh_muc === r.danh_muc && x.slug !== r.slug && !pair.includes(x)).slice(0, 4);
+    const watch = r.yt ? `https://www.youtube.com/${r.yt.shorts ? `shorts/${r.yt.id}` : `watch?v=${r.yt.id}`}` : "";
     const ld = {
       "@context": "https://schema.org", "@type": "Recipe", name: r.ten, description: r.tom_tat,
-      ...(r.anh ? { image: [r.anh] } : {}),
+      ...(r.img ? { image: [r.img] } : {}),
       author: { "@type": "Organization", name: site.site_name },
       ...(r.cap_nhat ? { datePublished: r.cap_nhat } : {}),
       ...(r.prep ? { prepTime: iso(r.prep) } : {}), ...(r.cook ? { cookTime: iso(r.cook) } : {}), ...(r.total ? { totalTime: iso(r.total) } : {}),
-      recipeYield: `${r.serv} người`, recipeCategory: r.cat.ten, recipeCuisine: r.cat.ten, keywords: r.tagList.join(", "),
+      recipeYield: `${r.serv} người`, recipeCategory: r.cat.ten, recipeCuisine: "Việt Nam", keywords: r.tagList.join(", "),
+      ...(r.cal ? { nutrition: { "@type": "NutritionInformation", calories: `${r.cal} kcal` } } : {}),
       recipeIngredient: r.ings.map((i) => [qtyText(num(i.so_luong, 0)), i.don_vi, i.ten, i.ghi_chu ? `(${i.ghi_chu})` : ""].filter(Boolean).join(" ")),
-      recipeInstructions: r.steps.map((s, i) => ({ "@type": "HowToStep", position: i + 1, text: s.noi_dung, url: `${site.site_url}/mon/${r.slug}/#buoc-${i + 1}` })),
-      ...(r.youtube_id ? { video: { "@type": "VideoObject", name: r.ten, description: r.tom_tat, thumbnailUrl: [ytThumb(r.youtube_id)], embedUrl: `https://www.youtube-nocookie.com/embed/${r.youtube_id}`, contentUrl: watch } } : {}),
+      recipeInstructions: r.steps.map((s, i) => ({ "@type": "HowToStep", position: i + 1, ...(s.tieu_de ? { name: s.tieu_de } : {}), text: s.noi_dung, url: `${site.site_url}/mon/${r.slug}/#buoc-${i + 1}`, ...(s.img ? { image: s.img } : {}) })),
+      ...(r.yt ? { video: { "@type": "VideoObject", name: r.ten, description: r.tom_tat, thumbnailUrl: [ytThumb(r.yt.id)], embedUrl: `https://www.youtube-nocookie.com/embed/${r.yt.id}`, contentUrl: watch } } : {}),
     };
+    const facts = [
+      r.prep ? ["clock", `${r.prep} phút`, "sơ chế"] : null,
+      r.cook ? ["flame", `${r.cook} phút`, "nấu"] : null,
+      r.do_kho ? ["chef", r.do_kho, "độ khó"] : null,
+      r.cal ? ["leaf", `${r.cal} kcal`, "mỗi phần"] : null,
+      r.cost ? ["coin", `~${money(r.cost)}`, "chi phí ước tính"] : null,
+      ["people", `${r.serv} người`, "khẩu phần gốc"],
+    ].filter(Boolean);
+    const thumbMax = r.yt ? `https://i.ytimg.com/vi/${r.yt.id}/maxresdefault.jpg` : "";
+    const videoBox = r.yt ? `<div class="player-box${r.yt.shorts ? " vertical" : ""}" data-player data-id="${esc(r.yt.id)}">
+      <button class="lite-yt" type="button" data-play aria-label="Phát video hướng dẫn ${esc(r.ten)}"><img src="${thumbMax}" onerror="this.onerror=null;this.src='${ytThumb(r.yt.id)}'" alt="" width="1280" height="720"><span class="play" aria-hidden="true"></span></button>
+    </div>` : "";
+    const media = r.yt || r.anh ? `<figure class="media">
+  ${r.yt && r.anh ? `<div class="seg small" role="tablist" aria-label="Ảnh hoặc video"><button type="button" role="tab" data-media="photo" aria-selected="true">Ảnh món</button><button type="button" role="tab" data-media="video" aria-selected="false">${icon("play")} Video</button></div>` : ""}
+  ${r.anh ? `<img class="hero-img" data-media-panel="photo" src="${esc(r.anh)}" alt="${esc(r.ten)}" width="1200" height="900">` : ""}
+  ${r.yt ? `<div data-media-panel="video"${r.anh ? " hidden" : ""}>${videoBox}<figcaption>Video: ${r.kenh ? `kênh <strong>${esc(r.kenh)}</strong>` : "YouTube"} · <a href="${watch}" rel="noopener" target="_blank">Xem trên YouTube</a></figcaption></div>` : ""}
+</figure>` : "";
+
     await page(site, {
       path: `/mon/${r.slug}/`, page: "recipe", title: r.ten, ogType: "article", ogImage: r.img, lastmod: r.cap_nhat,
       crumbs: [[r.cat.ten, `/danh-muc/${r.danh_muc}/`], [r.ten, `/mon/${r.slug}/`]],
-      description: `${r.tom_tat} ${r.total ? `${r.total} phút, ` : ""}${r.serv} người ăn${r.youtube_id ? ", có video hướng dẫn" : ""}.`,
+      description: `${r.tom_tat} ${r.total ? `${r.total} phút, ` : ""}${r.serv} người ăn${r.yt ? ", có video hướng dẫn" : ""}.`,
       jsonld: [ld],
-      body: `<article class="recipe" data-slug="${r.slug}" data-name="${esc(r.ten)}" data-serv="${r.serv}">
+      body: `<article class="recipe" data-slug="${r.slug}" data-name="${esc(r.ten)}" data-base-serv="${r.serv}">
+<p class="kicker"><a href="/danh-muc/${r.danh_muc}/">${esc(r.cat.ten)}</a></p>
 <h1>${esc(r.ten)}</h1>
 <p class="lead">${esc(r.tom_tat)}</p>
-<ul class="facts">
-  ${r.total ? `<li>${icon("clock")}<span><b>${r.total} phút</b>${r.prep && r.cook ? `<small>sơ chế ${r.prep} + nấu ${r.cook}</small>` : ""}</span></li>` : ""}
-  <li>${icon("people")}<span><b>${r.serv} người</b><small>khẩu phần gốc</small></span></li>
-  ${r.do_kho ? `<li>${icon("chef")}<span><b>${esc(r.do_kho)}</b><small>độ khó</small></span></li>` : ""}
-</ul>
+<ul class="facts">${facts.map(([ic, b, s]) => `<li>${icon(ic)}<b>${esc(b)}</b><small>${esc(s)}</small></li>`).join("")}</ul>
 <div class="actions">
-  <button class="btn ghost" type="button" data-fav>${icon("heart")}<span>Lưu món</span></button>
-  <button class="btn ghost" type="button" data-cook>${icon("chef")}<span>Chế độ nấu</span></button>
+  <button class="btn ghost" type="button" data-fav aria-pressed="false">${icon("heart")}<span>Lưu sổ tay</span></button>
+  <button class="btn" type="button" data-cook>${icon("chef")}<span>Bắt đầu nấu</span></button>
 </div>
-${r.youtube_id ? `<figure class="player">
-  <div class="player-box" data-player data-id="${esc(r.youtube_id)}">
-    <button class="lite-yt" type="button" data-play aria-label="Phát video hướng dẫn ${esc(r.ten)}"><img src="${ytThumb(r.youtube_id)}" alt="" width="480" height="360"><span class="play" aria-hidden="true"></span></button>
-  </div>
-  <figcaption>Video: ${r.kenh ? `kênh <strong>${esc(r.kenh)}</strong>` : "YouTube"} · <a href="${watch}" rel="noopener" target="_blank">Xem trên YouTube</a></figcaption>
-</figure>` : r.anh ? `<img class="hero-img" src="${esc(r.anh)}" alt="${esc(r.ten)}" width="800" height="600">` : ""}
-<section class="ing-box card">
-  <div class="ing-head"><h2>Nguyên liệu</h2>
+${media}
+<section class="ing-box card" aria-labelledby="ing-title">
+  <div class="ing-head"><h2 id="ing-title">Nguyên liệu</h2>
     <div class="stepper" role="group" aria-label="Số người ăn"><button type="button" data-serv-dec aria-label="Bớt một người">−</button><output data-serv-out>${r.serv}</output><span>người</span><button type="button" data-serv-inc aria-label="Thêm một người">+</button></div>
   </div>
+  <div class="serv-quick" role="group" aria-label="Chọn nhanh số người">${[1, 2, 4, 6].map((n) => `<button type="button" class="chip" data-serv="${n}" aria-pressed="${n === r.serv}">${n} người</button>`).join("")}</div>
+  <p class="muted small">Tích những món cần mua, rồi chép hoặc thêm vào danh sách đi chợ.</p>
   ${ingHTML}
-  <button class="btn" type="button" data-add-shop>${icon("cart")}<span>Thêm vào danh sách đi chợ</span></button>
+  <div class="row"><button class="btn ghost" type="button" data-copy-shop>${icon("copy")}<span>Chép danh sách đi chợ</span></button><button class="btn ghost" type="button" data-add-shop>${icon("cart")}<span>Thêm vào Đi chợ</span></button></div>
 </section>
-<section><h2>Cách làm</h2><ol class="steps">${stepHTML}</ol></section>
-${r.meo ? `<section class="tip"><h2>Mẹo nhỏ</h2>${md(r.meo)}</section>` : ""}
-${r.tagList.length ? `<p class="tags">${r.tagList.map((t) => `<a class="tag" href="/tim-kiem/?q=${encodeURIComponent(t)}">#${esc(t)}</a>`).join(" ")}</p>` : ""}
+${adSlot(site, "mid")}
+<section aria-labelledby="steps-title"><h2 id="steps-title">Cách làm</h2><ol class="steps">${stepHTML}</ol></section>
+${r.meo ? `<aside class="tip"><h2>${icon("leaf")} Bí quyết nấu ngon</h2>${md(r.meo)}</aside>` : ""}
+${pair.length ? `<section><h2>Ăn kèm hợp vị</h2>${grid(pair)}</section>` : ""}
+${r.tagList.length ? `<p class="tags">${r.tagList.map((t) => `<a class="tag" href="/tim-kiem/?tag=${encodeURIComponent(t)}">#${esc(t)}</a>`).join(" ")}</p>` : ""}
 ${r.cap_nhat ? `<p class="muted small">Cập nhật: ${esc(r.cap_nhat)}</p>` : ""}
 </article>
 ${adSlot(site, "bottom")}
 ${related.length ? `<section><h2 class="section-title">Thêm món trong ${esc(r.cat.ten)}</h2>${grid(related)}</section>` : ""}
-<div class="cook" data-cook-view hidden role="dialog" aria-modal="true" aria-label="Chế độ nấu">
-  <div class="cook-top"><span data-cook-pos></span><button class="icon-btn" type="button" data-cook-close aria-label="Đóng">✕</button></div>
-  <p class="cook-text" data-cook-text></p>
+<div class="cook" data-cook-view hidden role="dialog" aria-modal="true" aria-label="Chế độ đang nấu">
+  <div class="cook-top"><span data-cook-pos></span><button class="icon-btn" type="button" data-cook-close aria-label="Thoát chế độ nấu">✕</button></div>
+  <div class="cook-bar"><span data-cook-bar></span></div>
+  <div class="cook-body"><h2 class="cook-title" data-cook-title></h2><p class="cook-text" data-cook-text></p><img class="cook-img" data-cook-img alt="" hidden></div>
+  <label class="cook-done"><input type="checkbox" data-cook-done> Đã xong bước này</label>
   <div class="cook-tools" data-cook-tools></div>
   <div class="cook-nav"><button class="btn ghost" type="button" data-cook-prev>← Trước</button><button class="btn" type="button" data-cook-next>Tiếp →</button></div>
 </div>`,
@@ -226,22 +290,26 @@ ${related.length ? `<section><h2 class="section-title">Thêm món trong ${esc(r.
   }
 
   // ----- Video, tìm kiếm, đi chợ, đã lưu -----
-  const withVideo = recipes.filter((r) => r.youtube_id);
+  const withVideo = recipes.filter((r) => r.yt);
   await page(site, {
     path: "/video/", title: "Video hướng dẫn nấu ăn", crumbs: [["Video", "/video/"]],
-    description: "Tất cả video hướng dẫn nấu ăn, mỗi video đi kèm công thức chi tiết.",
-    body: `<h1>Video hướng dẫn</h1><p class="lead">Mỗi video có công thức chi tiết đi kèm: nguyên liệu, từng bước, hẹn giờ.</p>${withVideo.length ? grid(withVideo) : emptyState("Video đang được bổ sung", "Thêm mã video YouTube vào cột youtube_id trong Google Sheets.")}`,
+    description: "Video hướng dẫn nấu ăn, mỗi video đi kèm công thức chi tiết.",
+    body: `<h1>Video hướng dẫn</h1><p class="lead">Mỗi video có công thức chi tiết đi kèm: nguyên liệu, từng bước, hẹn giờ.</p>${withVideo.length ? grid(withVideo) : emptyState("Video đang được bổ sung", "Dán link YouTube hoặc YouTube Shorts vào cột video trong Google Sheets.")}`,
   });
   await page(site, {
-    path: "/tim-kiem/", page: "search", title: "Tìm món", crumbs: [["Tìm món", "/tim-kiem/"]],
-    description: "Tìm công thức theo tên món hoặc theo nguyên liệu bạn đang có. Gõ không dấu vẫn tìm được.",
+    path: "/tim-kiem/", page: "search", title: "Tìm món và Tủ lạnh có gì", crumbs: [["Tìm món", "/tim-kiem/"]],
+    description: "Tìm công thức theo tên món, chủ đề, hoặc chọn nguyên liệu đang có trong tủ lạnh để biết nấu được món gì.",
     body: `<h1>Tìm món</h1>
-<div class="seg" role="tablist"><button type="button" role="tab" data-mode="ten" aria-selected="true">Theo tên món</button><button type="button" role="tab" data-mode="nl" aria-selected="false">Theo nguyên liệu</button></div>
-<form class="search" role="search" onsubmit="return false">${icon("search")}<label class="sr-only" for="q">Tìm kiếm</label><input id="q" name="q" type="search" autocomplete="off" placeholder="Ví dụ: trứng, mì, sinh tố…"></form>
-<p class="muted small" data-hint>Gõ không dấu vẫn tìm được.</p>
-<div class="filters">
-  <div class="chips" data-filter="c"><button type="button" class="chip" data-v="" aria-pressed="true">Tất cả</button>${cats.map((c) => `<button type="button" class="chip" data-v="${c.slug}" aria-pressed="false">${esc(c.ten)}</button>`).join("")}</div>
-  <div class="chips" data-filter="m"><button type="button" class="chip" data-v="" aria-pressed="true">Mọi thời gian</button><button type="button" class="chip" data-v="15" aria-pressed="false">≤ 15 phút</button><button type="button" class="chip" data-v="30" aria-pressed="false">≤ 30 phút</button><button type="button" class="chip" data-v="60" aria-pressed="false">≤ 60 phút</button></div>
+<div class="seg" role="tablist"><button type="button" role="tab" data-mode="ten" aria-selected="true">Theo tên món</button><button type="button" role="tab" data-mode="nl" aria-selected="false">Tủ lạnh có gì?</button></div>
+<div data-panel="ten">
+  <form class="search" role="search" onsubmit="return false">${icon("search")}<label class="sr-only" for="q">Tìm kiếm</label><input id="q" name="q" type="search" autocomplete="off" placeholder="Ví dụ: trứng, canh, sinh tố…"></form>
+  <p class="muted small">Gõ không dấu vẫn tìm được.</p>
+  ${themes.length ? `<div class="chips" data-tags><button type="button" class="chip" data-v="" aria-pressed="true">Mọi chủ đề</button>${themes.map((t) => `<button type="button" class="chip" data-v="${esc(fold(t))}" aria-pressed="false">${esc(t)}</button>`).join("")}</div>` : ""}
+</div>
+<div data-panel="nl" hidden>
+  <p class="muted">Chọn nguyên liệu bạn đang có. Gia vị cơ bản (muối, đường, nước mắm, dầu ăn…) được tính là có sẵn.</p>
+  <div class="chips wrap" data-fridge>${fridge.map((g) => `<button type="button" class="chip" data-v="${esc(fold(g))}" aria-pressed="false">${esc(g)}</button>`).join("")}</div>
+  <form class="search" onsubmit="return false">${icon("plus")}<label class="sr-only" for="add-ing">Thêm nguyên liệu khác</label><input id="add-ing" type="text" autocomplete="off" placeholder="Nguyên liệu khác, gõ rồi Enter"></form>
 </div>
 <p class="muted small" data-count></p>
 <div class="rgrid" data-results></div>`,
@@ -250,49 +318,65 @@ ${related.length ? `<section><h2 class="section-title">Thêm món trong ${esc(r.
     path: "/di-cho/", page: "shop", title: "Danh sách đi chợ", crumbs: [["Đi chợ", "/di-cho/"]], noindex: true,
     description: "Danh sách nguyên liệu cần mua, gom từ các món bạn chọn.",
     body: `<h1>Đi chợ</h1><p class="lead">Nguyên liệu gom từ các món bạn đã thêm. Tích khi đã mua.</p><div data-shop></div>
-<div class="row"><button class="btn ghost" type="button" data-shop-share>Chia sẻ qua Zalo</button><button class="btn ghost" type="button" data-shop-clear>Xoá món đã mua</button></div>`,
+<div class="row"><button class="btn ghost" type="button" data-shop-share>${icon("copy")}<span>Chép / chia sẻ qua Zalo</span></button><button class="btn ghost" type="button" data-shop-clear>Xoá món đã mua</button></div>`,
   });
   await page(site, {
-    path: "/da-luu/", page: "saved", title: "Món đã lưu", crumbs: [["Đã lưu", "/da-luu/"]], noindex: true,
-    description: "Các công thức bạn đã lưu trên điện thoại này.",
-    body: `<h1>Món đã lưu</h1><div class="rgrid" data-saved-grid></div><div data-saved-empty hidden>${emptyState("Chưa lưu món nào", "Bấm “Lưu món” ở trang công thức để xem lại nhanh ở đây.")}</div>`,
+    path: "/da-luu/", page: "saved", title: "Sổ tay món ngon của tôi", crumbs: [["Sổ tay", "/da-luu/"]], noindex: true,
+    description: "Các công thức bạn đã lưu trên máy này, không cần đăng nhập.",
+    body: `<h1>Sổ tay món ngon</h1><p class="lead">Món bạn lưu nằm ngay trên máy này, không cần tài khoản.</p><div class="rgrid" data-saved-grid></div><div data-saved-empty hidden>${emptyState("Sổ tay còn trống", "Bấm “Lưu vào sổ tay” ở trang công thức để xem lại nhanh ở đây.")}</div>`,
   });
 
   // ----- Trang thông tin -----
   const email = site.contact_email ? `<a href="mailto:${esc(site.contact_email)}">${esc(site.contact_email)}</a>` : "đang cập nhật";
+  const name = esc(site.site_name);
   const info = [
-    ["ve-chung-toi", "Về chúng tôi", `${site.site_name} tổng hợp công thức nấu ăn dễ làm, có video hướng dẫn.`,
-      `<p>${esc(site.site_name)} là nơi tìm công thức nấu ăn dễ làm tại nhà: món Việt, món Á, món Âu, bánh và đồ uống.</p><p>Mỗi công thức được viết lại rõ ràng, có nguyên liệu tính theo số người ăn, từng bước làm, hẹn giờ và video hướng dẫn từ các kênh YouTube được ghi tên.</p>`],
+    ["gioi-thieu", "Giới thiệu", `${site.site_name} giúp bạn trả lời câu hỏi mỗi ngày: hôm nay nấu gì?`,
+      `<p>${name} giúp bạn trả lời câu hỏi quen thuộc mỗi ngày: hôm nay nấu gì? Web gợi ý món và mâm cơm 3 món, có công thức rõ ràng, nguyên liệu tính theo số người ăn, hẹn giờ từng bước và video hướng dẫn từ các kênh YouTube được ghi tên.</p><p>Công thức do chúng tôi tự viết. Nếu bạn thấy chỗ chưa đúng, hãy <a href="/lien-he/">báo cho chúng tôi</a>.</p>`],
     ["ban-quyen-video", "Bản quyền video", "Cách chúng tôi dùng video YouTube và cách yêu cầu gỡ.",
-      `<p>Video trên web được nhúng bằng trình phát chính thức của YouTube, không tải về hay sao chép. Lượt xem được tính cho kênh gốc, và mỗi video đều ghi tên kênh cùng đường dẫn xem trên YouTube.</p><p>Chủ kênh có thể tắt chức năng nhúng trên YouTube bất cứ lúc nào; khi đó video sẽ tự ẩn khỏi web. Nếu bạn là chủ kênh và muốn gỡ video, hãy liên hệ: ${email}. Chúng tôi gỡ trong vòng 48 giờ.</p><p>Công thức (nguyên liệu, các bước) do chúng tôi tự viết, không sao chép phần mô tả của video.</p>`],
+      `<p>Video trên web được nhúng bằng trình phát chính thức của YouTube, không tải về hay sao chép. Lượt xem được tính cho kênh gốc, mỗi video đều ghi tên kênh và đường dẫn xem trên YouTube.</p><p>Chủ kênh có thể tắt chức năng nhúng trên YouTube bất cứ lúc nào. Nếu bạn là chủ kênh và muốn gỡ video, hãy liên hệ: ${email}. Chúng tôi gỡ trong vòng 48 giờ.</p><p>Công thức (nguyên liệu, các bước) do chúng tôi tự viết, không sao chép phần mô tả của video.</p>`],
     ["chinh-sach-bao-mat", "Chính sách bảo mật", "Cách web xử lý dữ liệu của bạn.",
-      `<h2>Dữ liệu trên máy</h2><p>Món đã lưu và danh sách đi chợ chỉ lưu trong trình duyệt trên máy của bạn. Chúng tôi không có máy chủ lưu những dữ liệu này.</p><h2>Thống kê và quảng cáo</h2><p>Web có thể dùng công cụ thống kê lượt truy cập và hiển thị quảng cáo của Google. Các dịch vụ này có thể dùng cookie theo chính sách của họ, xem tại <a href="https://policies.google.com/technologies/partner-sites" rel="noopener" target="_blank">policies.google.com</a>.</p><h2>Video</h2><p>Video được nhúng từ YouTube ở chế độ hạn chế cookie và chỉ tải khi bạn bấm xem.</p>`],
+      `<h2>Dữ liệu trên máy</h2><p>Sổ tay món ngon và danh sách đi chợ chỉ lưu trong trình duyệt trên máy của bạn. Chúng tôi không có máy chủ lưu những dữ liệu này và không yêu cầu đăng nhập.</p><h2>Thống kê và quảng cáo</h2><p>Web có thể dùng công cụ thống kê lượt truy cập và hiển thị quảng cáo của Google. Các dịch vụ này có thể dùng cookie theo chính sách của họ, xem tại <a href="https://policies.google.com/technologies/partner-sites" rel="noopener" target="_blank">policies.google.com</a>.</p><h2>Video</h2><p>Video được nhúng từ YouTube ở chế độ hạn chế cookie và chỉ tải khi bạn bấm xem.</p>`],
+    ["dieu-khoan", "Điều khoản sử dụng", `Điều khoản khi sử dụng ${site.site_name}.`,
+      `<ol><li>Nội dung công thức thuộc ${name}. Bạn được dùng cho mục đích cá nhân; khi chia sẻ lại vui lòng dẫn link về trang gốc.</li><li>Video thuộc bản quyền của các kênh YouTube được ghi tên.</li><li>Lượng calo, chi phí và thời gian (nếu có) chỉ là ước tính, có thể khác tuỳ nguyên liệu và cách nấu.</li><li>Nếu bạn có bệnh lý hoặc dị ứng thực phẩm, hãy kiểm tra kỹ nguyên liệu trước khi nấu.</li><li>Chúng tôi có thể cập nhật điều khoản này; ngày cập nhật ghi ở cuối trang.</li></ol><p class="muted small">Cập nhật: ${new Date().toISOString().slice(0, 10)}</p>`],
     ["lien-he", "Liên hệ", `Liên hệ ${site.site_name}.`, `<p>Góp ý công thức, báo lỗi hoặc hợp tác: ${email}.</p>`],
   ];
   for (const [slug, title, description, html] of info) await page(site, { path: `/${slug}/`, title, description, crumbs: [[title, `/${slug}/`]], body: `<article class="prose"><h1>${title}</h1>${html}</article>` });
   await page(site, { path: "/404", title: "Không tìm thấy trang", noindex: true, description: "Trang không tồn tại.", body: `<h1>Không tìm thấy trang</h1><p>Trang bạn tìm không tồn tại. <a href="/">Về trang chủ</a> hoặc <a href="/tim-kiem/">tìm món</a>.</p>` });
 
-  // ----- sitemap, robots, ads.txt, service worker, đường dẫn gốc -----
+  // ----- sitemap, robots, ads.txt, service worker, manifest, đường dẫn gốc -----
   await write("sitemap.xml", `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${pages.map((p) => `<url><loc>${esc(site.site_url + p.path)}</loc>${p.lastmod ? `<lastmod>${esc(p.lastmod)}</lastmod>` : ""}</url>`).join("\n")}\n</urlset>\n`);
   await write("robots.txt", `User-agent: *\nAllow: /\nSitemap: ${site.site_url}/sitemap.xml\n`);
   if (site.adsense_client) await write("ads.txt", `google.com, ${site.adsense_client.replace(/^ca-/, "")}, DIRECT, f08c47fec0942fa0\n`);
   const sw = await fs.readFile(path.join(DIST, "sw.js"), "utf8");
   await write("sw.js", sw.replace("__BUILD_ID__", site.build_id).replace("__BASE__", site.base));
   const mf = JSON.parse(await fs.readFile(path.join(DIST, "manifest.webmanifest"), "utf8"));
-  mf.name = site.site_name; mf.description = site.tagline || mf.description;
+  mf.name = site.site_name; mf.short_name = site.site_name; mf.description = site.tagline || mf.description;
   await write("manifest.webmanifest", JSON.stringify(mf, null, 2));
   if (site.base) await rebase(site.base);
 
   const src = process.env.SHEET_ID && !sampleOnly ? "Google Sheets" : process.env.DATA_DIR || "data/sample";
   console.log(`Xong: ${pages.length} trang → dist/  (nguồn: ${src}${site.base ? `, đường dẫn gốc ${site.base}` : ""})`);
   console.log(`Đã xuất bản: ${recipes.length} món (${withVideo.length} có video), ${cats.length} danh mục.`);
+  for (const [s, n] of MAM) if (!recipes.some((r) => r.danh_muc === s)) report.warnings.push(`chưa có món nào trong danh mục "${s}" (${n}) – vòng quay mâm cơm sẽ thiếu ngăn này`);
   if (report.warnings.length) console.log(`\nCẢNH BÁO:\n- ` + report.warnings.join("\n- "));
   if (report.skipped.length) console.log(`\nKHÔNG xuất bản ${report.skipped.length} dòng:\n- ` + report.skipped.join("\n- "));
 }
 
-function groupMap(list, key) {
+function catCard(c, recipes) {
+  const n = recipes.filter((r) => r.danh_muc === c.slug).length;
+  return `<a class="cat-card" href="/danh-muc/${c.slug}/">${c.img ? `<img src="${esc(c.img)}" alt="" loading="lazy" width="120" height="120">` : `<span class="cat-emoji" aria-hidden="true">${esc(c.bieu_tuong || "🍽️")}</span>`}<strong>${esc(c.ten)}</strong><span>${n} món</span></a>`;
+}
+function topIngredients(recipes, n) {
+  const count = new Map();
+  for (const r of recipes) for (const i of r.ings) {
+    const k = fold(i.ten); if (PANTRY.includes(k)) continue;
+    const e = count.get(k) || { name: i.ten, n: 0 }; e.n++; count.set(k, e);
+  }
+  return [...count.values()].sort((a, b) => b.n - a.n || a.name.localeCompare(b.name, "vi")).slice(0, n).map((e) => e.name);
+}
+function groupMap(arr, key) {
   const m = new Map();
-  for (const x of list) { const k = x[key] || ""; if (!m.has(k)) m.set(k, []); m.get(k).push(x); }
+  for (const x of arr) { const k = x[key] || ""; if (!m.has(k)) m.set(k, []); m.get(k).push(x); }
   return m;
 }
 

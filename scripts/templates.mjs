@@ -14,6 +14,14 @@ const ICON = {
   timer: '<circle cx="12" cy="13.5" r="7"/><path d="M12 10v3.8l2.4 1.5M9.5 3.5h5"/>',
   moon: '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
   text: '<path d="M4 18 8.5 6h1L14 18M5.6 14h6.8M15 18l2.7-7h.6L21 18M15.8 16h4.4"/>',
+  dice: '<rect x="4" y="4" width="16" height="16" rx="4"/><circle cx="9" cy="9" r="1.1" fill="currentColor"/><circle cx="15" cy="15" r="1.1" fill="currentColor"/><circle cx="15" cy="9" r="1.1" fill="currentColor"/><circle cx="9" cy="15" r="1.1" fill="currentColor"/>',
+  flame: '<path d="M12 21c3.6 0 6-2.4 6-5.6 0-3.4-2.6-5.6-3.6-8.9-2 1.4-2.7 3.1-2.7 4.6-1-.7-1.8-1.9-2-3.3C8 9.6 6 12 6 15.4 6 18.6 8.4 21 12 21z"/>',
+  leaf: '<path d="M5 19c0-8 5-13 14-14 0 9-5 14-13 14z"/><path d="M5 19c3-4 6-7 10-9"/>',
+  coin: '<circle cx="12" cy="12" r="8"/><path d="M14.5 9.5c-.5-1-1.5-1.5-2.5-1.5-1.4 0-2.5.8-2.5 2s1.1 1.6 2.5 2 2.5.8 2.5 2-1.1 2-2.5 2c-1 0-2-.5-2.5-1.5M12 6.5v11"/>',
+  copy: '<rect x="8" y="8" width="11" height="12" rx="2.5"/><path d="M5 15.5V6a2 2 0 0 1 2-2h8"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  lock: '<rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8.5 11V8a3.5 3.5 0 0 1 7 0v3"/>',
+  unlock: '<rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8.5 11V8a3.5 3.5 0 0 1 6.8-1.2"/>',
 };
 export const icon = (name, cls = "ic") =>
   `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[name]}</svg>`;
@@ -23,13 +31,14 @@ const NAV = [
   ["/danh-muc/", "Danh mục", "grid"],
   ["/tim-kiem/", "Tìm món", "search"],
   ["/di-cho/", "Đi chợ", "cart"],
-  ["/da-luu/", "Đã lưu", "heart"],
+  ["/da-luu/", "Sổ tay", "heart"],
 ];
 const FOOT = [
-  ["/ve-chung-toi/", "Về chúng tôi"],
+  ["/gioi-thieu/", "Giới thiệu"],
   ["/video/", "Tất cả video"],
   ["/ban-quyen-video/", "Bản quyền video"],
   ["/chinh-sach-bao-mat/", "Chính sách bảo mật"],
+  ["/dieu-khoan/", "Điều khoản sử dụng"],
   ["/lien-he/", "Liên hệ"],
 ];
 
@@ -69,16 +78,16 @@ ${p.noindex ? '<meta name="robots" content="noindex">' : ""}
 <meta property="og:site_name" content="${esc(site.site_name)}">
 <meta property="og:locale" content="vi_VN">
 ${p.ogImage ? `<meta property="og:image" content="${esc(p.ogImage)}">` : ""}
-<meta name="theme-color" content="#fbf6ef" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#1c1714" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#faf8f5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1d1a17" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/assets/icons/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/icons/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Lora:wght@600;700&display=swap">
 <link rel="stylesheet" href="/assets/style.css?v=${site.build_id}">
-<script>try{var s=JSON.parse(localStorage.getItem("bnm-prefs")||"{}");if(s.theme)document.documentElement.dataset.theme=s.theme;if(s.big)document.documentElement.dataset.big="1"}catch(e){}</script>
+<script>try{var s=JSON.parse(localStorage.getItem("hnng-prefs")||"{}");if(s.theme)document.documentElement.dataset.theme=s.theme;if(s.big)document.documentElement.dataset.big="1"}catch(e){}</script>
 ${ld.map((o) => `<script type="application/ld+json">${JSON.stringify(o).replace(/</g, "\\u003c")}</script>`).join("\n")}
 ${adsense}
 </head>
@@ -120,3 +129,15 @@ export const emptyState = (title, text = "") =>
   `<div class="empty"><p class="empty-title">${esc(title)}</p>${text ? `<p>${esc(text)}</p>` : ""}</div>`;
 
 export const ytThumb = (id) => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+
+/** Thẻ món: ảnh 4:3 có badge thời gian, độ khó, calo, video. attrs = thêm data-* để lọc/sắp xếp phía trình duyệt. */
+export function recipeCard(r, attrs = false) {
+  const data = attrs ? ` data-k="${esc((r.do_kho || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase())}" data-m="${r.total || 0}" data-cal="${r.cal || 0}" data-d="${esc(r.cap_nhat || "")}"` : "";
+  return `<a class="rcard" href="/mon/${r.slug}/"${data}>
+  <div class="rcard-img">${r.img ? `<img src="${esc(r.img)}" alt="" loading="lazy" width="480" height="360">` : `<span class="rcard-emoji" aria-hidden="true">${esc(r.cat?.bieu_tuong || "🍽️")}</span>`}
+    ${r.yt ? `<span class="badge-video">${icon("play")} Video</span>` : ""}
+    <span class="badges">${r.total ? `<span>${icon("clock")} ${r.total} phút</span>` : ""}${r.do_kho ? `<span>${esc(r.do_kho)}</span>` : ""}${r.cal ? `<span>${r.cal} kcal</span>` : ""}</span>
+  </div>
+  <div class="rcard-body"><small class="rcard-cat">${esc(r.cat?.ten || "")}</small><strong>${esc(r.ten)}</strong></div>
+</a>`;
+}

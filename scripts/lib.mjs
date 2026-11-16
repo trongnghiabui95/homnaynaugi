@@ -82,3 +82,19 @@ export function parseSources(s) {
 }
 
 export const isSlug = (s) => /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(s || "");
+
+/** Link chia sẻ Google Drive → link ảnh trực tiếp (lh3.googleusercontent.com). Link khác giữ nguyên. */
+export function imgUrl(u) {
+  const s = String(u || "").trim();
+  const m = s.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:export=\w+&)?id=)([\w-]{20,})/) || s.match(/drive\.google\.com\/.*[?&]id=([\w-]{20,})/);
+  return m ? `https://lh3.googleusercontent.com/d/${m[1]}` : s;
+}
+
+/** Nhận mã 11 ký tự hoặc link YouTube (watch, youtu.be, shorts, embed) → { id, shorts }. Không hợp lệ → null. */
+export function parseYouTube(v) {
+  const s = String(v || "").trim();
+  if (!s) return null;
+  if (/^[\w-]{11}$/.test(s)) return { id: s, shorts: false };
+  const m = s.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/|live\/)|youtu\.be\/)([\w-]{11})/);
+  return m ? { id: m[1], shorts: /\/shorts\//.test(s) } : null;
+}

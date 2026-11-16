@@ -1,13 +1,13 @@
 {
-  "name": "Bếp Nhà Mình",
-  "short_name": "Bếp Nhà Mình",
-  "description": "Công thức nấu ăn dễ làm, có video hướng dẫn từng bước",
+  "name": "Hôm Nay Nấu Gì",
+  "short_name": "Hôm Nay Nấu Gì",
+  "description": "Gợi ý món, mâm cơm và công thức có video từng bước",
   "lang": "vi",
   "start_url": "/?src=pwa",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#fbf6ef",
-  "theme_color": "#b4532a",
+  "background_color": "#faf8f5",
+  "theme_color": "#c2492a",
   "icons": [
     { "src": "/assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "/assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },

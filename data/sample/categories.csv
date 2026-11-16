@@ -1,7 +1,8 @@
-slug,ten,mo_ta,bieu_tuong,thu_tu
-mon-viet,Món Việt,"Cơm nhà, món kho, món canh, món xào quen thuộc.",🍲,1
-mon-a,Món Á,"Món Hàn, Nhật, Thái, Trung dễ làm tại nhà.",🍜,2
-mon-au,Món Âu,"Mì Ý, salad, món nướng kiểu Âu.",🍝,3
-banh-ngot,Bánh ngọt,Bánh nướng và bánh hấp cho người mới.,🧁,4
-do-uong,Đồ uống,"Sinh tố, nước ép, trà, cà phê.",🥤,5
-mon-chay,Món chay,Món chay ngon và đủ chất.,🥗,6
+slug,ten,mo_ta,bieu_tuong,anh,thu_tu
+mon-man,Món mặn,"Món kho, chiên, rim, sốt đậm đà cho bữa cơm.",🍖,,1
+mon-canh,Món canh,Canh thanh mát cho mâm cơm gia đình.,🍲,,2
+mon-rau-xao,Món rau & xào,"Rau xào, rau luộc, món xào nhanh.",🥬,,3
+bua-sang,Bữa sáng,Món sáng nhanh gọn trong 10–15 phút.,🍳,,4
+mon-mot-dia,"Cơm, bún, mì","Món một đĩa: cơm chiên, bún, mì, phở.",🍝,,5
+an-vat,Ăn vặt,Món ăn chơi cho buổi chiều và cuối tuần.,🍢,,6
+do-uong,Đồ uống,"Sinh tố, nước ép, trà, cà phê.",🥤,,7
