@@ -105,7 +105,7 @@ ${crumbs}
 ${p.body}
 </main>
 <footer class="footer wrap">
-  <nav class="footer-links">${FOOT.map(([u, n]) => `<a href="${u}">${n}</a>`).join("")}</nav>
+  <nav class="footer-links">${FOOT.filter(([u]) => u !== "/video/" || site.has_video).map(([u, n]) => `<a href="${u}">${n}</a>`).join("")}</nav>
   <p class="muted">Video thuộc bản quyền của các kênh YouTube được ghi tên, nhúng theo chức năng chia sẻ của YouTube.</p>
   <p class="muted">© ${new Date().getFullYear()} ${esc(site.site_name)}</p>
 </footer>
