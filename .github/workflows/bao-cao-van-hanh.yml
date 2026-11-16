@@ -1,0 +1,33 @@
+name: Báo cáo vận hành
+# Mỗi sáng 6:40 giờ Việt Nam (23:40 UTC), sau khi web đã cập nhật nội dung lúc 6:10.
+# Đọc Google Sheet, ghi báo cáo nội dung vào Issue nhãn "bao-cao" (tạo mới nếu chưa có).
+# Skill /van-hanh của Claude đọc Issue này để lên việc cho Dev, Biên tập, Marketing.
+on:
+  schedule:
+    - cron: "40 23 * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+jobs:
+  bao-cao:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Tạo báo cáo từ Google Sheet
+        env: { SHEET_ID: "${{ secrets.SHEET_ID }}" }
+        run: node scripts/bao-cao.mjs > bao-cao.md
+      - name: Ghi vào Issue "Báo cáo nội dung"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh label create bao-cao --color 0E8A16 --description "Báo cáo tự động cho bộ máy vận hành" -R "$REPO" 2>/dev/null || true
+          so=$(gh issue list -R "$REPO" --label bao-cao --state open --json number --jq '.[0].number')
+          if [ -z "$so" ]; then
+            gh issue create -R "$REPO" --title "📊 Báo cáo nội dung (tự cập nhật mỗi sáng)" --label bao-cao --body-file bao-cao.md
+          else
+            gh issue edit "$so" -R "$REPO" --body-file bao-cao.md
+          fi
