@@ -12,6 +12,8 @@ jobs:
         with: { node-version: 22 }
       - name: Build với dữ liệu mẫu
         run: node scripts/build.mjs --sample
+      - name: Kiểm thử ảnh Wikimedia Commons
+        run: node --test tests/commons.test.mjs
       - name: Build với dữ liệu kiểm thử
         run: DATA_DIR=tests/fixtures node scripts/build.mjs
       - name: Kiểm tra trên trình duyệt
