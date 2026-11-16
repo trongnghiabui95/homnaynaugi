@@ -60,6 +60,16 @@ async def main():
         await pg.reload(); await pg.wait_for_timeout(600)
         check("nhớ kết quả quay sau khi tải lại", await pg.text_content('[data-slot="one"] strong') == one)
 
+        # Nút "Quay món" nằm trong màn hình đầu (trên thanh điều hướng đáy), ô chọn không bị cắt chữ
+        for w in (390, 360):
+            await pg.set_viewport_size({"width": w, "height": 844})
+            await pg.goto(B + "/"); await pg.evaluate("localStorage.clear()"); await pg.reload(); await pg.wait_for_timeout(300)
+            pos = await pg.evaluate("[document.querySelector('[data-spin-go]').getBoundingClientRect().bottom, document.querySelector('.tabbar').getBoundingClientRect().top]")
+            check(f"nút Quay món trong màn hình đầu ở khung {w}px", pos[0] <= pos[1], str(pos))
+            cut = await pg.evaluate("""()=>[...document.querySelectorAll('.spin select')].flatMap(s=>{const cs=getComputedStyle(s),c=document.createElement('canvas').getContext('2d');c.font=cs.fontWeight+' '+cs.fontSize+' '+cs.fontFamily;const room=s.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight);return [...s.options].filter(o=>c.measureText(o.text).width>room).map(o=>o.text)})""")
+            check(f"ô chọn quay món không cắt chữ ở khung {w}px", not cut, str(cut))
+        await pg.set_viewport_size({"width": 390, "height": 844})
+
         # Trang công thức: khẩu phần, chép danh sách, sổ tay, chế độ nấu
         await pg.goto(B + "/mon/trung-chien-hanh/"); await pg.wait_for_timeout(500)
         await pg.click("[data-serv-inc]")

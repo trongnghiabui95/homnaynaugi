@@ -124,6 +124,7 @@ select { min-height: 46px; padding: 0 12px; border: 1px solid var(--line); borde
 .spin-filters label span { display: block; font-size: .8em; color: var(--muted); margin-bottom: 4px; }
 @media (max-width: 600px) { .spin-filters { grid-template-columns: 1fr 1fr; } .spin-filters label:last-child { grid-column: 1 / -1; } }
 .spin-slots { display: grid; gap: 12px; }
+.spin-go { margin: 0 0 16px; }
 .spin-slots.mam { grid-template-columns: repeat(3, 1fr); }
 @media (max-width: 600px) { .spin-slots.mam { grid-template-columns: 1fr; } }
 .slot { position: relative; display: grid; grid-template-columns: 112px 1fr; gap: 12px; align-items: center; background: var(--bg); border: 1px solid var(--line); border-radius: 16px; padding: 10px; min-height: 120px; }
