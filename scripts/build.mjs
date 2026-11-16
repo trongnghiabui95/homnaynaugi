@@ -244,9 +244,17 @@ ${rs.length ? filterBar(rs) + grid(rs, true) : emptyState("Danh mục đang đư
     const videoBox = r.yt ? `<div class="player-box${r.yt.shorts ? " vertical" : ""}" data-player data-id="${esc(r.yt.id)}">
       <button class="lite-yt" type="button" data-play aria-label="Phát video hướng dẫn ${esc(r.ten)}"><img src="${thumbMax}" onerror="this.onerror=null;this.src='${ytThumb(r.yt.id)}'" alt="" width="1280" height="720"><span class="play" aria-hidden="true"></span></button>
     </div>` : "";
+    // Ghi công ảnh có giấy phép: "Tên tác giả, CC BY-SA 4.0 https://link-trang-ảnh"
+    const photoCredit = (t) => {
+      const raw = String(t || "").trim();
+      if (!raw) return "";
+      const link = raw.match(/https?:\/\/\S+/);
+      const txt = raw.replace(/https?:\/\/\S+/, "").replace(/[\s,;·–-]+$/, "").trim();
+      return `<figcaption class="credit" data-media-panel="photo">Ảnh: ${esc(txt || "xem nguồn")}${link ? ` · <a href="${esc(link[0])}" rel="noopener" target="_blank">Nguồn ảnh</a>` : ""}</figcaption>`;
+    };
     const media = r.yt || r.anh ? `<figure class="media">
   ${r.yt && r.anh ? `<div class="seg small" role="tablist" aria-label="Ảnh hoặc video"><button type="button" role="tab" data-media="photo" aria-selected="true">Ảnh món</button><button type="button" role="tab" data-media="video" aria-selected="false">${icon("play")} Video</button></div>` : ""}
-  ${r.anh ? `<img class="hero-img" data-media-panel="photo" src="${esc(r.anh)}" alt="${esc(r.ten)}" width="1200" height="900">` : ""}
+  ${r.anh ? `<img class="hero-img" data-media-panel="photo" src="${esc(r.anh)}" alt="${esc(r.ten)}" width="1200" height="900">${photoCredit(r.anh_nguon)}` : ""}
   ${r.yt ? `<div data-media-panel="video"${r.anh ? " hidden" : ""}>${videoBox}<figcaption>Video: ${r.kenh ? `kênh <strong>${esc(r.kenh)}</strong>` : "YouTube"} · <a href="${watch}" rel="noopener" target="_blank">Xem trên YouTube</a></figcaption></div>` : ""}
 </figure>` : "";
 
