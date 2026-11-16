@@ -168,7 +168,8 @@ async def main():
         await p2.goto(B + "/mon/mon-thu-video/"); await p2.wait_for_timeout(600)
         check("ảnh hỏng link ở trang món: bỏ ảnh, hiện video", await p2.evaluate("!document.querySelector('.hero-img') && !document.querySelector('.media .credit') && !document.querySelector('[data-media-panel=video]').hidden"))
         await p2.goto(B + "/mon/thit-kho-trung/"); await p2.wait_for_timeout(300)
-        await p2.evaluate("document.querySelector('.step-fig').scrollIntoView()"); await p2.wait_for_timeout(600)
+        # Ảnh bước tải lười: cuộn tới để ảnh tải (máy nhanh có thể đã tải hỏng và gỡ xong trước khi cuộn)
+        await p2.evaluate("document.querySelector('.step-fig')?.scrollIntoView()"); await p2.wait_for_timeout(600)
         check("ảnh bước hỏng link: bỏ cả ảnh lẫn dòng ghi nguồn", await p2.evaluate("!document.querySelector('.step-fig') && !document.querySelector('.credit')"))
         await c2.close()
 
