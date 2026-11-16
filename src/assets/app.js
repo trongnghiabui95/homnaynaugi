@@ -156,50 +156,86 @@ async function pageHome() {
   };
   const bySlug = Object.fromEntries(all.map((r) => [r.s, r]));
 
-  const render = () => {
-    $$("[data-spin-mode]", box).forEach((b) => b.setAttribute("aria-selected", b.dataset.spinMode === st.mode));
-    slotsEl.classList.toggle("mam", st.mode === "mam");
-    const defs = slotDefs();
-    slotsEl.innerHTML = defs.map((d) => {
-      const r = bySlug[st.picks[d.key]];
-      if (!r) return `<div class="slot empty-slot" data-slot="${d.key}"><div><div class="slot-label">${esc(d.label)}</div><p>Bấm “Quay món” để nhận gợi ý</p></div></div>`;
-      const locked = !!st.locks[d.key];
-      return `<div class="slot" data-slot="${d.key}">
-        <div class="slot-img">${r.img ? `<img src="${esc(r.img)}" alt="" width="240" height="180">` : esc(r.e || "🍽️")}</div>
+  const goBtn = $("[data-spin-go]", box), goText = $("span", goBtn);
+  const rand = (a) => a[(Math.random() * a.length) | 0];
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  const pic = (r) => (r.img ? `<img src="${esc(r.img)}" alt="" width="240" height="180">` : esc(r.e || "🍽️"));
+  const slotHTML = (d) => {
+    const r = bySlug[st.picks[d.key]];
+    if (!r) return `<div class="slot empty-slot" data-slot="${d.key}"><div><div class="slot-label">${esc(d.label)}</div><p>Bấm “Quay món” để nhận gợi ý</p></div></div>`;
+    const locked = !!st.locks[d.key];
+    return `<div class="slot" data-slot="${d.key}">
+        <div class="slot-img">${pic(r)}</div>
         <div><div class="slot-label">${esc(d.label)}</div><strong>${esc(r.t)}</strong><span class="meta">${IC.clock} ${r.m} phút · ${esc(r.k || "")}</span><br><a class="more" href="${BASE}/mon/${r.s}/">Xem cách nấu →</a></div>
         <button class="lock" type="button" data-lock="${d.key}" aria-pressed="${locked}" aria-label="${locked ? "Bỏ khoá" : "Khoá"} món ${esc(r.t)}">${locked ? IC.lock : IC.unlock}</button>
       </div>`;
-    }).join("");
+  };
+  const sync = () => {
+    const defs = slotDefs();
+    $$("[data-spin-mode]", box).forEach((b) => b.setAttribute("aria-selected", b.dataset.spinMode === st.mode));
     shopBtn.hidden = !defs.some((d) => bySlug[st.picks[d.key]]);
     shopBtn.querySelector("span").textContent = st.mode === "mam" ? "Thêm cả mâm vào Đi chợ" : "Thêm vào Đi chợ";
-    $$("[data-lock]", slotsEl).forEach((b) => (b.onclick = () => { st.locks[b.dataset.lock] = !st.locks[b.dataset.lock]; save(); render(); }));
+  };
+  const render = () => {
+    slotsEl.classList.toggle("mam", st.mode === "mam");
+    slotsEl.innerHTML = slotDefs().map(slotHTML).join("");
+    sync();
   };
   const save = () => store.set("spin", st);
-
-  const spin = async () => {
-    const defs = slotDefs().filter((d) => !st.locks[d.key] || !bySlug[st.picks[d.key]]);
-    if (!defs.length) return toast("Bạn đã khoá hết món. Bỏ khoá món muốn đổi.");
-    let empty = 0;
-    // Hiệu ứng quay: đổi tên nhanh vài lần trước khi dừng
-    for (let k = 0; k < 7; k++) {
-      for (const d of defs) {
-        const p = pool(d), el = $(`[data-slot="${d.key}"] strong`, slotsEl);
-        if (p.length && el) { el.textContent = p[(Math.random() * p.length) | 0].t; el.closest(".slot").classList.add("rolling"); }
-      }
-      await new Promise((r) => setTimeout(r, matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 70));
-    }
-    for (const d of defs) {
-      const p = pool(d);
-      if (!p.length) { delete st.picks[d.key]; empty++; continue; }
-      const choices = p.length > 1 ? p.filter((r) => r.s !== st.picks[d.key]) : p;
-      st.picks[d.key] = choices[(Math.random() * choices.length) | 0].s;
-    }
-    save(); render();
-    if (empty) toast("Chưa có món hợp bộ lọc cho một số ngăn. Thử nới bộ lọc.");
+  let busy = false;
+  slotsEl.onclick = (e) => {
+    const b = e.target.closest("[data-lock]");
+    if (!b || busy) return;
+    st.locks[b.dataset.lock] = !st.locks[b.dataset.lock]; save(); render();
   };
 
-  $$("[data-spin-mode]", box).forEach((b) => (b.onclick = () => { st.mode = b.dataset.spinMode; save(); render(); }));
-  $("[data-spin-go]", box).onclick = spin;
+  // Hiệu ứng máy quay: mỗi ngăn cuộn một dải ảnh món, chậm dần rồi dừng lần lượt
+  const roll = async ({ d, p, fin }, i) => {
+    const el = $(`[data-slot="${d.key}"]`, slotsEl);
+    const n = 9 + i * 4, dur = 950 + i * 380;
+    const strip = Array.from({ length: n }, () => rand(p)).concat(fin);
+    el.className = "slot rolling";
+    el.innerHTML = `<div class="slot-img"><div class="reel" style="--d:${dur}ms" aria-hidden="true">${strip.map((r) => `<div>${pic(r)}</div>`).join("")}</div></div><div><div class="slot-label">${esc(d.label)}</div><strong>${esc(rand(p).t)}</strong><span class="meta">Đang chọn…</span></div>`;
+    const reel = $(".reel", el), name = $("strong", el);
+    reel.getBoundingClientRect();
+    reel.style.transform = `translateY(-${n * 100}%)`;
+    const tick = setInterval(() => (name.textContent = rand(p).t), 90);
+    await wait(dur);
+    clearInterval(tick);
+    st.picks[d.key] = fin.s;
+    el.outerHTML = slotHTML(d);
+    $(`[data-slot="${d.key}"]`, slotsEl).classList.add("landed");
+    try { navigator.vibrate && navigator.vibrate(12); } catch {}
+  };
+
+  const spin = async () => {
+    if (busy) return;
+    const defs = slotDefs().filter((d) => !st.locks[d.key] || !bySlug[st.picks[d.key]]);
+    if (!defs.length) return toast("Bạn đã khoá hết món. Bỏ khoá món muốn đổi.");
+    const rolls = [], empties = [];
+    for (const d of defs) {
+      const p = pool(d);
+      if (!p.length) { delete st.picks[d.key]; empties.push(d); continue; }
+      rolls.push({ d, p, fin: rand(p.length > 1 ? p.filter((r) => r.s !== st.picks[d.key]) : p) });
+    }
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches || !rolls.length) {
+      rolls.forEach(({ d, fin }) => (st.picks[d.key] = fin.s));
+      render();
+    } else {
+      busy = true; goBtn.disabled = true; goBtn.classList.add("spinning"); goText.textContent = "Đang quay…";
+      slotsEl.setAttribute("aria-busy", "true");
+      empties.forEach((d) => ($(`[data-slot="${d.key}"]`, slotsEl).outerHTML = slotHTML(d)));
+      await Promise.all(rolls.map(roll));
+      busy = false; goBtn.disabled = false; goBtn.classList.remove("spinning"); goText.textContent = "Quay món";
+      slotsEl.removeAttribute("aria-busy");
+      sync();
+    }
+    save();
+    if (empties.length) toast("Chưa có món hợp bộ lọc cho một số ngăn. Thử nới bộ lọc.");
+  };
+
+  $$("[data-spin-mode]", box).forEach((b) => (b.onclick = () => { if (busy) return; st.mode = b.dataset.spinMode; save(); render(); }));
+  goBtn.onclick = spin;
   shopBtn.onclick = async () => {
     const rs = slotDefs().map((d) => bySlug[st.picks[d.key]]).filter(Boolean);
     await addToShop(rs.map((r) => ({ slug: r.s, name: r.t, serv: r.sv, items: r.ig.map(([ten, q, u]) => ({ ten, q, u })) })));
