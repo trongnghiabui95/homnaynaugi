@@ -15,7 +15,7 @@ Phong cách tạp chí ẩm thực: nền kem `#FAF8F5`, thẻ trắng đổ bó
 ## Trang
 | Trang | Đường dẫn |
 | --- | --- |
-| Trang chủ: tìm món, chủ đề, **Quay món** (1 món / mâm cơm 3 món, lọc bữa, thời gian, nguyên liệu chính, khoá món), danh mục, Tủ lạnh có gì, sổ tay, món nhanh, món mới | `/` |
+| Trang chủ: tìm món, chủ đề, **Quay món** (radio Món ăn / Đồ uống; món ăn: 1 món hoặc mâm cơm 3 món, không lẫn đồ uống; đồ uống: 1 ngăn chỉ quay danh mục `do-uong`; bộ lọc bữa, thời gian, nguyên liệu chính thu gọn trong "Bộ lọc"; khoá món), danh mục, sổ tay, món nhanh (hàng vuốt ngang), Tủ lạnh có gì, món mới (không lặp món nhanh) | `/` |
 | Danh mục (lọc độ khó, thời gian, calo; sắp xếp mới nhất / nấu nhanh nhất) | `/danh-muc/`, `/danh-muc/<slug>/` |
 | Công thức | `/mon/<slug>/`, tất cả: `/mon/` |
 | Tìm món theo tên, chủ đề; **Tủ lạnh có gì** (chọn nguyên liệu, hiện "Đủ 2/2 nguyên liệu") | `/tim-kiem/` |

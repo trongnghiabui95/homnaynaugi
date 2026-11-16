@@ -56,14 +56,28 @@ async def main():
             same &= (await pg.text_content('[data-slot="m0"] strong')) == locked
         check("khoá giữ nguyên món khi quay lại", same)
         await pg.screenshot(path=f"{OUT}/1-trang-chu.png", full_page=True)
+        check("bộ lọc thu gọn, mặc định đóng", not await pg.is_visible('[data-spin-f="b"]'))
+        await pg.click(".spin-more summary")
         await pg.select_option('[data-spin-f="b"]', "sang")
+        check("tiêu đề Bộ lọc đếm số lọc đang bật", await pg.text_content(".spin-more summary") == "Bộ lọc (1)")
         await pg.click('[data-spin-mode="one"]'); await quay()
         one = await pg.text_content('[data-slot="one"] strong')
-        check("gợi ý 1 món theo bữa sáng", one in ["Bánh mì ốp la", "Sinh tố bơ"], one)
+        check("gợi ý 1 món theo bữa sáng, không lẫn đồ uống", one == "Bánh mì ốp la", one)
         await pg.click("[data-spin-shop]"); await pg.wait_for_timeout(300)
         check("thêm món gợi ý vào đi chợ", await pg.text_content('[data-badge="cart"]') == "1")
         await pg.reload(); await pg.wait_for_timeout(600)
         check("nhớ kết quả quay sau khi tải lại", await pg.text_content('[data-slot="one"] strong') == one)
+
+        # Radio Món ăn / Đồ uống: đồ uống quay riêng một ngăn, chỉ ra món trong danh mục Đồ uống
+        check("có radio Món ăn / Đồ uống, mặc định Món ăn", await pg.is_checked('[data-spin-kind][value="an"]') and len(await pg.query_selector_all('.kind input[type=radio]')) == 2)
+        await pg.check('[data-spin-kind][value="uong"]'); await pg.wait_for_timeout(100)
+        check("chọn Đồ uống: ẩn Mâm cơm / 1 món, còn một ngăn", not await pg.is_visible("[data-spin-modes]") and len(await pg.query_selector_all("[data-spin-slots] .slot")) == 1)
+        await quay()
+        check("quay đồ uống chỉ ra đồ uống", await pg.text_content('[data-slot="uong"] strong') == "Sinh tố bơ")
+        await pg.reload(); await pg.wait_for_timeout(600)
+        check("nhớ lựa chọn Đồ uống sau khi tải lại", await pg.is_checked('[data-spin-kind][value="uong"]') and await pg.text_content('[data-slot="uong"] strong') == "Sinh tố bơ")
+        await pg.check('[data-spin-kind][value="an"]'); await pg.wait_for_timeout(100)
+        check("về Món ăn: giữ món đã quay trước đó", await pg.text_content('[data-slot="one"] strong') == one)
 
         # Nút "Quay món" nằm trong màn hình đầu (trên thanh điều hướng đáy), ô chọn không bị cắt chữ
         for w in (390, 360):
@@ -71,6 +85,7 @@ async def main():
             await pg.goto(B + "/"); await pg.evaluate("localStorage.clear()"); await pg.reload(); await pg.wait_for_timeout(300)
             pos = await pg.evaluate("[document.querySelector('[data-spin-go]').getBoundingClientRect().bottom, document.querySelector('.tabbar').getBoundingClientRect().top]")
             check(f"nút Quay món trong màn hình đầu ở khung {w}px", pos[0] <= pos[1], str(pos))
+            await pg.click(".spin-more summary")
             cut = await pg.evaluate("""()=>[...document.querySelectorAll('.spin select')].flatMap(s=>{const cs=getComputedStyle(s),c=document.createElement('canvas').getContext('2d');c.font=cs.fontWeight+' '+cs.fontSize+' '+cs.fontFamily;const room=s.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight);return [...s.options].filter(o=>c.measureText(o.text).width>room).map(o=>o.text)})""")
             check(f"ô chọn quay món không cắt chữ ở khung {w}px", not cut, str(cut))
         await pg.set_viewport_size({"width": 390, "height": 844})
@@ -228,7 +243,7 @@ async def main():
         DO = """()=>{
           const vis=e=>{const r=e.getBoundingClientRect(),cs=getComputedStyle(e);return r.width>0&&r.height>0&&cs.visibility!='hidden'&&cs.display!='none'};
           const inText=e=>e.tagName=='A'&&e.closest('p,li,figcaption,small')&&!e.closest('.footer-links,.crumbs,.tags,.kicker');
-          const nho=[...document.querySelectorAll('a,button,select,input:not([type=checkbox]),label:has(input[type=checkbox])')].filter(e=>vis(e)&&!inText(e)&&!e.classList.contains('skip')&&e.getBoundingClientRect().height<43.5).map(e=>(e.innerText||e.getAttribute('aria-label')||e.tagName).trim().slice(0,20)+' '+Math.round(e.getBoundingClientRect().height)+'px');
+          const nho=[...document.querySelectorAll('a,button,select,input:not([type=checkbox]):not([type=radio]),label:has(input[type=checkbox],input[type=radio])')].filter(e=>vis(e)&&!inText(e)&&!e.classList.contains('skip')&&e.getBoundingClientRect().height<43.5).map(e=>(e.innerText||e.getAttribute('aria-label')||e.tagName).trim().slice(0,20)+' '+Math.round(e.getBoundingClientRect().height)+'px');
           const chu=[...document.querySelectorAll('body *')].filter(e=>vis(e)&&!e.closest('.ad-slot')&&[...e.childNodes].some(n=>n.nodeType==3&&n.textContent.trim())&&parseFloat(getComputedStyle(e).fontSize)<12.95).map(e=>e.innerText.trim().slice(0,15)+' '+getComputedStyle(e).fontSize);
           return [[...new Set(nho)],[...new Set(chu)]]}"""
         for u in ["/", "/mon/trung-chien-hanh/", "/mon/mon-thu-video/", "/danh-muc/", "/danh-muc/mon-man/", "/tim-kiem/", "/video/", "/di-cho/", "/da-luu/", "/gioi-thieu/"]:

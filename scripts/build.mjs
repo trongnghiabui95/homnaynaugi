@@ -162,7 +162,9 @@ async function main() {
   // ----- Trang chủ -----
   // Trang chủ: món có ảnh (ảnh thật hoặc ảnh bìa video) xếp trước món chưa có ảnh; trong mỗi nhóm giữ thứ tự mới nhất.
   const anhTruoc = (rs) => [...rs.filter((r) => r.img), ...rs.filter((r) => !r.img)];
-  const quick = anhTruoc(recipes.filter((r) => r.total && r.total <= 20)).slice(0, 6);
+  const quick = anhTruoc(recipes.filter((r) => r.total && r.total <= 20)).slice(0, 8);
+  // Công thức mới không lặp lại món đã có ở hàng "Nhanh gọn"
+  const moi = anhTruoc(recipes.filter((r) => !quick.includes(r))).slice(0, 8);
   await page(site, {
     path: "/", page: "home", title: site.site_name,
     description: `${site.tagline}. ${recipes.length} công thức có hướng dẫn từng bước, gợi ý mâm cơm 3 món mỗi ngày.`,
@@ -178,19 +180,23 @@ async function main() {
 
 <section class="spin card" data-spin aria-labelledby="spin-title">
   <h2 id="spin-title">Quay món cho hôm nay</h2>
-  <div class="seg" role="tablist" aria-label="Kiểu gợi ý">
+  <div class="kind" role="radiogroup" aria-label="Quay món ăn hay đồ uống">
+    <label><input type="radio" name="spin-kind" value="an" data-spin-kind checked><span>Món ăn</span></label>
+    <label><input type="radio" name="spin-kind" value="uong" data-spin-kind><span>Đồ uống</span></label>
+  </div>
+  <div class="seg" role="tablist" aria-label="Kiểu gợi ý" data-spin-modes>
     <button type="button" role="tab" data-spin-mode="one" aria-selected="false">Gợi ý 1 món</button>
     <button type="button" role="tab" data-spin-mode="mam" aria-selected="true">Mâm cơm 3 món</button>
   </div>
-  <div class="spin-filters">
+  <details class="spin-more"><summary>Bộ lọc<span data-spin-fcount></span></summary><div class="spin-filters">
     <label><span>Bữa</span><select data-spin-f="b"><option value="">Mọi bữa</option><option value="sang">Bữa sáng</option><option value="trua">Bữa trưa</option><option value="toi">Bữa tối</option></select></label>
     <label><span>Thời gian</span><select data-spin-f="m"><option value="">Mọi thời gian</option><option value="15">Dưới 15 phút</option><option value="30">Dưới 30 phút</option><option value="45">Dưới 45 phút</option></select></label>
     <label><span>Nguyên liệu chính</span><select data-spin-f="n"><option value="">Mọi nguyên liệu</option>${mains.map((n) => `<option>${esc(n)}</option>`).join("")}</select></label>
-  </div>
+  </div></details>
   <div class="row spin-go"><button class="btn big" type="button" data-spin-go>${icon("dice")}<span>Quay món</span></button></div>
   <div class="spin-slots" data-spin-slots aria-live="polite" data-mam='${esc(JSON.stringify(MAM))}'></div>
   <div class="row spin-shop"><button class="btn ghost" type="button" data-spin-shop hidden>${icon("cart")}<span>Thêm cả mâm vào Đi chợ</span></button></div>
-  <p class="muted small">Bấm “Giữ” để giữ món đã ưng, lần quay sau chỉ đổi các món còn lại.</p>
+  <p class="muted small">Bấm “Giữ” để giữ món ưng ý. Lần quay sau chỉ đổi món còn lại.</p>
 </section>
 ${adSlot(site, "home")}
 ${withVideo.length ? `<section data-vstrip aria-labelledby="vstrip-title">
@@ -203,14 +209,14 @@ ${withVideo.length ? `<section data-vstrip aria-labelledby="vstrip-title">
   <div class="cat-row">${catsShown.map((c) => catCard(c, recipes)).join("")}</div>
 </section>
 
+<section data-saved-home hidden><div class="sec-head"><h2>Sổ tay món ngon của tôi</h2><a href="/da-luu/">Xem hết</a></div><div class="rgrid" data-saved-grid></div></section>
+${quick.length ? `<section><div class="sec-head"><h2>Nhanh gọn dưới 20 phút</h2></div><div class="rgrid rrow">${quick.map((r) => recipeCard(r)).join("")}</div></section>` : ""}
+
 <section class="fridge-cta card">
   <div><h2>Tủ lạnh có gì?</h2><p class="muted">Chọn nguyên liệu bạn đang có, web gợi ý món nấu được ngay.</p></div>
   <a class="btn" href="/tim-kiem/?mode=nl">Chọn nguyên liệu</a>
 </section>
-
-<section data-saved-home hidden><div class="sec-head"><h2>Sổ tay món ngon của tôi</h2><a href="/da-luu/">Xem hết</a></div><div class="rgrid" data-saved-grid></div></section>
-${quick.length ? `<section><div class="sec-head"><h2>Nhanh gọn dưới 20 phút</h2></div>${grid(quick)}</section>` : ""}
-<section><div class="sec-head"><h2>Công thức mới</h2><a href="/mon/">Tất cả ${recipes.length} món</a></div>${recipes.length ? grid(anhTruoc(recipes).slice(0, 12)) : emptyState("Chưa có công thức", "Thêm công thức trong Google Sheets, web sẽ tự cập nhật.")}</section>`,
+${moi.length || !recipes.length ? `<section><div class="sec-head"><h2>Công thức mới</h2><a href="/mon/">Tất cả ${recipes.length} món</a></div>${recipes.length ? grid(moi) : emptyState("Chưa có công thức", "Thêm công thức trong Google Sheets, web sẽ tự cập nhật.")}</section>` : ""}`,
   });
 
   // ----- Tất cả món, danh mục -----

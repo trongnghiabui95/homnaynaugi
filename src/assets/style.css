@@ -123,7 +123,8 @@ select { min-height: 46px; padding: 0 12px; border: 1px solid var(--line); borde
 /* Khung quay món: viền kép mảnh như khung tranh, mâm 3 ngăn nằm ngang để thấy cả mâm trong một màn hình */
 .spin { position: relative; border-top: 3px solid var(--accent); }
 .spin::before { content: ""; position: absolute; inset: 7px; border: 1px solid var(--line); border-radius: 12px; pointer-events: none; }
-.spin-filters { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 6px 0 16px; }
+.spin-filters { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 8px 0 4px; }
+.kind{display:flex;gap:8px;margin-bottom:12px}.kind label{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;border:2px solid var(--line);border-radius:14px;font-weight:600;cursor:pointer}.kind label:has(:checked){border-color:var(--primary);color:var(--primary);background:var(--surface-2)}.kind input{accent-color:var(--primary);width:18px;height:18px;margin:0}.spin-more{margin-bottom:14px}.spin-more summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:600;color:var(--primary)}.rgrid.rrow{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:44%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding-bottom:6px}.rrow>*{scroll-snap-align:start}@media (min-width:700px){.rgrid.rrow{grid-auto-columns:30%}}
 .spin-filters label span { display: block; font-size: .8em; color: var(--muted); margin-bottom: 4px; }
 @media (max-width: 600px) { .spin-filters { grid-template-columns: 1fr 1fr; } .spin-filters label:last-child { grid-column: 1 / -1; } }
 .spin-go { margin: 0 0 14px; }

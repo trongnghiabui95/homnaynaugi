@@ -162,17 +162,19 @@ async function pageHome() {
   const slotsEl = $("[data-spin-slots]", box), shopBtn = $("[data-spin-shop]", box);
   const MAM = JSON.parse(slotsEl.dataset.mam);
   const saved = await store.get("spin", null);
-  const st = { mode: saved?.mode || "mam", picks: saved?.picks || {}, locks: saved?.locks || {} };
+  const st = { kind: saved?.kind || "an", mode: saved?.mode || "mam", picks: saved?.picks || {}, locks: saved?.locks || {} };
 
   const filters = () => Object.fromEntries($$("[data-spin-f]", box).map((s) => [s.dataset.spinF, s.value]));
-  const slotDefs = () => (st.mode === "mam" ? MAM.map(([c, label], i) => ({ key: "m" + i, cat: c, label })) : [{ key: "one", cat: "", label: "Gợi ý cho bạn" }]);
+  // Đồ uống: một ngăn riêng chỉ quay danh mục do-uong. Món ăn: mâm cơm 3 món hoặc 1 món, không lẫn đồ uống.
+  const slotDefs = () => (st.kind === "uong" ? [{ key: "uong", cat: "do-uong", label: "Đồ uống cho bạn" }]
+    : st.mode === "mam" ? MAM.map(([c, label], i) => ({ key: "m" + i, cat: c, label })) : [{ key: "one", cat: "", label: "Gợi ý cho bạn" }]);
   const pool = (def) => {
     const f = filters();
     return all.filter((r) => (!def.cat || r.c === def.cat)
       && (!f.b || r.b.includes(f.b))
       && (!f.m || (r.m && r.m <= Number(f.m)))
       && (!f.n || def.cat === "mon-canh" || def.cat === "mon-rau-xao" || fold(r.n) === fold(f.n))
-      && (st.mode === "mam" || !["do-uong"].includes(r.c) || f.b === "sang"));
+      && (def.cat || r.c !== "do-uong"));
   };
   const bySlug = Object.fromEntries(all.map((r) => [r.s, r]));
 
@@ -195,11 +197,15 @@ async function pageHome() {
   const sync = () => {
     const defs = slotDefs();
     $$("[data-spin-mode]", box).forEach((b) => b.setAttribute("aria-selected", b.dataset.spinMode === st.mode));
+    $$("[data-spin-kind]", box).forEach((i) => (i.checked = i.value === st.kind));
+    $("[data-spin-modes]", box).hidden = st.kind === "uong";
+    const nf = Object.values(filters()).filter(Boolean).length;
+    $("[data-spin-fcount]", box).textContent = nf ? ` (${nf})` : "";
     shopBtn.hidden = !defs.some((d) => bySlug[st.picks[d.key]]);
-    shopBtn.querySelector("span").textContent = st.mode === "mam" ? "Thêm cả mâm vào Đi chợ" : "Thêm vào Đi chợ";
+    shopBtn.querySelector("span").textContent = st.kind === "an" && st.mode === "mam" ? "Thêm cả mâm vào Đi chợ" : "Thêm vào Đi chợ";
   };
   const render = () => {
-    slotsEl.classList.toggle("mam", st.mode === "mam");
+    slotsEl.classList.toggle("mam", st.kind === "an" && st.mode === "mam");
     slotsEl.innerHTML = slotDefs().map(slotHTML).join("");
     sync();
   };
@@ -257,6 +263,8 @@ async function pageHome() {
   };
 
   $$("[data-spin-mode]", box).forEach((b) => (b.onclick = () => { if (busy) return; st.mode = b.dataset.spinMode; save(); render(); }));
+  $$("[data-spin-kind]", box).forEach((i) => (i.onchange = () => { if (busy) return render(); st.kind = i.value; save(); render(); }));
+  $$("[data-spin-f]", box).forEach((s) => s.addEventListener("change", sync));
   goBtn.onclick = spin;
   shopBtn.onclick = async () => {
     const rs = slotDefs().map((d) => bySlug[st.picks[d.key]]).filter(Boolean);
