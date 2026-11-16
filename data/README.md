@@ -32,7 +32,7 @@ Muốn một bước có nút "Xem đoạn này": ghi số giây của đoạn �
 | --- | --- | --- |
 | `settings` | Một cài đặt | key, value — `site_name`, `tagline`, `site_url` (địa chỉ web thật), `contact_email`, `chu_de` (chủ đề nổi bật, cách nhau dấu phẩy, phải trùng với tags của món); khi có AdSense: `adsense_client`, `adsense_slot_home`, `adsense_slot_mid`, `adsense_slot_bottom` |
 | `categories` | Một danh mục | slug, ten, mo_ta, bieu_tuong (một emoji), anh (link ảnh tròn, có thể trống), thu_tu |
-| `recipes` | Một món | slug, ten, danh_muc (slug danh mục), tom_tat, khau_phan (số người), phut_chuan_bi, phut_nau, do_kho (Dễ / Vừa / Khó), bua (sáng, trưa, tối – cách nhau dấu phẩy), nguyen_lieu_chinh (Thịt heo, Gà, Cá, Trứng…), calo (kcal mỗi phần, để trống nếu chưa biết), chi_phi (đồng, để trống nếu chưa biết), anh, video, kenh, tags (cách nhau dấu phẩy), meo (bí quyết), an_kem (slug món ăn kèm, cách nhau dấu phẩy), trang_thai (nháp / duyệt), cap_nhat (2026-11-16) |
+| `recipes` | Một món | slug, ten, danh_muc (slug danh mục), tom_tat, khau_phan (số người), phut_chuan_bi, phut_nau, do_kho (Dễ / Vừa / Khó), bua (sáng, trưa, tối – cách nhau dấu phẩy), nguyen_lieu_chinh (Thịt heo, Gà, Cá, Trứng…), calo (kcal mỗi phần, để trống nếu chưa biết), chi_phi (đồng, để trống nếu chưa biết), anh, video, kenh, tags (cách nhau dấu phẩy), meo (bí quyết), an_kem (slug món ăn kèm, cách nhau dấu phẩy), trang_thai (nháp / duyệt), cap_nhat (2026-11-16), anh_nguon (ghi công ảnh không tự chụp: tên tác giả, giấy phép, link trang ảnh; ảnh tự chụp thì để trống) |
 | `ingredients` | Một nguyên liệu | recipe_slug, nhom (ví dụ "Ướp thịt", có thể trống), ten, so_luong (số; ½ ghi `0.5`), don_vi, ghi_chu |
 | `steps` | Một bước | recipe_slug, buoc, tieu_de, noi_dung, anh (ảnh bước, có thể trống), giay_video (có thể trống), hen_gio_phut (hiện nút hẹn giờ, có thể trống) |
 
@@ -40,3 +40,9 @@ Muốn một bước có nút "Xem đoạn này": ghi số giây của đoạn �
 - Tự viết công thức bằng lời của mình, không chép phần mô tả video hay công thức từ web khác.
 - Calo và chi phí chỉ điền khi có số liệu thật; để trống thì web không hiện.
 - Không ghi thông tin cá nhân hay mật khẩu vào Sheet: ai có link cũng xem được.
+
+## Ghi nguồn ảnh
+
+Ảnh không phải tự chụp phải có giấy phép rõ và ghi vào cột `anh_nguon`, ví dụ:
+`Nguyễn Văn A, CC BY-SA 4.0 https://commons.wikimedia.org/wiki/File:Ten_anh.jpg`
+Web hiện dòng "Ảnh: … · Nguồn ảnh" ngay dưới ảnh món. Xem thêm `ops/NGUON-NOI-DUNG.md`.

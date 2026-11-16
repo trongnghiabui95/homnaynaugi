@@ -85,6 +85,8 @@ async def main():
         await pg.goto(B + "/mon/mon-thu-video/"); await pg.wait_for_timeout(400)
         hero = await pg.get_attribute(".hero-img", "src")
         check("link Google Drive đổi sang ảnh trực tiếp", hero == "https://lh3.googleusercontent.com/d/1ThuNghiemAnhDriveABCDEFGHIJKLmnop", hero)
+        cr = [await pg.text_content(".media .credit"), await pg.get_attribute(".media .credit a", "href")]
+        check("ghi nguồn ảnh dưới ảnh món", cr == ["Ảnh: Người thử, CC BY-SA 4.0 · Nguồn ảnh", "https://commons.wikimedia.org/wiki/File:Anh_thu.jpg"], str(cr))
         check("ảnh bước từ Drive", (await pg.get_attribute(".step-img", "src") or "").startswith("https://lh3.googleusercontent.com/d/"))
         check("có calo và chi phí", "420 kcal" in await pg.text_content(".facts") and "85.000đ" in await pg.text_content(".facts"))
         await pg.click("[data-seek='95']"); await pg.wait_for_timeout(300)
