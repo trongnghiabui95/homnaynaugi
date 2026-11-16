@@ -97,7 +97,7 @@ ${ogTags(site, p)}
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Lora:wght@600;700&display=swap">
 <link rel="stylesheet" href="/assets/style.css?v=${site.build_id}">
-<script>try{var s=JSON.parse(localStorage.getItem("hnng-prefs")||"{}");if(s.theme)document.documentElement.dataset.theme=s.theme;if(s.big)document.documentElement.dataset.big="1"}catch(e){}</script>
+<script>document.documentElement.classList.add("js");try{var s=JSON.parse(localStorage.getItem("hnng-prefs")||"{}");if(s.theme)document.documentElement.dataset.theme=s.theme;if(s.big)document.documentElement.dataset.big="1"}catch(e){}</script>
 ${ld.map((o) => `<script type="application/ld+json">${JSON.stringify(o).replace(/</g, "\\u003c")}</script>`).join("\n")}
 ${adsense}
 </head>
@@ -140,11 +140,14 @@ export const emptyState = (title, text = "") =>
 
 export const ytThumb = (id) => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
 
+/** Khung trung tính khi món chưa có ảnh (hoặc ảnh hỏng link): nền ấm + tên món chữ Lora, không giả làm ảnh. Ảnh thật nằm đè lên trên. */
+export const noPhoto = (ten) => `<span class="ph" aria-hidden="true"><span>${esc(ten)}</span></span>`;
+
 /** Thẻ món: ảnh 4:3 có badge thời gian, độ khó, calo, video. attrs = thêm data-* để lọc/sắp xếp phía trình duyệt. */
 export function recipeCard(r, attrs = false) {
   const data = attrs ? ` data-k="${esc((r.do_kho || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase())}" data-m="${r.total || 0}" data-cal="${r.cal || 0}" data-d="${esc(r.cap_nhat || "")}"` : "";
   return `<a class="rcard" href="/mon/${r.slug}/"${data}>
-  <div class="rcard-img">${r.img ? `<img src="${esc(r.img)}" alt="" loading="lazy" width="480" height="360">` : `<span class="rcard-emoji" aria-hidden="true">${esc(r.cat?.bieu_tuong || "🍽️")}</span>`}
+  <div class="rcard-img">${noPhoto(r.ten)}${r.img ? `<img src="${esc(r.img)}" alt="" loading="lazy" decoding="async" width="480" height="360">` : ""}
     ${r.yt ? `<span class="badge-video">${icon("play")} Video</span>` : ""}
     <span class="badges">${r.total ? `<span>${icon("clock")} ${r.total} phút</span>` : ""}${r.do_kho ? `<span>${esc(r.do_kho)}</span>` : ""}${r.cal ? `<span>${r.cal} kcal</span>` : ""}</span>
   </div>

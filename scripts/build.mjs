@@ -113,7 +113,7 @@ async function main() {
 
   // Chỉ mục cho vòng quay, tìm kiếm, tủ lạnh, đi chợ, đã lưu (phía trình duyệt)
   const index = recipes.map((r) => ({
-    s: r.slug, t: r.ten, c: r.danh_muc, cn: r.cat.ten, e: r.cat.bieu_tuong || "", m: r.total, k: r.do_kho, img: r.img, v: r.yt ? 1 : 0,
+    s: r.slug, t: r.ten, c: r.danh_muc, cn: r.cat.ten, m: r.total, k: r.do_kho, img: r.img, v: r.yt ? 1 : 0,
     cal: r.cal || 0, b: r.bua, n: r.nguyen_lieu_chinh || "", d: r.cap_nhat || "", tg: r.tagList.map(fold),
     f: fold([r.ten, r.tom_tat, r.cat.ten, r.tags, r.nguyen_lieu_chinh].join(" ")),
     g: r.ings.filter((i) => !PANTRY.includes(fold(i.ten))).map((i) => fold(i.ten)),
@@ -127,7 +127,9 @@ async function main() {
   const fridge = topIngredients(recipes, 24);
 
   // ----- Trang chủ -----
-  const quick = recipes.filter((r) => r.total && r.total <= 20).slice(0, 6);
+  // Trang chủ: món có ảnh (ảnh thật hoặc ảnh bìa video) xếp trước món chưa có ảnh; trong mỗi nhóm giữ thứ tự mới nhất.
+  const anhTruoc = (rs) => [...rs.filter((r) => r.img), ...rs.filter((r) => !r.img)];
+  const quick = anhTruoc(recipes.filter((r) => r.total && r.total <= 20)).slice(0, 6);
   await page(site, {
     path: "/", page: "home", title: site.site_name,
     description: `${site.tagline}. ${recipes.length} công thức có hướng dẫn từng bước, gợi ý mâm cơm 3 món mỗi ngày.`,
@@ -170,7 +172,7 @@ ${adSlot(site, "home")}
 
 <section data-saved-home hidden><div class="sec-head"><h2>Sổ tay món ngon của tôi</h2><a href="/da-luu/">Xem hết</a></div><div class="rgrid" data-saved-grid></div></section>
 ${quick.length ? `<section><div class="sec-head"><h2>Nhanh gọn dưới 20 phút</h2></div>${grid(quick)}</section>` : ""}
-<section><div class="sec-head"><h2>Công thức mới</h2><a href="/mon/">Tất cả ${recipes.length} món</a></div>${recipes.length ? grid(recipes.slice(0, 12)) : emptyState("Chưa có công thức", "Thêm công thức trong Google Sheets, web sẽ tự cập nhật.")}</section>`,
+<section><div class="sec-head"><h2>Công thức mới</h2><a href="/mon/">Tất cả ${recipes.length} món</a></div>${recipes.length ? grid(anhTruoc(recipes).slice(0, 12)) : emptyState("Chưa có công thức", "Thêm công thức trong Google Sheets, web sẽ tự cập nhật.")}</section>`,
   });
 
   // ----- Tất cả món, danh mục -----
@@ -376,6 +378,10 @@ ${related.length ? `<section><h2 class="section-title">Thêm món trong ${esc(r.
   console.log(`Xong: ${pages.length} trang → dist/  (nguồn: ${src}${site.base ? `, đường dẫn gốc ${site.base}` : ""})`);
   console.log(`Đã xuất bản: ${recipes.length} món (${withVideo.length} có video), ${cats.length} danh mục.`);
   for (const [s, n] of MAM) if (!recipes.some((r) => r.danh_muc === s)) report.warnings.push(`chưa có món nào trong danh mục "${s}" (${n}) – vòng quay mâm cơm sẽ thiếu ngăn này`);
+  // Nhắc Biên tập bổ sung (không chặn build)
+  const thieuAnh = recipes.filter((r) => !r.anh), thieuVideo = recipes.filter((r) => !r.yt);
+  if (thieuAnh.length) console.log(`\nTHIẾU ẢNH (${thieuAnh.length}/${recipes.length} món, cột anh trống): ${thieuAnh.map((r) => r.slug + (r.yt ? " (đang dùng ảnh bìa video)" : "")).join(", ")}`);
+  if (thieuVideo.length) console.log(`\nTHIẾU VIDEO (${thieuVideo.length}/${recipes.length} món, cột video trống): ${thieuVideo.map((r) => r.slug).join(", ")}`);
   if (report.warnings.length) console.log(`\nCẢNH BÁO:\n- ` + report.warnings.join("\n- "));
   if (report.skipped.length) console.log(`\nKHÔNG xuất bản ${report.skipped.length} dòng:\n- ` + report.skipped.join("\n- "));
 }
