@@ -5,7 +5,7 @@
 
 ## Tiếp theo
 - Chủ dự án bật GitHub Pages (Settings → Pages → Source: GitHub Actions), merge PR.
-- Tạo Google Sheet theo `data/README.md`, thêm secret `SHEET_ID`.
+- Google Sheet đã tạo (ID trong `sheet.json`); chủ dự án nhập món thật.
 - Đổi tên repo thành `homnaynaugi`, mua domain (ví dụ homnaynaugi.vn) khi sẵn sàng chạy AdSense.
 - Chặng 2: 30–50 món đầu tiên có video Shorts, ảnh món trên Google Drive.
 

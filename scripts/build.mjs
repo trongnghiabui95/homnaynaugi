@@ -21,10 +21,15 @@ const PANTRY = ["muoi", "duong", "nuoc mam", "tieu", "tieu xay", "dau an", "hat 
 // Ba ngăn của mâm cơm: slug danh mục cho từng ngăn.
 const MAM = [["mon-man", "Món mặn"], ["mon-canh", "Món canh"], ["mon-rau-xao", "Món rau / xào"]];
 
+// ID Google Sheet: biến môi trường SHEET_ID, không có thì đọc sheet.json. Sheet để chế độ "ai có link đều xem được" nên ID không phải bí mật.
+let sheetJson = {};
+try { sheetJson = JSON.parse(await fs.readFile(path.join(ROOT, "sheet.json"), "utf8")); } catch {}
+const SHEET_ID = sampleOnly || process.env.DATA_DIR ? "" : process.env.SHEET_ID || sheetJson.sheetId || "";
+
 async function loadTab(tab) {
-  const sheetId = sampleOnly ? "" : process.env.SHEET_ID || "";
+  const sheetId = SHEET_ID;
   if (sheetId) {
-    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tab)}`;
+    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&headers=1&sheet=${encodeURIComponent(tab)}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Không tải được tab "${tab}" từ Google Sheets (HTTP ${res.status}). Kiểm tra quyền chia sẻ và tên tab.`);
     return parseCSV(await res.text());
@@ -354,7 +359,7 @@ ${related.length ? `<section><h2 class="section-title">Thêm món trong ${esc(r.
   await write("manifest.webmanifest", JSON.stringify(mf, null, 2));
   if (site.base) await rebase(site.base);
 
-  const src = process.env.SHEET_ID && !sampleOnly ? "Google Sheets" : process.env.DATA_DIR || "data/sample";
+  const src = SHEET_ID ? "Google Sheets" : process.env.DATA_DIR || "data/sample";
   console.log(`Xong: ${pages.length} trang → dist/  (nguồn: ${src}${site.base ? `, đường dẫn gốc ${site.base}` : ""})`);
   console.log(`Đã xuất bản: ${recipes.length} món (${withVideo.length} có video), ${cats.length} danh mục.`);
   for (const [s, n] of MAM) if (!recipes.some((r) => r.danh_muc === s)) report.warnings.push(`chưa có món nào trong danh mục "${s}" (${n}) – vòng quay mâm cơm sẽ thiếu ngăn này`);

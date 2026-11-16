@@ -2,13 +2,10 @@
 
 Toàn bộ công thức của **Hôm Nay Nấu Gì** nằm trong **một file Google Sheets**. Bạn thêm, sửa món trong Sheet; web tự cập nhật ở lần build kế tiếp (mỗi sáng, hoặc bấm tay ở tab Actions trên GitHub).
 
-## Tạo Sheet lần đầu
-1. Vào sheets.google.com, tạo file mới, đặt tên "Hôm Nay Nấu Gì – công thức".
-2. Tạo 5 tab, **tên tab viết đúng như dưới**: `settings`, `categories`, `recipes`, `ingredients`, `steps`.
-3. Ở mỗi tab: **Tệp → Nhập → Tải lên** file CSV cùng tên trong thư mục `data/sample/`, chọn "Thay thế trang tính hiện tại". Bạn có sẵn 9 món mẫu.
-4. Bấm **Chia sẻ** → "Bất kỳ ai có đường liên kết" → **Người xem**.
-5. Lấy **ID** của Sheet: đoạn giữa `/d/` và `/edit` trên thanh địa chỉ.
-6. Thêm ID vào GitHub: repo → Settings → Secrets and variables → Actions → New repository secret → tên `SHEET_ID`.
+## Sheet đang dùng
+[Hôm Nay Nấu Gì – công thức](https://docs.google.com/spreadsheets/d/1c1jpTB0ckqe3YuDkrl4UK6P48c6xv7pDZHFDpxCd--Q/edit) (chủ sở hữu: tài khoản Google của chủ dự án, chế độ "ai có link đều xem được"). ID của Sheet ghi trong `sheet.json` ở thư mục gốc repo. Sheet có sẵn 5 tab và 9 món mẫu; mọi ô để định dạng văn bản để Google Sheets không tự đổi số thành ngày.
+
+Muốn dùng Sheet khác: tạo 5 tab đúng tên `settings`, `categories`, `recipes`, `ingredients`, `steps` (nhập từ các file CSV trong `data/sample/`), chia sẻ "Bất kỳ ai có đường liên kết → Người xem", rồi sửa ID trong `sheet.json`.
 
 ## Thêm một món
 1. Tab `recipes`: thêm một dòng, đặt `slug` (tên không dấu nối gạch ngang, ví dụ `ca-kho-to`), để `trang_thai` = `nháp`.
