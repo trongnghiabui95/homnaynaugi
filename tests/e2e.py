@@ -117,13 +117,6 @@ async def main():
         tagged = await pg.eval_on_selector_all("[data-results] strong", "els=>els.map(e=>e.textContent)")
         check("lọc theo chủ đề", set(tagged) == {"Đậu hũ sốt cà chua", "Rau muống xào tỏi"}, str(tagged))
 
-        # Đi chợ gộp nguyên liệu
-        await pg.goto(B + "/di-cho/"); await pg.wait_for_timeout(500)
-        rows = await pg.eval_on_selector_all(".shop-list li", "els=>els.map(e=>e.textContent)")
-        check("đi chợ có món từ trang công thức và từ vòng quay", len(await pg.query_selector_all(".shop-recipes .chip")) == 2, str(rows))
-        await pg.screenshot(path=f"{OUT}/6-di-cho.png", full_page=True)
-        await pg.goto(B + "/da-luu/"); await pg.wait_for_timeout(400)
-        check("sổ tay hiện món đã lưu", len(await pg.query_selector_all("[data-saved-grid] .rcard")) == 1)
         # Vùng bấm ≥ 44px và chữ ≥ 13px trên các trang chính (bỏ qua link nằm trong đoạn văn và link "Bỏ qua đến nội dung")
         DO = """()=>{
           const vis=e=>{const r=e.getBoundingClientRect(),cs=getComputedStyle(e);return r.width>0&&r.height>0&&cs.visibility!='hidden'&&cs.display!='none'};
@@ -136,6 +129,13 @@ async def main():
             nho, chu = await pg.evaluate(DO)
             check(f"vùng bấm ≥ 44px, chữ ≥ 13px: {u}", not nho and not chu, f"{nho[:4]} {chu[:4]}")
 
+        # Đi chợ gộp nguyên liệu
+        await pg.goto(B + "/di-cho/"); await pg.wait_for_timeout(500)
+        rows = await pg.eval_on_selector_all(".shop-list li", "els=>els.map(e=>e.textContent)")
+        check("đi chợ có món từ trang công thức và từ vòng quay", len(await pg.query_selector_all(".shop-recipes .chip")) == 2, str(rows))
+        await pg.screenshot(path=f"{OUT}/6-di-cho.png", full_page=True)
+        await pg.goto(B + "/da-luu/"); await pg.wait_for_timeout(400)
+        check("sổ tay hiện món đã lưu", len(await pg.query_selector_all("[data-saved-grid] .rcard")) == 1)
         await pg.goto(B + "/mon/thit-kho-trung/"); await pg.click('[data-toggle="theme"]'); await pg.wait_for_timeout(300)
         await pg.screenshot(path=f"{OUT}/7-dem.png")
         await b.close()
