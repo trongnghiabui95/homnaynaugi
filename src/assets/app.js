@@ -89,10 +89,11 @@ scanPhotos();
 
 /** Thẻ món phía trình duyệt, giống recipeCard() lúc build. */
 function cardHTML(r, extra = "") {
-  return `<a class="rcard" href="${BASE}/mon/${r.s}/"><div class="rcard-img">${noPhoto(r.t)}${r.img ? `<img src="${esc(r.img)}" alt="" loading="lazy" decoding="async" width="480" height="360">` : ""}
-  ${r.v ? `<span class="badge-video">${IC.play} Video</span>` : ""}
-  <span class="badges">${r.m ? `<span>${IC.clock} ${r.m} phút</span>` : ""}${r.k ? `<span>${esc(r.k)}</span>` : ""}${r.cal ? `<span>${r.cal} kcal</span>` : ""}</span></div>
-  <div class="rcard-body"><small class="rcard-cat">${esc(r.cn)}</small><strong>${esc(r.t)}</strong>${extra}</div></a>`;
+  const k = fold(r.k);
+  return `<a class="rcard${["de", "vua", "kho"].includes(k) ? ` k-${k}` : ""}" href="${BASE}/mon/${r.s}/"><div class="rcard-img">${noPhoto(r.t)}${r.img ? `<img src="${esc(r.img)}" alt="" loading="lazy" decoding="async" width="480" height="360">` : ""}
+  ${r.v ? `<span class="badge-video">${IC.play} Video</span>` : ""}</div>
+  <div class="rcard-body"><small class="rcard-cat">${esc(r.cn)}</small><strong>${esc(r.t)}</strong>${extra}
+  <span class="rcard-meta"><span>${r.m ? `${IC.clock} ${r.m} phút` : ""}</span>${r.k ? `<b>${esc(r.k)}</b>` : ""}</span></div></a>`;
 }
 
 // ---------- Đi chợ: thêm món ----------
@@ -183,12 +184,12 @@ async function pageHome() {
   const pickFin = (p) => rand([...p].sort((a, b) => !!b.img - !!a.img).flatMap((r) => (r.img ? [r, r, r] : [r])));
   const slotHTML = (d) => {
     const r = bySlug[st.picks[d.key]];
-    if (!r) return `<div class="slot empty-slot" data-slot="${d.key}"><div><div class="slot-label">${esc(d.label)}</div><p>Bấm “Quay món” để nhận gợi ý</p></div></div>`;
+    if (!r) return `<div class="slot empty-slot" data-slot="${d.key}"><div><div class="slot-label">${esc(d.label)}</div><p>Chờ quay</p></div></div>`;
     const locked = !!st.locks[d.key];
-    return `<div class="slot" data-slot="${d.key}">
+    return `<div class="slot${["de", "vua", "kho"].includes(fold(r.k)) ? ` k-${fold(r.k)}` : ""}" data-slot="${d.key}">
         <div class="slot-img">${pic(r)}</div>
-        <div><div class="slot-label">${esc(d.label)}</div><strong>${esc(r.t)}</strong><span class="meta">${IC.clock} ${r.m} phút · ${esc(r.k || "")}</span><br><a class="more" href="${BASE}/mon/${r.s}/">Xem cách nấu →</a></div>
-        <button class="lock" type="button" data-lock="${d.key}" aria-pressed="${locked}" aria-label="${locked ? "Bỏ khoá" : "Khoá"} món ${esc(r.t)}">${locked ? IC.lock : IC.unlock}</button>
+        <div><div class="slot-label">${esc(d.label)}</div><strong>${esc(r.t)}</strong><span class="meta">${IC.clock} ${r.m} phút · ${esc(r.k || "")}</span><br><a class="more" href="${BASE}/mon/${r.s}/">Cách nấu →</a></div>
+        <button class="lock" type="button" data-lock="${d.key}" aria-pressed="${locked}" aria-label="${locked ? "Bỏ khoá" : "Khoá"} món ${esc(r.t)}">${locked ? IC.lock : IC.unlock}<span>${locked ? "Đã giữ" : "Giữ"}</span></button>
       </div>`;
   };
   const sync = () => {
@@ -247,7 +248,7 @@ async function pageHome() {
       slotsEl.setAttribute("aria-busy", "true");
       empties.forEach((d) => ($(`[data-slot="${d.key}"]`, slotsEl).outerHTML = slotHTML(d)));
       await Promise.all(rolls.map(roll));
-      busy = false; goBtn.disabled = false; goBtn.classList.remove("spinning"); goText.textContent = "Quay món";
+      busy = false; goBtn.disabled = false; goBtn.classList.remove("spinning"); goText.textContent = "Quay lại lần nữa";
       slotsEl.removeAttribute("aria-busy");
       sync();
     }

@@ -164,9 +164,10 @@ async function main() {
     <label><span>Thời gian</span><select data-spin-f="m"><option value="">Mọi thời gian</option><option value="15">Dưới 15 phút</option><option value="30">Dưới 30 phút</option><option value="45">Dưới 45 phút</option></select></label>
     <label><span>Nguyên liệu chính</span><select data-spin-f="n"><option value="">Mọi nguyên liệu</option>${mains.map((n) => `<option>${esc(n)}</option>`).join("")}</select></label>
   </div>
-  <div class="row spin-go"><button class="btn big" type="button" data-spin-go>${icon("dice")}<span>Quay món</span></button><button class="btn ghost" type="button" data-spin-shop hidden>${icon("cart")}<span>Thêm cả mâm vào Đi chợ</span></button></div>
+  <div class="row spin-go"><button class="btn big" type="button" data-spin-go>${icon("dice")}<span>Quay món</span></button></div>
   <div class="spin-slots" data-spin-slots aria-live="polite" data-mam='${esc(JSON.stringify(MAM))}'></div>
-  <p class="muted small">Bấm ổ khoá để giữ món đã ưng, lần quay sau chỉ đổi các món còn lại.</p>
+  <div class="row spin-shop"><button class="btn ghost" type="button" data-spin-shop hidden>${icon("cart")}<span>Thêm cả mâm vào Đi chợ</span></button></div>
+  <p class="muted small">Bấm “Giữ” để giữ món đã ưng, lần quay sau chỉ đổi các món còn lại.</p>
 </section>
 ${adSlot(site, "home")}
 ${withVideo.length ? `<section data-vstrip aria-labelledby="vstrip-title">
