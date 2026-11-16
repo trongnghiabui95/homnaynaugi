@@ -1,0 +1,13 @@
+{
+  "name": "homnaynaugi",
+  "private": true,
+  "type": "module",
+  "description": "Web công thức nấu ăn có video – web tĩnh dựng từ Google Sheets",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "build:sample": "node scripts/build.mjs --sample",
+    "build:test": "DATA_DIR=tests/fixtures node scripts/build.mjs",
+    "serve": "python3 -m http.server 8080 -d dist"
+  }
+}

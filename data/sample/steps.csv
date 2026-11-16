@@ -1,0 +1,41 @@
+recipe_slug,buoc,tieu_de,noi_dung,anh,giay_video,hen_gio_phut
+trung-chien-hanh,1,Đánh trứng,"Đập trứng ra tô, thêm nước mắm và một ít tiêu, đánh tan.",,,
+trung-chien-hanh,2,Thêm hành,"Hành lá rửa sạch, cắt nhỏ, cho vào tô trứng và trộn đều.",,,
+trung-chien-hanh,3,Làm nóng chảo,Đun nóng dầu trong chảo trên lửa vừa.,,,
+trung-chien-hanh,4,Chiên mặt dưới,"Đổ trứng vào chảo, dàn đều. Chiên đến khi mặt dưới vàng.",,,2
+trung-chien-hanh,5,Lật và cắt,"Lật mặt, chiên thêm cho chín vàng mặt còn lại rồi cắt miếng.",,,1
+thit-kho-trung,1,Sơ chế thịt,"Rửa thịt, cắt miếng vuông khoảng 3 cm.",,,
+thit-kho-trung,2,Ướp thịt,"Băm hành tím và tỏi. Ướp thịt với hành tỏi, nước mắm, đường và tiêu.",,,30
+thit-kho-trung,3,Luộc trứng,"Luộc trứng chín, ngâm nước lạnh rồi bóc vỏ.",,,10
+thit-kho-trung,4,Đảo thịt,Cho thịt vào nồi trên lửa vừa và đảo đến khi thịt săn lại.,,,
+thit-kho-trung,5,Kho,"Đổ nước dừa ngập thịt, đun sôi rồi hớt bọt. Cho trứng vào, hạ lửa nhỏ, kho đến khi thịt mềm và nước sánh lại.",,,45
+thit-kho-trung,6,Nêm lại,Nếm và nêm lại cho vừa ăn rồi tắt bếp.,,,
+dau-hu-sot-ca-chua,1,Chiên đậu,"Cắt đậu thành miếng vừa ăn, chiên vàng các mặt rồi vớt ra.",,,8
+dau-hu-sot-ca-chua,2,Làm sốt,"Cà chua cắt nhỏ, xào với một ít dầu đến khi nhừ.",,,5
+dau-hu-sot-ca-chua,3,Cho đậu vào sốt,"Cho đậu vào chảo sốt, nêm nước mắm và đường, đun lửa nhỏ cho sốt thấm.",,,5
+dau-hu-sot-ca-chua,4,Hoàn thành,"Rắc hành lá cắt nhỏ lên trên, tắt bếp.",,,
+canh-bi-do-thit-bam,1,Sơ chế bí,"Gọt vỏ bí, bỏ ruột, cắt miếng vừa ăn.",,,
+canh-bi-do-thit-bam,2,Xào thịt,"Ướp thịt với một ít hạt nêm. Đun nóng dầu, xào thịt đến khi săn lại.",,,
+canh-bi-do-thit-bam,3,Nấu canh,"Đổ nước vào, đun sôi rồi cho bí vào nấu đến khi bí mềm.",,,12
+canh-bi-do-thit-bam,4,Nêm và thêm hành,"Nêm hạt nêm cho vừa ăn, rắc hành lá rồi tắt bếp.",,,
+canh-rau-ngot-thit-bam,1,Sơ chế rau,"Tuốt lá rau ngót, rửa sạch, vò nhẹ.",,,
+canh-rau-ngot-thit-bam,2,Nấu thịt,"Đun sôi nước, cho thịt băm vào, khuấy cho thịt tơi.",,,
+canh-rau-ngot-thit-bam,3,Cho rau,"Khi nước sôi lại, cho rau vào nấu thêm cho rau chín.",,,3
+canh-rau-ngot-thit-bam,4,Nêm,Nêm hạt nêm vừa ăn rồi tắt bếp.,,,
+rau-muong-xao-toi,1,Nhặt rau,"Nhặt rau muống, bỏ lá úa, ngắt khúc dài khoảng một gang tay. Rửa sạch, để ráo.",,,
+rau-muong-xao-toi,2,Băm tỏi,"Tỏi bóc vỏ, đập dập rồi băm nhỏ.",,,
+rau-muong-xao-toi,3,Phi tỏi,"Đun nóng dầu, phi một nửa số tỏi đến khi thơm vàng.",,,
+rau-muong-xao-toi,4,Xào rau,"Bật lửa lớn, cho rau vào, đảo nhanh tay.",,,3
+rau-muong-xao-toi,5,Nêm,"Nêm nước mắm, hạt nêm, đảo đều rồi tắt bếp. Rắc phần tỏi còn lại lên trên.",,,
+banh-mi-op-la,1,Làm nóng chảo,Đun nóng dầu trong chảo nhỏ trên lửa vừa.,,,
+banh-mi-op-la,2,Ốp trứng,"Đập trứng vào chảo, chiên đến khi lòng trắng chín, lòng đỏ còn mềm.",,,2
+banh-mi-op-la,3,Bày ra đĩa,"Rắc tiêu, thêm vài giọt nước tương. Ăn kèm bánh mì nóng và dưa leo thái lát.",,,
+mi-y-sot-ca-chua,1,Luộc mì,"Đun sôi một nồi nước, cho muối vào, luộc mì theo thời gian ghi trên bao.",,,9
+mi-y-sot-ca-chua,2,Sơ chế,"Trong lúc luộc mì, băm nhỏ hành tây, tỏi và cà chua.",,,
+mi-y-sot-ca-chua,3,Phi thơm,"Đun nóng dầu ô liu, phi hành tây và tỏi đến khi thơm.",,,
+mi-y-sot-ca-chua,4,Nấu sốt,"Cho cà chua vào, đun lửa nhỏ đến khi sốt sệt lại.",,,10
+mi-y-sot-ca-chua,5,Trộn mì,"Nêm muối, đường cho vừa ăn. Cho mì đã luộc vào đảo đều với sốt.",,,
+sinh-to-bo,1,Lấy thịt bơ,"Bổ đôi quả bơ, bỏ hạt, dùng thìa nạo lấy phần thịt.",,,
+sinh-to-bo,2,Cho vào máy xay,"Cho bơ, sữa đặc, sữa tươi và đá vào máy xay.",,,
+sinh-to-bo,3,Xay,Xay đến khi hỗn hợp mịn.,,,1
+sinh-to-bo,4,Nêm và rót,"Nếm thử, thêm sữa đặc nếu muốn ngọt hơn, rồi rót ra ly.",,,
