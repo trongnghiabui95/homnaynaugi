@@ -124,6 +124,17 @@ async def main():
         await pg.screenshot(path=f"{OUT}/6-di-cho.png", full_page=True)
         await pg.goto(B + "/da-luu/"); await pg.wait_for_timeout(400)
         check("sổ tay hiện món đã lưu", len(await pg.query_selector_all("[data-saved-grid] .rcard")) == 1)
+        # Danh mục trống (an-vat trong fixtures): ẩn ở trang chủ, trang Danh mục, sitemap; trang vẫn có nhưng noindex
+        await pg.goto(B + "/"); await pg.wait_for_timeout(300)
+        check("trang chủ không hiện danh mục trống", not await pg.query_selector('.cat-row a[href$="/danh-muc/an-vat/"]'))
+        await pg.goto(B + "/danh-muc/")
+        check("trang Danh mục không hiện danh mục trống", not await pg.query_selector('.cat-grid a[href$="/danh-muc/an-vat/"]') and await pg.query_selector('.cat-grid a[href$="/danh-muc/mon-man/"]'))
+        r = await pg.goto(B + "/danh-muc/an-vat/")
+        check("trang danh mục trống vẫn mở được, có noindex", r.status == 200 and await pg.query_selector('meta[name="robots"][content="noindex"]'))
+        sm = open(os.path.join(DIST, "sitemap.xml"), encoding="utf-8").read()
+        check("sitemap bỏ danh mục trống, giữ trang video khi có video", "/danh-muc/an-vat/" not in sm and "/video/" in sm)
+        check("chân trang có link video khi đã có video", await pg.query_selector('.footer-links a[href$="/video/"]') is not None)
+
         await pg.goto(B + "/mon/thit-kho-trung/"); await pg.click('[data-toggle="theme"]'); await pg.wait_for_timeout(300)
         await pg.screenshot(path=f"{OUT}/7-dem.png")
         await b.close()

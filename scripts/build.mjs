@@ -20,6 +20,8 @@ const sampleOnly = process.argv.includes("--sample");
 const PANTRY = ["muoi", "duong", "nuoc mam", "tieu", "tieu xay", "dau an", "hat nem", "nuoc", "bot ngot", "nuoc tuong", "dau o liu", "da vien", "nuoc loc"];
 // Ba ngăn của mâm cơm: slug danh mục cho từng ngăn.
 const MAM = [["mon-man", "Món mặn"], ["mon-canh", "Món canh"], ["mon-rau-xao", "Món rau / xào"]];
+// Danh mục có ít món hơn số này thì không hiện ở trang chủ, trang Danh mục và sitemap (trang vẫn có, đặt noindex).
+const MIN_MON_DANH_MUC = 1;
 
 // ID Google Sheet: biến môi trường SHEET_ID, không có thì đọc sheet.json. Sheet để chế độ "ai có link đều xem được" nên ID không phải bí mật.
 let sheetJson = {};
@@ -102,6 +104,9 @@ async function main() {
   if (report.errors.length) { console.error("LỖI:\n- " + report.errors.join("\n- ")); process.exit(1); }
   recipes.sort((a, b) => (b.cap_nhat || "").localeCompare(a.cap_nhat || "") || a.ten.localeCompare(b.ten, "vi"));
   const bySlug = Object.fromEntries(recipes.map((r) => [r.slug, r]));
+  const catCount = (c) => recipes.filter((r) => r.danh_muc === c.slug).length;
+  const catsShown = cats.filter((c) => catCount(c) >= MIN_MON_DANH_MUC);
+  site.has_video = recipes.some((r) => r.yt); // ẩn link "Tất cả video" ở chân trang khi chưa có video
 
   await fs.rm(DIST, { recursive: true, force: true });
   await fs.cp(SRC, DIST, { recursive: true });
@@ -155,7 +160,7 @@ ${adSlot(site, "home")}
 
 <section>
   <div class="sec-head"><h2>Chọn theo loại món</h2><a href="/danh-muc/">Tất cả</a></div>
-  <div class="cat-row">${cats.map((c) => catCard(c, recipes)).join("")}</div>
+  <div class="cat-row">${catsShown.map((c) => catCard(c, recipes)).join("")}</div>
 </section>
 
 <section class="fridge-cta card">
@@ -182,13 +187,13 @@ ${quick.length ? `<section><div class="sec-head"><h2>Nhanh gọn dưới 20 phú
   });
   await page(site, {
     path: "/danh-muc/", title: "Danh mục món ăn", crumbs: [["Danh mục", "/danh-muc/"]],
-    description: "Chọn món theo loại: món mặn, món canh, rau xào, bữa sáng, cơm bún mì, ăn vặt, đồ uống.",
-    body: `<h1>Danh mục</h1><div class="cat-grid">${cats.map((c) => catCard(c, recipes)).join("")}</div>`,
+    description: `Chọn món theo loại: ${catsShown.map((c) => c.ten.toLowerCase()).join(", ")}.`,
+    body: `<h1>Danh mục</h1><div class="cat-grid">${catsShown.map((c) => catCard(c, recipes)).join("")}</div>`,
   });
   for (const c of cats) {
     const rs = recipes.filter((r) => r.danh_muc === c.slug);
     await page(site, {
-      path: `/danh-muc/${c.slug}/`, page: "list", title: `${c.ten} – công thức dễ làm`, crumbs: [["Danh mục", "/danh-muc/"], [c.ten, `/danh-muc/${c.slug}/`]],
+      path: `/danh-muc/${c.slug}/`, page: "list", noindex: rs.length < MIN_MON_DANH_MUC, title: `${c.ten} – công thức dễ làm`, crumbs: [["Danh mục", "/danh-muc/"], [c.ten, `/danh-muc/${c.slug}/`]],
       description: c.mo_ta || `Công thức ${c.ten} có video hướng dẫn.`,
       body: `<header class="cat-head">${c.img ? `<img src="${esc(c.img)}" alt="" width="96" height="96">` : `<span class="cat-emoji big" aria-hidden="true">${esc(c.bieu_tuong || "🍽️")}</span>`}<div><h1>${esc(c.ten)}</h1><p class="lead">${esc(c.mo_ta)}</p></div></header>
 ${rs.length ? filterBar(rs) + grid(rs, true) : emptyState("Danh mục đang được bổ sung", "Công thức mới sẽ sớm có ở đây.")}`,
@@ -305,7 +310,7 @@ ${related.length ? `<section><h2 class="section-title">Thêm món trong ${esc(r.
   // ----- Video, tìm kiếm, đi chợ, đã lưu -----
   const withVideo = recipes.filter((r) => r.yt);
   await page(site, {
-    path: "/video/", title: "Video hướng dẫn nấu ăn", crumbs: [["Video", "/video/"]],
+    path: "/video/", title: "Video hướng dẫn nấu ăn", noindex: !withVideo.length, crumbs: [["Video", "/video/"]],
     description: "Video hướng dẫn nấu ăn, mỗi video đi kèm công thức chi tiết.",
     body: `<h1>Video hướng dẫn</h1><p class="lead">Mỗi video có công thức chi tiết đi kèm: nguyên liệu, từng bước, hẹn giờ.</p>${withVideo.length ? grid(withVideo) : emptyState("Video đang được bổ sung", "Dán link YouTube hoặc YouTube Shorts vào cột video trong Google Sheets.")}`,
   });
