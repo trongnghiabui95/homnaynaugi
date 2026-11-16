@@ -30,7 +30,9 @@ async def main():
             await ctx.route(f"https://{host}/**", anh_that)
         pg = await ctx.new_page()
         pg.on("pageerror", lambda e: errs.append(str(e)))
-        pg.on("console", lambda m: errs.append(m.text) if m.type == "error" and "Failed to load resource" not in m.text else None)
+        # Bỏ qua lỗi tải tài nguyên và "Permissions policy violation" do trình phát YouTube nhúng tự sinh (không phải lỗi của web)
+        BO_QUA = ("Failed to load resource", "Permissions policy violation")
+        pg.on("console", lambda m: errs.append(m.text) if m.type == "error" and not any(x in m.text for x in BO_QUA) else None)
 
         # Hôm nay nấu gì: mâm cơm 3 món đúng ngăn, khoá giữ món
         await pg.goto(B + "/"); await pg.wait_for_timeout(500)
