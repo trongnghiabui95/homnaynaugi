@@ -33,6 +33,8 @@ const NAV = [
   ["/di-cho/", "Đi chợ", "cart"],
   ["/da-luu/", "Sổ tay", "heart"],
 ];
+// Khi đã có ít nhất 1 video: mục Video thay mục Danh mục ở thanh dưới (tối đa 5 mục); Danh mục chuyển xuống chân trang.
+const NAV_VIDEO = ["/video/", "Video", "play"];
 const FOOT = [
   ["/gioi-thieu/", "Giới thiệu"],
   ["/video/", "Tất cả video"],
@@ -69,6 +71,8 @@ export function layout(site, p) {
     });
   }
   const active = (u) => (u === "/" ? p.path === "/" : p.path.startsWith(u));
+  const nav = NAV.map((n) => (site.has_video && n[0] === "/danh-muc/" ? NAV_VIDEO : n));
+  const foot = site.has_video ? [FOOT[0], ["/danh-muc/", "Danh mục"], ...FOOT.slice(1)] : FOOT;
   const adsense = site.adsense_client
     ? `<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${esc(site.adsense_client)}" crossorigin="anonymous"></script>`
     : "";
@@ -115,12 +119,12 @@ ${crumbs}
 ${p.body}
 </main>
 <footer class="footer wrap">
-  <nav class="footer-links">${FOOT.filter(([u]) => u !== "/video/" || site.has_video).map(([u, n]) => `<a href="${u}">${n}</a>`).join("")}</nav>
+  <nav class="footer-links">${foot.filter(([u]) => u !== "/video/" || site.has_video).map(([u, n]) => `<a href="${u}">${n}</a>`).join("")}</nav>
   <p class="muted">Video thuộc bản quyền của các kênh YouTube được ghi tên, nhúng theo chức năng chia sẻ của YouTube.</p>
   <p class="muted">© ${new Date().getFullYear()} ${esc(site.site_name)}</p>
 </footer>
 <nav class="tabbar" aria-label="Điều hướng chính">
-${NAV.map(([u, n, ic]) => `<a href="${u}"${active(u) ? ' aria-current="page"' : ""}>${icon(ic)}<span>${n}</span><b class="badge" data-badge="${ic}" hidden></b></a>`).join("\n")}
+${nav.map(([u, n, ic]) => `<a href="${u}"${active(u) ? ' aria-current="page"' : ""}>${icon(ic)}<span>${n}</span><b class="badge" data-badge="${ic}" hidden></b></a>`).join("\n")}
 </nav>
 <div class="timer-chip" data-timer-chip hidden></div>
 <script type="module" src="/assets/app.js?v=${site.build_id}"></script>

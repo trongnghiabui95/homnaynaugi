@@ -126,6 +126,16 @@ async function main() {
   const themes = list(site.chu_de).filter((t) => recipes.some((r) => r.tagList.map(fold).includes(fold(t))));
   const fridge = topIngredients(recipes, 24);
 
+  // ----- Video: thẻ phát tại chỗ (trang chủ) và trình xem liên tiếp (/video/). Chỉ nhúng youtube-nocookie, luôn ghi kênh + link YouTube.
+  const withVideo = recipes.filter((r) => r.yt);
+  const watchUrl = (yt) => `https://www.youtube.com/${yt.shorts ? `shorts/${yt.id}` : `watch?v=${yt.id}`}`;
+  const videoCredit = (r) => `Video: ${r.kenh ? `kênh <strong>${esc(r.kenh)}</strong>` : "YouTube"} · <a href="${watchUrl(r.yt)}" rel="noopener" target="_blank">Xem trên YouTube</a>`;
+  const liteYT = (r, attr) => `<button class="lite-yt" type="button" ${attr} aria-label="Phát video ${esc(r.ten)}"><img src="${ytThumb(r.yt.id)}" alt="" loading="lazy" width="480" height="360"><span class="play" aria-hidden="true"></span></button>`;
+  const vcard = (r) => `<article class="vcard${r.yt.shorts ? " doc" : ""}" data-vcard data-id="${esc(r.yt.id)}">
+  <div class="vcard-media">${liteYT(r, "data-vplay")}</div>
+  <div class="vcard-body"><strong>${esc(r.ten)}</strong>${r.yt.shorts || !r.tom_tat ? "" : `<p>${esc(r.tom_tat)}</p>`}<small>${videoCredit(r)}</small><a class="vcard-link" href="/mon/${r.slug}/">Xem công thức →</a></div>
+</article>`;
+
   // ----- Trang chủ -----
   // Trang chủ: món có ảnh (ảnh thật hoặc ảnh bìa video) xếp trước món chưa có ảnh; trong mỗi nhóm giữ thứ tự mới nhất.
   const anhTruoc = (rs) => [...rs.filter((r) => r.img), ...rs.filter((r) => !r.img)];
@@ -159,6 +169,10 @@ async function main() {
   <p class="muted small">Bấm ổ khoá để giữ món đã ưng, lần quay sau chỉ đổi các món còn lại.</p>
 </section>
 ${adSlot(site, "home")}
+${withVideo.length ? `<section data-vstrip aria-labelledby="vstrip-title">
+  <div class="sec-head"><h2 id="vstrip-title">Xem video nấu ăn</h2><a href="/video/">Tất cả ${withVideo.length} video</a></div>
+  <div class="vstrip">${withVideo.slice(0, 10).map(vcard).join("")}</div>
+</section>` : ""}
 
 <section>
   <div class="sec-head"><h2>Chọn theo loại món</h2><a href="/danh-muc/">Tất cả</a></div>
@@ -310,11 +324,21 @@ ${related.length ? `<section><h2 class="section-title">Thêm món trong ${esc(r.
   }
 
   // ----- Video, tìm kiếm, đi chợ, đã lưu -----
-  const withVideo = recipes.filter((r) => r.yt);
+  const v0 = withVideo[0];
+  const vdata = withVideo.map((r) => ({ id: r.yt.id, sh: r.yt.shorts ? 1 : 0, s: r.slug, t: r.ten, k: r.kenh || "", w: watchUrl(r.yt) }));
   await page(site, {
-    path: "/video/", title: "Video hướng dẫn nấu ăn", noindex: !withVideo.length, crumbs: [["Video", "/video/"]],
+    path: "/video/", page: "video", title: "Video hướng dẫn nấu ăn", noindex: !withVideo.length, crumbs: [["Video", "/video/"]],
     description: "Video hướng dẫn nấu ăn, mỗi video đi kèm công thức chi tiết.",
-    body: `<h1>Video hướng dẫn</h1><p class="lead">Mỗi video có công thức chi tiết đi kèm: nguyên liệu, từng bước, hẹn giờ.</p>${withVideo.length ? grid(withVideo) : emptyState("Video đang được bổ sung", "Dán link YouTube hoặc YouTube Shorts vào cột video trong Google Sheets.")}`,
+    body: `<h1>Video hướng dẫn</h1><p class="lead">Mỗi video có công thức chi tiết đi kèm: nguyên liệu, từng bước, hẹn giờ.</p>${withVideo.length ? `
+<section class="vstage" data-vstage data-videos='${esc(JSON.stringify(vdata))}' aria-label="Xem video liên tiếp">
+  <div class="player-box${v0.yt.shorts ? " vertical" : ""}" data-vbox>${liteYT(v0, "data-vstart")}</div>
+  <p class="muted small" data-vpos aria-live="polite">Video 1/${withVideo.length}</p>
+  <h2 data-vtitle>${esc(v0.ten)}</h2>
+  <p class="muted small" data-vcredit>${videoCredit(v0)}</p>
+  <div class="vnav"><button class="btn ghost" type="button" data-vprev aria-label="Video trước">← Trước</button><a class="btn" data-vrecipe href="/mon/${v0.slug}/">Xem công thức</a><button class="btn ghost" type="button" data-vnext aria-label="Video kế">Kế →</button></div>
+  <p class="muted small">Vuốt ngang trên khung video hoặc bấm “Kế” để sang video tiếp theo.</p>
+</section>
+<section><h2>Tất cả công thức có video</h2>${grid(withVideo)}</section>` : `<div class="empty"><p class="empty-title">Video đang được chuẩn bị</p><p>Chúng tôi đang chọn video hướng dẫn cho từng món. Trong lúc chờ, bạn xem công thức từng bước nhé.</p><p><a class="btn" href="/mon/">Xem tất cả công thức</a></p></div>`}`,
   });
   await page(site, {
     path: "/tim-kiem/", page: "search", title: "Tìm món và Tủ lạnh có gì", crumbs: [["Tìm món", "/tim-kiem/"]],

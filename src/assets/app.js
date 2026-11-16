@@ -507,6 +507,56 @@ async function renderSaved() {
   const empty = $("[data-saved-empty]"); if (empty) empty.hidden = !!rs.length;
 }
 
+// ---------- Video: phát tại chỗ, xem liên tiếp ----------
+const ytFrame = (id, title) => `<iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0&playsinline=1" title="${esc(title || "Video hướng dẫn")}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
+// Dải video ở trang chủ: bấm là phát ngay trong thẻ, mỗi lúc chỉ một video chạy.
+{
+  let cur = null, curHTML = "";
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-vplay]");
+    if (!b) return;
+    const card = b.closest("[data-vcard]"), media = b.parentElement;
+    if (cur) { cur.innerHTML = curHTML; cur.closest("[data-vcard]").classList.remove("playing"); }
+    cur = media; curHTML = media.innerHTML;
+    media.innerHTML = ytFrame(card.dataset.id, $("strong", card)?.textContent);
+    card.classList.add("playing");
+    card.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+  });
+}
+// Trang /video/: xem liên tiếp, bấm hoặc vuốt sang video kế. Đã bấm phát một lần thì video kế tự phát.
+function pageVideo() {
+  const st = $("[data-vstage]");
+  if (!st) return;
+  const vs = JSON.parse(st.dataset.videos), box = $("[data-vbox]", st);
+  let i = 0, started = false;
+  const want = new URLSearchParams(location.search).get("v");
+  const show = (n, play = started) => {
+    i = (n + vs.length) % vs.length;
+    const v = vs[i];
+    box.classList.toggle("vertical", !!v.sh);
+    box.dataset.id = v.id;
+    box.innerHTML = play ? ytFrame(v.id, v.t)
+      : `<button class="lite-yt" type="button" data-vstart aria-label="Phát video ${esc(v.t)}"><img src="https://i.ytimg.com/vi/${esc(v.id)}/hqdefault.jpg" alt="" width="480" height="360"><span class="play" aria-hidden="true"></span></button>`;
+    $("[data-vpos]", st).textContent = `Video ${i + 1}/${vs.length}`;
+    $("[data-vtitle]", st).textContent = v.t;
+    $("[data-vcredit]", st).innerHTML = `Video: ${v.k ? `kênh <strong>${esc(v.k)}</strong>` : "YouTube"} · <a href="${esc(v.w)}" rel="noopener" target="_blank">Xem trên YouTube</a>`;
+    $("[data-vrecipe]", st).href = `${BASE}/mon/${v.s}/`;
+  };
+  box.addEventListener("click", (e) => { if (e.target.closest("[data-vstart]")) { started = true; show(i, true); } });
+  $("[data-vprev]", st).onclick = () => show(i - 1);
+  $("[data-vnext]", st).onclick = () => show(i + 1);
+  if (vs.length < 2) { $("[data-vprev]", st).hidden = $("[data-vnext]", st).hidden = true; }
+  let x0 = null;
+  st.addEventListener("touchstart", (e) => (x0 = e.touches[0].clientX), { passive: true });
+  st.addEventListener("touchend", (e) => {
+    if (x0 === null) return;
+    const dx = e.changedTouches[0].clientX - x0; x0 = null;
+    if (Math.abs(dx) > 60 && vs.length > 1) show(i + (dx < 0 ? 1 : -1));
+  }, { passive: true });
+  const k = vs.findIndex((v) => v.s === want);
+  if (k > 0) show(k, false);
+}
+
 // ---------- Chế độ đêm, chữ lớn ----------
 const prefs = (() => { try { return JSON.parse(localStorage.getItem("hnng-prefs") || "{}"); } catch { return {}; } })();
 const savePrefs = () => { try { localStorage.setItem("hnng-prefs", JSON.stringify(prefs)); } catch {} };
@@ -522,7 +572,7 @@ $('[data-toggle="big"]')?.addEventListener("click", () => {
 });
 
 // ---------- Khởi động ----------
-const PAGES = { home: pageHome, recipe: pageRecipe, list: pageList, search: pageSearch, shop: pageShop, saved: renderSaved };
+const PAGES = { home: pageHome, recipe: pageRecipe, list: pageList, search: pageSearch, shop: pageShop, saved: renderSaved, video: pageVideo };
 PAGES[document.body.dataset.page]?.();
 updateBadges();
 if ("serviceWorker" in navigator && location.hostname !== "localhost") navigator.serviceWorker.register(BASE + "/sw.js", { scope: BASE + "/" }).catch(() => {});
