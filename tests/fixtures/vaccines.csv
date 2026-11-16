@@ -1,0 +1,5 @@
+ma,ten_vaccine,phong_benh,mui_so,tuoi_ngay_som_nhat,tuoi_ngay_muon_nhat,loai,luu_y,nguon,reviewed_by,cap_nhat
+T1,Vắc xin thử A,bệnh thử A,1,0,1,TCMR,Dữ liệu kiểm thử.,Kiểm thử | https://example.com,Kiểm thử,2026-11-16
+T2,Vắc xin thử B,bệnh thử B,1,60,90,TCMR,,Kiểm thử | https://example.com,Kiểm thử,2026-11-16
+T3,Vắc xin thử B,bệnh thử B,2,90,120,TCMR,,Kiểm thử | https://example.com,Kiểm thử,2026-11-16
+T4,Vắc xin thử C,bệnh thử C,1,270,365,Dịch vụ,,Kiểm thử | https://example.com,Kiểm thử,2026-11-16

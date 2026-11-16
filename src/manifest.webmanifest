@@ -1,0 +1,16 @@
+{
+  "name": "Kiến thức làm mẹ",
+  "short_name": "Làm mẹ",
+  "description": "Đồng hành chăm bé từ lúc chuẩn bị sinh đến 6 tuổi",
+  "lang": "vi",
+  "start_url": "/?src=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f8f4ee",
+  "theme_color": "#23705f",
+  "icons": [
+    { "src": "/assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/assets/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

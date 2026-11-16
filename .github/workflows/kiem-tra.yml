@@ -1,0 +1,23 @@
+name: Kiểm tra
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Build với dữ liệu mẫu
+        run: node scripts/build.mjs --sample
+      - name: Build với dữ liệu kiểm thử
+        run: DATA_DIR=tests/fixtures node scripts/build.mjs
+      - name: Kiểm tra trên trình duyệt
+        run: |
+          pip install playwright==1.* >/dev/null
+          python3 -m playwright install --with-deps chromium >/dev/null
+          python3 tests/e2e.py | tee e2e.log
+          ! grep -q "SAI" e2e.log
+          grep -q "errors: \[\]" e2e.log
