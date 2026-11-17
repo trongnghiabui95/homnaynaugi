@@ -18,7 +18,7 @@ export function commonsFile(u) {
   let m = s.match(/^(?:File|Tập tin|Tập_tin):(.+)$/i)
     || s.match(/^https?:\/\/(?:commons\.(?:m\.)?wikimedia\.org\/wiki\/|[\w.-]+\.wikipedia\.org\/wiki\/[^#]*#\/media\/)(?:File|Tập_tin|Tập tin):([^?#]+)/i);
   let name = m?.[1];
-  if (!name && (m = s.match(/^https?:\/\/upload\.wikimedia\.org\/wikipedia\/commons\/(thumb\/)?[0-9a-f]\/[0-9a-f]{2}\/([^/?#]+)/))) name = m[2];
+  if (!name && (m = s.match(/^https?:\/\/(?:upload|thumb)\.wikimedia\.org\/wikipedia\/commons\/(thumb\/)?[0-9a-f]\/[0-9a-f]{2}\/([^/?#]+)/))) name = m[2];
   if (!name) return "";
   try { name = decodeURIComponent(name); } catch {}
   name = name.replace(/_/g, " ").replace(/\s+/g, " ").trim();
@@ -44,7 +44,8 @@ function pageInfo(p) {
   const author = (v("Artist") || v("Credit")).slice(0, 120);
   if (!author && !/public domain|cc0|pd/i.test(license)) return { why: "không rõ tác giả" };
   const src = ii.thumburl || ii.url;
-  if (!/^https:\/\/upload\.wikimedia\.org\//.test(src || "")) return { why: "link ảnh lạ" };
+  // Ảnh thu nhỏ có thể nằm ở upload.wikimedia.org hoặc thumb.wikimedia.org (máy chủ ảnh mới của Wikimedia)
+  if (!/^https:\/\/(upload|thumb)\.wikimedia\.org\//.test(src || "")) return { why: "link ảnh lạ" };
   const page = ii.descriptionurl || `https://commons.wikimedia.org/wiki/${encodeURI(p.title.replace(/ /g, "_"))}`;
   return { src, page, author, license, licenseUrl: v("LicenseUrl") };
 }
