@@ -292,8 +292,12 @@ ${rs.length ? filterBar(rs) + grid(rs, true) : emptyState(t("cat_empty"), t("cat
         const g = r.ings[k], q = num(g.so_luong, 0);
         return `<span${A(g.lv.ten)}>${esc(g.ten)}${q ? `&nbsp;<b class="qty" data-q="${q}">${qtyText(q)}</b>${g.don_vi ? `&nbsp;<span${A(g.lv.don_vi)}>${esc(g.don_vi)}</span>` : ""}` : ""}</span>`;
       }).join(" · ");
-      return `<li data-step id="buoc-${i + 1}">${s.tieu_de ? `<h3${A(s.lv.tieu_de)}>${esc(s.tieu_de)}</h3>` : ""}<p${A(s.lv.noi_dung)}>${toDam(s.noi_dung)}</p>${uses ? `<div class="uses">${t("step_uses")}: ${uses}</div>` : ""}${s.img ? `<figure class="step-fig"><img class="step-img" src="${esc(s.img)}" alt="${esc(s.tieu_de || t("step_n", i + 1))}"${s.tieu_de ? A(s.lv.tieu_de) : ""} loading="lazy" width="800" height="600">${photoCredit(s.credit)}</figure>` : ""}${tools ? `<div class="step-tools">${tools}</div>` : ""}</li>`;
+      // Dòng thời gian: số bước là ô tích (vùng bấm 44px), nhãn thời gian chờ cạnh tiêu đề. Chế độ nấu đọc h3, p, .step-img, [data-timer].
+      return `<li data-step id="buoc-${i + 1}"><label class="step-ck"><input type="checkbox" data-step-done aria-label="${esc(t("step_mark", i + 1))}"><span>${i + 1}</span></label><div class="step-head"><h3${s.tieu_de ? A(s.lv.tieu_de) : ""}>${esc(s.tieu_de || t("step_n", i + 1))}</h3>${tmin ? `<span class="step-time">${icon("clock")} ${t("min", qtyText(tmin))}</span>` : ""}</div><p${A(s.lv.noi_dung)}>${toDam(s.noi_dung)}</p>${uses ? `<div class="uses">${t("step_uses")}: ${uses}</div>` : ""}${s.img ? `<figure class="step-fig"><img class="step-img" src="${esc(s.img)}" alt="${esc(s.tieu_de || t("step_n", i + 1))}"${s.tieu_de ? A(s.lv.tieu_de) : ""} loading="lazy" width="800" height="600">${photoCredit(s.credit)}</figure>` : ""}${tools ? `<div class="step-tools">${tools}</div>` : ""}</li>`;
     }).join("");
+    const cho = r.steps.map((s) => num(s.hen_gio_phut, 0)).filter(Boolean);
+    const stepTop = `<p class="muted step-sum">${t("steps_sum", r.steps.length, cho.length, qtyText(Math.max(0, ...cho)))}</p>
+<div class="step-prog" data-step-prog hidden><b data-step-count>${t("step_prog", 0, r.steps.length)}</b><span class="bar"><i data-step-bar></i></span><button class="mini" type="button" data-step-reset hidden>${t("step_reset")}</button><small class="muted">${t("step_hint")}</small></div>`;
 
     // Món ăn kèm: lấy từ cột an_kem, thiếu thì gợi ý theo mâm cơm (mặn ↔ canh, rau)
     let pair = r.anKem.map((s) => bySlug[s]).filter(Boolean);
@@ -363,7 +367,7 @@ ${media}
 </section>
 </div><div class="r-main">
 ${adSlot(L, "mid")}
-<section aria-labelledby="steps-title"><h2 id="steps-title">${t("steps")}</h2><ol class="steps">${stepHTML}</ol></section>
+<section aria-labelledby="steps-title"><h2 id="steps-title">${t("steps")}</h2>${stepTop}<ol class="steps">${stepHTML}</ol></section>
 ${r.meo ? `<aside class="tip"><h2>${icon("leaf")} ${t("tip")}</h2>${r.lv.meo ? vi(md(r.meo)) : md(r.meo)}</aside>` : ""}
 </div></div>
 ${pair.length ? `<section><h2>${t("pair")}</h2>${grid(pair, false, true)}</section>` : ""}

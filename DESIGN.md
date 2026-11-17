@@ -240,6 +240,11 @@ Bộ ba "nền kem + serif + cam đất" bị nhiều bộ kiểm tra coi là gi
 - **Lỗi**: nói chuyện gì xảy ra, cách khắc phục, có nút thử lại. Mất mạng thì báo đang ngoại tuyến.
 - **Thành quả của bạn đọc** (`thanh-qua.css`, chỉ tải trên trang món): nút chính "Khoe món bạn nấu" có icon máy ảnh; lưới thẻ 2 cột (3 cột từ 700px), ảnh 4:3 trên, tên + thời gian + cảm nhận dưới; "Báo cáo" là nút chữ phụ, vùng bấm 44px. Hộp gửi là `<dialog>`: ô ảnh lớn khung đứt nét, cảm nhận, tên (máy nhớ), một nút Gửi. Chỉ một ô bắt buộc là tên.
 - **Logo yendan** (thương hiệu chủ quản): hình chim yến bay màu `primary` cạnh chữ "yendan" Lora 700, đặt ở chân trang dạng "Một sản phẩm của yendan". Header chỉ dùng logo "Hôm Nay Nấu Gì". SVG nội tuyến để tự đổi màu theo chế độ; bản màu cố định ở `src/assets/yendan.svg`.
+- **Các bước nấu** (`recipe.css`): dòng thời gian dọc, không viền hộp. Số bước là ô tích (vùng bấm 44px); đường mảnh 2px màu `line` nối các số.
+  - Đầu khối: dòng tóm tắt "6 bước · 3 bước cần chờ · chờ lâu nhất 45 phút" (tính từ `hen_gio_phut`), thanh tiến độ "2/6 bước", nút "Làm lại từ đầu".
+  - Bước phải chờ có nhãn đồng hồ + số phút cạnh tiêu đề.
+  - Bước đang làm (bước đầu chưa xong): số nền `primary`; bước khác chữ `muted`; bước xong: số nền `herb` có dấu tích, thu gọn còn tiêu đề.
+  - Tiến độ lưu theo món trên máy. Ảnh bước trên màn rộng là ảnh nhỏ bên phải, bấm để phóng to.
 - **Chế độ nấu**: chữ hướng dẫn là chính; ảnh bước là khung 4:3 nhỏ (cao ≤ 190px và ≤ 22% màn hình), canh trái.
 - **Ghi nguồn**: dưới ảnh không tự chụp luôn có một dòng nhỏ 13px màu `muted` "Nguồn: tác giả, giấy phép", cả dòng là link tới trang ảnh, quá dài thì cắt "…" (không bỏ tên tác giả: CC BY/BY-SA bắt buộc); dưới video luôn có tên kênh và link YouTube.
 
@@ -307,7 +312,7 @@ Ma trận: độ rộng 320, 390, 768, 1280 · chế độ sáng, đêm (`data-t
 8. Giả lập reduced-motion: bấm quay vẫn ra kết quả, không còn chuyển động dịch chuyển.
 9. Tắt JS: trang món vẫn đọc được tên món, nguyên liệu, các bước.
 10. Quảng cáo đúng vị trí, có nhãn, cách nội dung ≥ 16px.
-11. Ngân sách: CSS < 30 KB, JS < 100 KB (`wc -c src/assets/*.css src/assets/*.js`).
+11. Ngân sách: **mỗi trang** tải CSS < 30 KB, JS < 100 KB. CSS chia theo trang: `style.css` (mọi trang) + `home.css` (trang chủ) hoặc `recipe.css` + `thanh-qua.css` (trang món). Đo bằng `wc -c src/assets/*.css src/assets/*.js` rồi cộng theo trang.
 12. `tests/e2e.py`: mọi dòng `OK`, `errors: []`.
 
 **Reflex** (dò nhanh trong `style.css`)
@@ -338,7 +343,7 @@ Những chỗ hiện tại còn lệch hệ thống này (đo ngày 2026-11-17).
 8. Bo góc đang có 7 giá trị (10, 12, 14, 16, 18, 50%, 999px) và khoảng 15 cỡ chữ đặt tay: gom về thang ở trên.
 9. Khoảng 30 màu viết trực tiếp ngoài `:root`.
 10. `.cat-emoji` dùng emoji khi danh mục chưa có ảnh.
-11. `style.css` 30.616 byte, sát trần 30 KB (30.720 byte): các sửa ở trên phải cắt bớt nhiều hơn thêm vào; cân nhắc bước nén CSS khi build.
+11. (Đã xử lý 2026-11-17) CSS chia theo trang: trang chủ tải 25,6 KB, trang món 28,7 KB. Trang món còn khoảng 1,3 KB trước trần 30 KB.
 
 Đã sửa ngày 2026-11-17 (PR khung quay ngang): mục 1 (bỏ IN HOA giãn chữ ở `.kicker`, `.slot-label`, `.rcard-meta b`, `.ing-box h3`, `.ad-label`, nút quay), mục 2 (bỏ sọc trái `.sec-head h2`, `.tip`), mục 3 (hover nhấc thẻ trong `@media (hover: hover)`, bỏ phóng ảnh), mục 6 (khung chờ ảnh nền phẳng). Bỏ thêm lớp phủ gradient và hiệu ứng `filter` khi quay.
 
