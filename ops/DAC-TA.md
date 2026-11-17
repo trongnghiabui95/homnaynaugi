@@ -16,6 +16,7 @@ Phong cách tạp chí ẩm thực: nền kem `#FAF8F5`, thẻ trắng đổ bó
 | Trang | Đường dẫn |
 | --- | --- |
 | Trang chủ: tìm món, chủ đề, **Quay món** (radio Món ăn / Đồ uống; món ăn: 1 món hoặc mâm cơm 3 món, không lẫn đồ uống; đồ uống: 1 ngăn chỉ quay danh mục `do-uong`; bộ lọc bữa, thời gian, nguyên liệu chính thu gọn trong "Bộ lọc"; khoá món), danh mục, sổ tay, món nhanh (hàng vuốt ngang), Tủ lạnh có gì, món mới (không lặp món nhanh) | `/` |
+| **Thành quả của bạn đọc** (dưới mỗi công thức): người dùng chụp hoặc chọn ảnh món đã nấu, viết cảm nhận, nhập tên rồi gửi. Không đăng nhập, có Turnstile chống bot. Bài hiện ngay; 3 báo cáo thì tự ẩn. Quản trị tại `/quan-tri/`. Chỉ chạy trên Cloudflare Pages (D1); GitHub Pages tự ẩn. Bật theo `ops/BAT-THANH-QUA.md` | `/mon/<slug>/`, `/quan-tri/` |
 | Danh mục (lọc độ khó, thời gian, calo; sắp xếp mới nhất / nấu nhanh nhất) | `/danh-muc/`, `/danh-muc/<slug>/` |
 | Công thức | `/mon/<slug>/`, tất cả: `/mon/` |
 | Tìm món theo tên, chủ đề; **Tủ lạnh có gì** (chọn nguyên liệu, hiện "Đủ 2/2 nguyên liệu") | `/tim-kiem/` |

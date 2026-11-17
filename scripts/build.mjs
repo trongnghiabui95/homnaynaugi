@@ -332,6 +332,12 @@ ${pair.length ? `<section><h2>Ăn kèm hợp vị</h2>${grid(pair)}</section>` :
 ${r.tagList.length ? `<p class="tags">${r.tagList.map((t) => `<a class="tag" href="/tim-kiem/?tag=${encodeURIComponent(t)}">#${esc(t)}</a>`).join(" ")}</p>` : ""}
 ${r.cap_nhat ? `<p class="muted small">Cập nhật: ${esc(r.cap_nhat)}</p>` : ""}
 </article>
+${site.turnstile_site_key ? `<section class="tq" data-tq data-mon="${r.slug}" data-key="${esc(site.turnstile_site_key)}" hidden aria-labelledby="tq-title">
+  <div class="sec-head"><h2 id="tq-title">Thành quả của bạn đọc</h2></div>
+  <p class="muted">Nấu xong rồi? Chụp một tấm cho mọi người cùng xem nhé.</p>
+  <button class="btn" type="button" data-tq-mo>${icon("camera")}<span>Khoe món bạn nấu</span></button>
+  <div class="tq-ds" data-tq-ds aria-live="polite"></div>
+</section>` : ""}
 ${adSlot(site, "bottom")}
 ${related.length ? `<section><h2 class="section-title">Thêm món trong ${esc(r.cat.ten)}</h2>${grid(related)}</section>` : ""}
 <div class="cook" data-cook-view hidden role="dialog" aria-modal="true" aria-label="Chế độ đang nấu">
@@ -406,7 +412,13 @@ ${related.length ? `<section><h2 class="section-title">Thêm món trong ${esc(r.
       `<ol><li>Nội dung công thức thuộc ${name}. Bạn được dùng cho mục đích cá nhân; khi chia sẻ lại vui lòng dẫn link về trang gốc.</li><li>Video thuộc bản quyền của các kênh YouTube được ghi tên.</li><li>Lượng calo, chi phí và thời gian (nếu có) chỉ là ước tính, có thể khác tuỳ nguyên liệu và cách nấu.</li><li>Nếu bạn có bệnh lý hoặc dị ứng thực phẩm, hãy kiểm tra kỹ nguyên liệu trước khi nấu.</li><li>Chúng tôi có thể cập nhật điều khoản này; ngày cập nhật ghi ở cuối trang.</li></ol><p class="muted small">Cập nhật: ${new Date().toISOString().slice(0, 10)}</p>`],
     ["lien-he", "Liên hệ", `Liên hệ ${site.site_name}.`, `<p>Góp ý công thức, báo lỗi hoặc hợp tác: ${email}.</p>`],
   ];
+  if (site.turnstile_site_key) {
+    info[2][3] += `<h2>Ảnh và bình luận bạn đăng</h2><p>Khi bạn bấm "Khoe món bạn nấu", ảnh, cảm nhận và tên hiển thị bạn nhập sẽ hiện công khai dưới món đó. Web tự nén ảnh và xoá thông tin máy chụp, vị trí trong ảnh trước khi gửi. Chúng tôi không lưu địa chỉ IP của bạn, chỉ lưu một mã băm không đảo ngược được để chống spam. Muốn gỡ bài, hãy liên hệ: ${email}.</p><p>Để chống máy tự động gửi bài, web dùng Cloudflare Turnstile, xem chính sách tại <a href="https://www.cloudflare.com/privacypolicy/" rel="noopener" target="_blank">cloudflare.com</a>.</p>`;
+    info[3][3] = info[3][3].replace("</ol>", `<li>Ảnh và bình luận bạn đăng phải do bạn tự chụp, tự viết, không chứa nội dung xúc phạm, quảng cáo hay đường link. Chúng tôi có thể gỡ bài vi phạm mà không cần báo trước.</li></ol>`);
+  }
   for (const [slug, title, description, html] of info) await page(site, { path: `/${slug}/`, title, description, crumbs: [[title, `/${slug}/`]], body: `<article class="prose"><h1>${title}</h1>${html}</article>` });
+  if (site.turnstile_site_key) await page(site, { path: "/quan-tri/", page: "admin", noindex: true, title: "Quản trị thành quả", description: "Gỡ hoặc hiện lại ảnh, bình luận của bạn đọc.",
+    body: `<h1>Quản trị thành quả</h1><div data-qt><form class="row" data-qt-dang-nhap><label class="grow"><span class="muted small">Mã quản trị</span><input type="password" data-qt-ma autocomplete="current-password" required></label><button class="btn" type="submit">Mở</button></form><div data-qt-ds></div></div>` });
   await page(site, { path: "/404", title: "Không tìm thấy trang", noindex: true, description: "Trang không tồn tại.", body: `<h1>Không tìm thấy trang</h1><p>Trang bạn tìm không tồn tại. <a href="/">Về trang chủ</a> hoặc <a href="/tim-kiem/">tìm món</a>.</p>` });
 
   // ----- sitemap, robots, ads.txt, service worker, manifest, đường dẫn gốc -----

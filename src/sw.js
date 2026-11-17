@@ -13,6 +13,7 @@ self.addEventListener("fetch", (e) => {
   const req = e.request;
   const url = new URL(req.url);
   if (req.method !== "GET" || url.origin !== location.origin) return;
+  if (url.pathname.startsWith(BASE + "/api/")) return; // dữ liệu Thành quả (bài, ảnh) luôn lấy mới từ máy chủ, không lưu đệm
   if (req.mode === "navigate") {
     e.respondWith(fetch(req).then((res) => {
       const copy = res.clone();
