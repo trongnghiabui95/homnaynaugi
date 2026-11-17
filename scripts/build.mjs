@@ -142,7 +142,7 @@ async function main() {
   for (const r of recipes) {
     r.vi = { ten: r.ten, tom_tat: r.tom_tat, meo: r.meo };
     for (const i of r.ings) i.vi = { ten: i.ten, ghi_chu: i.ghi_chu, nhom: i.nhom, don_vi: i.don_vi };
-    for (const s of r.steps) s.vi = { tieu_de: s.tieu_de, noi_dung: s.noi_dung };
+    for (const s of r.steps) s.vi = { tieu_de: s.tieu_de, noi_dung: s.noi_dung, giai_doan: s.giai_doan, dau_hieu: s.dau_hieu, luu_y: s.luu_y };
     r.dich = daDich(r, "en");
   }
   const catCount = (c) => recipes.filter((r) => r.danh_muc === c.slug).length;
@@ -281,7 +281,9 @@ ${rs.length ? filterBar(rs) + grid(rs, true) : emptyState(t("cat_empty"), t("cat
       const con = (l) => (l === i.lv.ten ? "" : ` lang="${l || lang}"`);
       return `<li${A(i.lv.ten)}><label><input type="checkbox" aria-label="${esc(t("need_buy", i.ten))}"><span><b class="qty" data-q="${q || ""}">${qtyText(q)}</b> <span class="unit"${con(i.lv.don_vi)}>${esc(i.don_vi)}</span> <strong>${esc(i.ten)}</strong>${i.ghi_chu ? ` <small${con(i.lv.ghi_chu)}>(${esc(i.ghi_chu)})</small>` : ""}</span></label></li>`;
     }).join("")}</ul>`).join("");
-    const stepHTML = r.steps.map((s, i) => {
+    // Giai đoạn (cột giai_doan): gom các bước liền nhau cùng giai đoạn; có giai đoạn thì tiêu đề bước xuống h4.
+    const phases = stepPhases(r.steps), hs = phases.some((g) => g.ten) ? "h4" : "h3";
+    const stepLi = (s, i) => {
       const sec = num(s.giay_video, -1), tmin = num(s.hen_gio_phut, 0);
       const tools = [
         r.yt && sec >= 0 ? `<button class="mini" type="button" data-seek="${sec}">${icon("play")} ${t("see_part", mmss(sec))}</button>` : "",
@@ -292,9 +294,12 @@ ${rs.length ? filterBar(rs) + grid(rs, true) : emptyState(t("cat_empty"), t("cat
         const g = r.ings[k], q = num(g.so_luong, 0);
         return `<span${A(g.lv.ten)}>${esc(g.ten)}${q ? `&nbsp;<b class="qty" data-q="${q}">${qtyText(q)}</b>${g.don_vi ? `&nbsp;<span${A(g.lv.don_vi)}>${esc(g.don_vi)}</span>` : ""}` : ""}</span>`;
       }).join(" · ");
-      // Dòng thời gian: số bước là ô tích (vùng bấm 44px), nhãn thời gian chờ cạnh tiêu đề. Chế độ nấu đọc h3, p, .step-img, [data-timer].
-      return `<li data-step id="buoc-${i + 1}"><label class="step-ck"><input type="checkbox" data-step-done aria-label="${esc(t("step_mark", i + 1))}"><span>${i + 1}</span></label><div class="step-head"><h3${s.tieu_de ? A(s.lv.tieu_de) : ""}>${esc(s.tieu_de || t("step_n", i + 1))}</h3>${tmin ? `<span class="step-time">${icon("clock")} ${t("min", qtyText(tmin))}</span>` : ""}</div><p${A(s.lv.noi_dung)}>${toDam(s.noi_dung)}</p>${uses ? `<div class="uses">${t("step_uses")}: ${uses}</div>` : ""}${s.img ? `<figure class="step-fig"><img class="step-img" src="${esc(s.img)}" alt="${esc(s.tieu_de || t("step_n", i + 1))}"${s.tieu_de ? A(s.lv.tieu_de) : ""} loading="lazy" width="800" height="600">${photoCredit(s.credit)}</figure>` : ""}${tools ? `<div class="step-tools">${tools}</div>` : ""}</li>`;
-    }).join("");
+      const sign = s.dau_hieu ? `<p class="sign">${icon("eye")} <span><b>${t("step_sign")}:</b> <span${A(s.lv.dau_hieu)}>${esc(s.dau_hieu)}</span></span></p>` : "";
+      const note = s.luu_y ? `<div class="step-note"><b>${t("step_note")}:</b> <span${A(s.lv.luu_y)}>${esc(s.luu_y)}</span></div>` : "";
+      // Dòng thời gian: số bước là ô tích (vùng bấm 44px), nhãn thời gian chờ cạnh tiêu đề. Chế độ nấu đọc h3/h4, p, .sign, .step-note, .step-img, [data-timer].
+      return `<li data-step id="buoc-${i + 1}"><label class="step-ck"><input type="checkbox" data-step-done aria-label="${esc(t("step_mark", i + 1))}"><span>${i + 1}</span></label><div class="step-head"><${hs}${s.tieu_de ? A(s.lv.tieu_de) : ""}>${esc(s.tieu_de || t("step_n", i + 1))}</${hs}>${tmin ? `<span class="step-time">${icon("clock")} ${t("min", qtyText(tmin))}</span>` : ""}</div><p${A(s.lv.noi_dung)}>${toDam(s.noi_dung)}</p>${uses ? `<div class="uses">${t("step_uses")}: ${uses}</div>` : ""}${sign}${note}${s.img ? `<figure class="step-fig"><img class="step-img" src="${esc(s.img)}" alt="${esc(s.tieu_de || t("step_n", i + 1))}"${s.tieu_de ? A(s.lv.tieu_de) : ""} loading="lazy" width="800" height="600">${photoCredit(s.credit)}</figure>` : ""}${tools ? `<div class="step-tools">${tools}</div>` : ""}</li>`;
+    };
+    const stepHTML = phases.map((g) => `${g.ten ? `<h3 class="phase"><span${A(g.lv)}>${esc(g.ten)}</span> <small>${t("n_steps", g.steps.length)}</small></h3>` : ""}<ol class="steps"${g.from ? ` start="${g.from + 1}"` : ""}>${g.steps.map((s, k) => stepLi(s, g.from + k)).join("")}</ol>`).join("");
     const cho = r.steps.map((s) => num(s.hen_gio_phut, 0)).filter(Boolean);
     const stepTop = `<p class="muted step-sum">${t("steps_sum", r.steps.length, cho.length, qtyText(Math.max(0, ...cho)))}</p>
 <div class="step-prog" data-step-prog hidden><b data-step-count>${t("step_prog", 0, r.steps.length)}</b><span class="bar"><i data-step-bar></i></span><button class="mini" type="button" data-step-reset hidden>${t("step_reset")}</button><small class="muted">${t("step_hint")}</small></div>`;
@@ -318,7 +323,11 @@ ${rs.length ? filterBar(rs) + grid(rs, true) : emptyState(t("cat_empty"), t("cat
       recipeYield: t("recipe_yield", r.serv), recipeCategory: r.cat.ten, recipeCuisine: t("cuisine"), keywords: r.tagList.join(", "),
       ...(r.cal ? { nutrition: { "@type": "NutritionInformation", calories: `${r.cal} kcal` } } : {}),
       recipeIngredient: r.ings.map((i) => [qtyText(num(i.so_luong, 0)), i.don_vi, i.ten, i.ghi_chu ? `(${i.ghi_chu})` : ""].filter(Boolean).join(" ")),
-      recipeInstructions: r.steps.map((s, i) => ({ "@type": "HowToStep", position: i + 1, ...(s.tieu_de ? { name: s.tieu_de } : {}), text: s.noi_dung, url: `${abs(site, lang, `/mon/${r.slug}/`)}#buoc-${i + 1}`, ...(s.img ? { image: s.img } : {}) })),
+      // Có giai đoạn thì gom bằng HowToSection; bước không có giai đoạn vẫn là HowToStep. text luôn là nội dung bước.
+      recipeInstructions: phases.flatMap((g) => {
+        const st = g.steps.map((s, k) => ({ "@type": "HowToStep", position: g.from + k + 1, ...(s.tieu_de ? { name: s.tieu_de } : {}), text: s.noi_dung, url: `${abs(site, lang, `/mon/${r.slug}/`)}#buoc-${g.from + k + 1}`, ...(s.img ? { image: s.img } : {}) }));
+        return g.ten ? [{ "@type": "HowToSection", name: g.ten, itemListElement: st }] : st;
+      }),
       ...(r.yt ? { video: { "@type": "VideoObject", name: r.ten, description: r.tom_tat, thumbnailUrl: [ytThumb(r.yt.id)], embedUrl: `https://www.youtube-nocookie.com/embed/${r.yt.id}`, contentUrl: watch } } : {}),
     };
     const facts = [
@@ -367,7 +376,7 @@ ${media}
 </section>
 </div><div class="r-main">
 ${adSlot(L, "mid")}
-<section aria-labelledby="steps-title"><h2 id="steps-title">${t("steps")}</h2>${stepTop}<ol class="steps">${stepHTML}</ol></section>
+<section class="steps-sec" aria-labelledby="steps-title"><h2 id="steps-title">${t("steps")}</h2>${stepTop}${stepHTML}</section>
 ${r.meo ? `<aside class="tip"><h2>${icon("leaf")} ${t("tip")}</h2>${r.lv.meo ? vi(md(r.meo)) : md(r.meo)}</aside>` : ""}
 </div></div>
 ${pair.length ? `<section><h2>${t("pair")}</h2>${grid(pair, false, true)}</section>` : ""}
@@ -385,7 +394,7 @@ ${related.length ? `<section><h2 class="section-title">${t("more_in", r.cat.lv.t
 <div class="cook" data-cook-view hidden role="dialog" aria-modal="true" aria-label="${t("cook_dlg")}">
   <div class="cook-top"><span data-cook-pos></span><span><button class="icon-btn" type="button" data-cook-say aria-pressed="false" aria-label="${t("cook_say")}" title="${t("cook_say")}" hidden>${icon("loa")}</button><button class="icon-btn" type="button" data-cook-close aria-label="${t("cook_exit")}">✕</button></span></div>
   <div class="cook-bar"><span data-cook-bar></span></div>
-  <div class="cook-body" data-cook-body aria-live="polite"><h2 class="cook-title" data-cook-title${r.dich ? "" : LV}></h2><p class="cook-text" data-cook-text${r.dich ? "" : LV}></p><div data-cook-extra></div><img class="cook-img" data-cook-img alt="" hidden></div>
+  <div class="cook-body" data-cook-body aria-live="polite"><h2 class="cook-title" data-cook-title${r.dich ? "" : LV}></h2><p class="cook-text" data-cook-text${r.dich ? "" : LV}></p><p class="sign" data-cook-sign hidden></p><div class="step-note" data-cook-note hidden></div><div data-cook-extra></div><img class="cook-img" data-cook-img alt="" hidden></div>
   <p class="cook-next" data-cook-upnext></p>
   <label class="cook-done"><input type="checkbox" data-cook-done> ${t("cook_done")}</label>
   <div class="cook-tools" data-cook-tools></div>
@@ -514,7 +523,7 @@ function localize(lang, cats, recipes) {
       const u = lang === "vi" ? undefined : i[`don_vi_${lang}`] || t("unit", fold(i.vi.don_vi || ""));
       if (u === undefined) set(i, "don_vi", ""); else { i.don_vi = u; i.lv.don_vi = ""; }
     }
-    for (const s of r.steps) for (const k of ["tieu_de", "noi_dung"]) set(s, k);
+    for (const s of r.steps) for (const k of ["tieu_de", "noi_dung", "giai_doan", "dau_hieu", "luu_y"]) set(s, k);
   }
 }
 function topIngredients(recipes, n) {
@@ -524,6 +533,16 @@ function topIngredients(recipes, n) {
     const e = count.get(k) || { name: i.ten, n: 0 }; e.n++; count.set(k, e);
   }
   return [...count.values()].sort((a, b) => b.n - a.n || a.name.localeCompare(b.name, "vi")).slice(0, n).map((e) => e.name);
+}
+/** Gom các bước liền nhau cùng giai đoạn (so theo chữ gốc tiếng Việt). Trả về [{ ten, lv, from, steps }]. */
+function stepPhases(steps) {
+  const out = [];
+  steps.forEach((s, i) => {
+    const key = String(s.vi.giai_doan || "").trim(), last = out[out.length - 1];
+    if (last && last.key === key) last.steps.push(s);
+    else out.push({ key, ten: s.giai_doan, lv: s.lv.giai_doan, from: i, steps: [s] });
+  });
+  return out;
 }
 function groupMap(arr, key) {
   const m = new Map();

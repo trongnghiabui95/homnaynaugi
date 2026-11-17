@@ -516,7 +516,7 @@ async function pageRecipe() {
   steps.forEach((li, i) => ($("[data-step-done]", li).onchange = (e) => datXong(i, e.target.checked)));
   $("[data-step-reset]").onclick = () => { steps.forEach((li) => li.classList.remove("done")); veBuoc(); store.set(kStep, []); };
   (await store.get(kStep, [])).forEach((k) => steps[k]?.classList.add("done"));
-  prog.hidden = false; $(".steps").classList.add("live"); veBuoc();
+  prog.hidden = false; $$(".steps").forEach((ol) => ol.classList.add("live")); veBuoc();
   // Ảnh bước: màn rộng là ảnh nhỏ bên phải, bấm để phóng to
   $$(".step-fig").forEach((f) => (f.onclick = () => f.classList.toggle("big")));
 
@@ -543,7 +543,7 @@ async function pageRecipe() {
   const sayBtn = $("[data-cook-say]");
   const veSay = () => { sayBtn.setAttribute("aria-pressed", !!prefs.say); sayBtn.innerHTML = prefs.say ? IC.loa : IC.tat; };
   sayBtn.hidden = !say.ok; veSay();
-  const tiep = (li) => { const h = li?.querySelector("h3"); $("[data-cook-upnext]").innerHTML = h ? `${esc(S.upNext(""))}<span${lv(h)}>${esc(h.textContent)}</span>` : ""; };
+  const tiep = (li) => { const h = li?.querySelector("h3, h4"); $("[data-cook-upnext]").innerHTML = h ? `${esc(S.upNext(""))}<span${lv(h)}>${esc(h.textContent)}</span>` : ""; };
   const ytId = $("[data-player]")?.dataset.id, doc = $("[data-player]")?.classList.contains("vertical");
   const show = () => {
     const n = steps.length, li = steps[idx], img = li?.querySelector(".step-img"), cimg = $("[data-cook-img]");
@@ -557,6 +557,10 @@ async function pageRecipe() {
     cimg.hidden = !img; if (img) cimg.src = img.src;
     $("[data-cook-tools]").innerHTML = "";
     body.scrollTop = 0;
+    // "Đạt khi" và "Lưu ý" của bước (build sinh, đã thoát HTML); ẩn ở màn Chuẩn bị, Hoàn thành
+    for (const [sel, src] of [["[data-cook-sign]", ".sign"], ["[data-cook-note]", ".step-note"]]) {
+      const e = li?.querySelector(src), c = $(sel); c.hidden = !e || idx < 0 || idx >= n; c.innerHTML = e ? e.innerHTML : "";
+    }
     let doc2 = "";
     if (idx < 0) {
       body.dataset.man = "prep";
@@ -575,7 +579,7 @@ async function pageRecipe() {
       tungBong(body); amThanh.keng();
       doc2 = `${S.doneTitle} ${S.doneText}`;
     } else {
-      const p = li.querySelector("p").textContent, tit = li.querySelector("h3")?.textContent || "";
+      const p = li.querySelector("p").textContent, tit = li.querySelector("h3, h4")?.textContent || "";
       body.dataset.man = "step";
       $("[data-cook-title]").textContent = tit;
       $("[data-cook-text]").innerHTML = li.querySelector("p").innerHTML; // build đã thoát HTML và tô đậm (scripts/buoc.mjs)
