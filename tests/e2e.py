@@ -158,6 +158,8 @@ async def main():
         check("mở chế độ nấu: màn Chuẩn bị, nguyên liệu theo khẩu phần đang chọn (4 người), có CSS riêng", cb[0] == "Chuẩn bị" and cb[1] == "Gom đủ nguyên liệu cho 4 người" and cb[2][0] == "Trứng gà 6 quả" and cb[3] == "Tiếp theo: Đánh trứng" and cb[4] == "fixed", str(cb))
         await pg.click(".cook-prep li:first-child label")
         check("tích nguyên liệu đã sẵn: đếm 1/5", await pg.text_content("[data-prep-count]") == "Đã sẵn 1/5")
+        await pg.click("[data-cook-close]"); await pg.click("[data-cook]"); await pg.wait_for_timeout(200)
+        check("mở lại chế độ nấu: vẫn nhớ nguyên liệu đã tích", await pg.text_content("[data-prep-count]") == "Đã sẵn 1/5" and await pg.is_checked(".cook-prep li:first-child input"))
         await pg.screenshot(path=f"{OUT}/3a-nau-chuan-bi.png")
         await pg.click("[data-cook-next]"); await pg.wait_for_timeout(200)
         b1 = await pg.evaluate("(()=>[document.querySelector('[data-cook-pos]').textContent, document.querySelector('[data-cook-title]').textContent, [...document.querySelectorAll('.cook-dung li')].map(l=>l.textContent.trim().replace(/\\s+/g,' ')), document.querySelector('[data-cook-upnext]').textContent])()")
@@ -240,7 +242,8 @@ async def main():
         kt = await pg.evaluate("(()=>{const i=document.querySelector('[data-cook-img]');const r=i.getBoundingClientRect();return [!i.hidden, Math.round(r.height), Math.round(r.width), innerHeight]})()")
         check("chế độ nấu: ảnh bước nhỏ gọn (≤ 190px, ≤ 25% màn hình)", kt[0] and 0 < kt[1] <= 190 and kt[1] <= kt[3] * 0.25 and abs(kt[2] / kt[1] - 4 / 3) < 0.05, str(kt))
         await pg.screenshot(path=f"{OUT}/3b-che-do-nau-anh.png")
-        await pg.click("[data-cook-close]")
+        await pg.click("[data-cook-close]"); await pg.wait_for_timeout(100)
+        check("thoát chế độ nấu: gỡ video đang phát", not await pg.query_selector("[data-cook-view] iframe"))
         # Logo thương hiệu yendan ở chân trang
         lg = await pg.evaluate("(()=>{const y=document.querySelector('.footer .yendan');return y?[y.textContent.trim(), !!y.querySelector('svg'), Math.round(y.querySelector('svg').getBoundingClientRect().width)]:null})()")
         check("chân trang có logo yendan (chim yến + chữ)", lg == ["yendan", True, 24], str(lg))

@@ -24,6 +24,7 @@ const S = {
     shopText: (n, s) => `🛒 Đi chợ: ${n} (${s} người)`, shopTitle: "Danh sách đi chợ", copiedNote: "Đã chép danh sách, dán vào Zalo hoặc Ghi chú.",
     addedIng: (n) => `Đã thêm ${n} nguyên liệu vào Đi chợ`, videoGuide: "Video hướng dẫn",
     stepProg: (d, n) => `${d}/${n} bước`, stepPos: (i, n) => `Bước ${i}/${n}`,
+    noVoice: "Máy chưa có giọng đọc tiếng Việt. Bạn cài thêm trong phần Giọng nói của máy.",
     prep: "Chuẩn bị", prepTitle: (n) => `Gom đủ nguyên liệu cho ${n} người`, prepHint: "Tích từng thứ khi đã để sẵn trên bếp.", prepReady: (d, n) => `Đã sẵn ${d}/${n}`,
     useHere: "Dùng ở bước này", upNext: (t) => `Tiếp theo: ${t}`, lastStep: "Đây là bước cuối", seePart: "Xem đoạn này", timerN: (n) => `Hẹn giờ ${n} phút`,
     startCook: "Bắt đầu bước 1 →", doneKicker: "Hoàn thành", doneTitle: "Xong món rồi!", doneText: "Chúc cả nhà ngon miệng. Chụp một tấm cho mọi người cùng xem nhé.",
@@ -50,6 +51,7 @@ const S = {
     shopText: (n, s) => `🛒 Shopping: ${n} (${s} ${s === 1 ? "person" : "people"})`, shopTitle: "Shopping list", copiedNote: "List copied. Paste it into a chat or your notes.",
     addedIng: (n) => `Added ${n} ${n === 1 ? "ingredient" : "ingredients"} to shopping`, videoGuide: "Video guide",
     stepProg: (d, n) => `${d}/${n} steps`, stepPos: (i, n) => `Step ${i}/${n}`,
+    noVoice: "Your device has no voice for this language. Add one in your device's speech settings.",
     prep: "Get ready", prepTitle: (n) => `Gather ingredients for ${n} ${n === 1 ? "person" : "people"}`, prepHint: "Tick each one once it is ready on the counter.", prepReady: (d, n) => `${d}/${n} ready`,
     useHere: "Used in this step", upNext: (t) => `Next: ${t}`, lastStep: "This is the last step", seePart: "Watch this part", timerN: (n) => `Timer ${n} min`,
     startCook: "Start step 1 →", doneKicker: "Finished", doneTitle: "Dish done!", doneText: "Enjoy your meal. Take a photo and share it with everyone.",
@@ -526,7 +528,7 @@ async function pageRecipe() {
   const lv = (el) => (el?.getAttribute("lang") ? ` lang="${el.getAttribute("lang")}"` : ""); // nội dung chưa dịch giữ lang="vi"
   const ings = $$(".ings li").map((li) => ({ lv: lv(li), ten: $("strong", li).textContent, q: Number($(".qty", li).dataset.q) || 0, dv: $(".unit", li).textContent, gc: ($("small", li)?.textContent || "").replace(/^\(|\)$/g, "") }));
   const luong = (g) => [g.q ? qtyText((g.q * serv) / base) : "", g.dv, g.q ? "" : g.gc].filter(Boolean).join(" ");
-  const daSan = new Set();
+  const kPrep = "prep-" + slug, daSan = new Set(await store.get(kPrep, []));
   let idx = 0, lock = null;
   const say = (() => {
     const ok = "speechSynthesis" in window;
@@ -535,7 +537,9 @@ async function pageRecipe() {
       speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(txt), l = LANG === "en" ? "en" : "vi";
       u.lang = l === "vi" ? "vi-VN" : "en-US"; u.rate = 0.95;
-      const v = speechSynthesis.getVoices().find((x) => x.lang.toLowerCase().startsWith(l)); if (v) u.voice = v;
+      const vs = speechSynthesis.getVoices(), v = vs.find((x) => x.lang.toLowerCase().startsWith(l));
+      if (vs.length && !v) { prefs.say = false; savePrefs(); veSay(); return toast(S.noVoice); } // danh sách giọng có nhưng thiếu ngôn ngữ này
+      if (v) u.voice = v;
       speechSynthesis.speak(u);
     };
     return { ok, noi, dung: () => ok && speechSynthesis.cancel() };
@@ -549,7 +553,7 @@ async function pageRecipe() {
     const n = steps.length, li = steps[idx], img = li?.querySelector(".step-img"), cimg = $("[data-cook-img]");
     const nut = (cls, txt, attr = "") => `<button class="btn${cls}" type="button" ${attr}>${txt}</button>`;
     $("[data-cook-pos]").textContent = idx < 0 ? S.prep : idx >= n ? S.doneKicker : S.stepPos(idx + 1, n);
-    $("[data-cook-bar]").style.width = `${(Math.max(0, Math.min(idx + 1, n)) / n) * 100}%`;
+    $("[data-cook-bar]").style.transform = `scaleX(${Math.max(0, Math.min(idx + 1, n)) / n})`;
     $("[data-cook-done]").closest("label").hidden = idx < 0 || idx >= n;
     $("[data-cook-prev]").disabled = idx < 0;
     $("[data-cook-next]").hidden = idx >= n;
@@ -595,7 +599,7 @@ async function pageRecipe() {
     }
     say.noi(doc2);
   };
-  const close = () => { view.hidden = true; say.dung(); lock?.release?.(); lock = null; document.body.style.overflow = ""; };
+  const close = () => { view.hidden = true; say.dung(); extra.innerHTML = ""; lock?.release?.(); lock = null; document.body.style.overflow = ""; };
   const di = (d) => { const n = steps.length; if (d > 0 && idx >= 0 && idx < n) datXong(idx, true); idx = Math.max(-1, Math.min(n, idx + d)); show(); };
   $("[data-cook]").onclick = async () => {
     await napCss("cook");
@@ -611,7 +615,7 @@ async function pageRecipe() {
   sayBtn.onclick = () => { prefs.say = !prefs.say; savePrefs(); veSay(); if (prefs.say) show(); else say.dung(); };
   extra.onclick = (e) => {
     const pr = e.target.closest("[data-prep]");
-    if (pr) { pr.checked ? daSan.add(+pr.dataset.prep) : daSan.delete(+pr.dataset.prep); $("[data-prep-count]").textContent = S.prepReady(daSan.size, ings.length); return; }
+    if (pr) { pr.checked ? daSan.add(+pr.dataset.prep) : daSan.delete(+pr.dataset.prep); store.set(kPrep, [...daSan]); $("[data-prep-count]").textContent = S.prepReady(daSan.size, ings.length); return; }
     const sk = e.target.closest("[data-cook-seek]");
     if (sk) { sk.parentElement.innerHTML = `<div class="cook-player${doc ? " vertical" : ""}"><iframe src="https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&rel=0&playsinline=1&start=${sk.dataset.cookSeek}" title="${S.videoGuide}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>`; say.dung(); return; }
     if (e.target.closest("[data-cook-tq]")) { close(); $("[data-tq-mo]").click(); }
