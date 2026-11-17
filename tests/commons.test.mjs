@@ -51,7 +51,7 @@ test("tên đã được API chuẩn hoá vẫn khớp; thiếu giấy phép ho�
     ] } }]);
   assert.equal(info.get("File:a.jpg").author, "Thử");
   // Ảnh thu nhỏ ở máy chủ thumb.wikimedia.org cũng được nhận
-  const t = parseResponses(["File:T.jpg"], [{ query: { pages: [{ title: "File:T.jpg", imageinfo: [{ thumburl: "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ab/T.jpg/1280px-T.jpg", descriptionurl: "https://commons.wikimedia.org/wiki/File:T.jpg", extmetadata: { Artist: { value: "Thử" }, LicenseShortName: { value: "CC0" } } }] }] } }]);
+  const t = parseResponses(["File:T.jpg"], [{ query: { pages: [{ title: "File:T.jpg", imageinfo: [{ thumburl: "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ab/T.jpg/1280px-T.jpg?utm_source=commons.wikimedia.org&utm_content=thumbnail", descriptionurl: "https://commons.wikimedia.org/wiki/File:T.jpg", extmetadata: { Artist: { value: "Thử" }, LicenseShortName: { value: "CC0" } } }] }] } }]);
   assert.equal(t.get("File:T.jpg").src, "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ab/T.jpg/1280px-T.jpg");
   assert.equal(parseResponses(["File:X.jpg"], [{ query: { pages: [{ title: "File:X.jpg", imageinfo: [{ thumburl: "https://example.com/x.jpg", extmetadata: { LicenseShortName: { value: "CC0" } } }] }] } }]).get("File:X.jpg").why, "link ảnh lạ");
   assert.match(info.get("File:B.jpg").why, /giấy phép/);

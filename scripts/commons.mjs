@@ -43,7 +43,7 @@ function pageInfo(p) {
   if (!license) return { why: "không rõ giấy phép" };
   const author = (v("Artist") || v("Credit")).slice(0, 120);
   if (!author && !/public domain|cc0|pd/i.test(license)) return { why: "không rõ tác giả" };
-  const src = ii.thumburl || ii.url;
+  const src = (ii.thumburl || ii.url || "").replace(/\?.*$/, ""); // bỏ ?utm_… Wikimedia gắn thêm
   // Ảnh thu nhỏ có thể nằm ở upload.wikimedia.org hoặc thumb.wikimedia.org (máy chủ ảnh mới của Wikimedia)
   if (!/^https:\/\/(upload|thumb)\.wikimedia\.org\//.test(src || "")) return { why: "link ảnh lạ" };
   const page = ii.descriptionurl || `https://commons.wikimedia.org/wiki/${encodeURI(p.title.replace(/ /g, "_"))}`;
