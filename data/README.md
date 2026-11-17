@@ -33,6 +33,22 @@ Muốn một bước có nút "Xem đoạn này": ghi số giây của đoạn �
 3. Khi build, web tự lấy ảnh cỡ vừa (1280px) và **tự ghi** tác giả, giấy phép, link trang ảnh dưới ảnh. Không cần tải ảnh về, không cần điền `anh_nguon`. Nếu điền `anh_nguon` thì web dùng phần bạn ghi.
 4. Ảnh bị xoá, sai tên hoặc thiếu thông tin giấy phép thì web **không hiện ảnh đó** và ghi cảnh báo trong log build. Lúc build không kết nối được Commons thì các ảnh Commons tạm ẩn, lần build sau tự hiện lại.
 
+## Bản dịch tiếng Anh (trang `/en/`)
+Mỗi cột nội dung có thể thêm một cột cùng tên kèm đuôi `_en` (tuỳ chọn, để trống được). Thêm cột vào cuối tab; build tự nhận theo tên cột.
+
+| Tab | Cột bản dịch |
+| --- | --- |
+| `recipes` | `ten_en`, `tom_tat_en`, `meo_en` |
+| `ingredients` | `ten_en`, `ghi_chu_en`, `don_vi_en` (đơn vị, ví dụ `cloves`), `nhom_en` (tên nhóm) |
+| `steps` | `tieu_de_en`, `noi_dung_en` |
+
+- Trang `/en/mon/<slug>/` dùng bản `_en` khi có; ô nào chưa dịch thì hiện tiếng Việt (đánh dấu `lang="vi"`).
+- Món **đã dịch** khi có đủ `ten_en`, `tom_tat_en`, mọi nguyên liệu có `ten_en` (và `ghi_chu_en` nếu có ghi chú), mọi bước có `noi_dung_en` (và `tieu_de_en` nếu có tiêu đề). Khi đó trang không còn dòng "This recipe is not translated yet." và dữ liệu Google (`Recipe`) ghi `inLanguage: "en"`. Mẹo, nhóm, đơn vị không bắt buộc.
+- Số lượng giữ nguyên. Đơn vị: dùng `don_vi_en`; trống thì tra từ điển trong `scripts/i18n.mjs` (thìa canh → tbsp, thìa cà phê → tsp, quả → bỏ trống…); không có thì giữ tiếng Việt.
+- Tên danh mục và độ khó tiếng Anh lấy từ từ điển giao diện (`cat_name`, `diff_*` trong `scripts/i18n.mjs`). Danh mục mới chưa có trong từ điển thì giữ tên tiếng Việt.
+- Bản dịch không đổi cổng duyệt: món vẫn chỉ lên web khi `trang_thai` = `duyệt`. Báo cáo vận hành có dòng "Món đã dịch tiếng Anh: X/Y".
+- Dịch bằng lời của mình, câu ngắn, xưng "you".
+
 ## Các tab
 | Tab | Một dòng là | Cột |
 | --- | --- | --- |

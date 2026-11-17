@@ -30,7 +30,7 @@ Phong cách tạp chí ẩm thực: nền kem `#FAF8F5`, thẻ trắng đổ bó
 - Nút **EN / VI** ở đầu trang chuyển sang đúng trang tương ứng ở ngôn ngữ kia; lựa chọn lưu ở `hnng-prefs.lang`. Lần sau mở link của ngôn ngữ kia, web tự chuyển về ngôn ngữ đã chọn (trừ trang 404).
 - Mỗi trang có `lang`, `<link rel="alternate" hreflang="vi|en|x-default">`, `og:locale` + `og:locale:alternate`; `sitemap.xml` có cả 2 ngôn ngữ kèm `xhtml:link` hreflang. `manifest.webmanifest` giữ tiếng Việt.
 - Sổ tay, Đi chợ, kết quả quay món dùng chung giữa 2 ngôn ngữ (cùng IndexedDB).
-- Trang công thức tiếng Anh: món chưa dịch hiện nội dung tiếng Việt (trong phần tử `lang="vi"`) kèm dòng "This recipe is not translated yet." Bản dịch món: Issue #40.
+- Trang công thức tiếng Anh: dùng cột bản dịch `*_en` trong Sheet (xem `data/README.md`). Món dịch đủ hiện tiếng Anh, `Recipe` ghi `inLanguage: "en"`; phần chưa dịch hiện tiếng Việt (trong phần tử `lang="vi"`) kèm dòng "This recipe is not translated yet."
 - Câu giới thiệu trang chủ tiếng Anh: khoá `tagline_en` trong tab `settings`; để trống thì dùng câu mặc định trong `scripts/i18n.mjs`.
 
 ## Trang công thức

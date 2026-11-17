@@ -39,6 +39,11 @@ const catSlugs = new Set(cats.map((c) => c.slug));
 const countBy = (rows) => rows.reduce((m, r) => ((m[r.recipe_slug] = (m[r.recipe_slug] || 0) + 1), m), {});
 const ingN = countBy(raw.ingredients);
 const stepN = countBy(raw.steps);
+// Món "đã dịch tiếng Anh": đủ ten_en, tom_tat_en, mọi nguyên liệu có ten_en (và ghi_chu_en nếu có ghi chú), mọi bước có noi_dung_en (và tieu_de_en nếu có tiêu đề). Giống daDich() trong build.mjs.
+const co = (v) => !!String(v || "").trim();
+const daDich = (r) => co(r.ten_en) && co(r.tom_tat_en)
+  && raw.ingredients.filter((i) => i.recipe_slug === r.slug && co(i.ten)).every((i) => co(i.ten_en) && (!co(i.ghi_chu) || co(i.ghi_chu_en)))
+  && raw.steps.filter((s) => s.recipe_slug === r.slug && co(s.noi_dung)).every((s) => co(s.noi_dung_en) && (!co(s.tieu_de) || co(s.tieu_de_en)));
 
 const mon = raw.recipes.filter((r) => r.slug || r.ten).map((r) => {
   const loi = [];
@@ -50,7 +55,7 @@ const mon = raw.recipes.filter((r) => r.slug || r.ten).map((r) => {
     slug: r.slug, ten: r.ten, danh_muc: r.danh_muc,
     duyet: fold(r.trang_thai) === "duyet",
     co_video: !!parseYouTube(r.video), co_anh: !!r.anh, co_kenh: !!r.kenh,
-    cap_nhat: r.cap_nhat || "", loi,
+    cap_nhat: r.cap_nhat || "", loi, da_dich: daDich(r),
   };
 });
 
@@ -74,6 +79,8 @@ const data = {
   thieu_video: len.filter((m) => !m.co_video).map((m) => m.slug),
   video_thieu_kenh: len.filter((m) => m.co_video && !m.co_kenh).map((m) => m.slug),
   thieu_anh: len.filter((m) => !m.co_anh && !m.co_video).map((m) => m.slug),
+  da_dich_en: len.filter((m) => m.da_dich).length,
+  chua_dich_en: len.filter((m) => !m.da_dich).map((m) => m.slug),
 };
 
 if (jsonOnly) { console.log(JSON.stringify(data, null, 2)); process.exit(0); }
@@ -88,6 +95,7 @@ const out = [
   `- Món nháp chờ bạn duyệt: **${nhap.length}**`,
   `- Đã duyệt nhưng bị bỏ qua vì lỗi: **${duyetLoi.length}**`,
   `- Mâm cơm 3 món: ${data.mam_com_du ? "đủ món mặn, canh, rau/xào" : "**thiếu** một trong 3 danh mục mặn / canh / rau-xào"}`,
+  `- Món đã dịch tiếng Anh: **${data.da_dich_en}/${data.len_web}**`,
   `- Domain thật: ${data.site_url || "chưa có"} · AdSense: ${data.adsense ? "đã gắn" : "chưa"}`,
   "",
   "## Theo danh mục",

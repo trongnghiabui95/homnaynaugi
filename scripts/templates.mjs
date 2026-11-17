@@ -165,18 +165,21 @@ export const emptyState = (title, text = "") =>
 export const ytThumb = (id) => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
 
 /** Khung trung tính khi món chưa có ảnh (hoặc ảnh hỏng link): nền ấm + tên món chữ Lora, không giả làm ảnh. Ảnh thật nằm đè lên trên. */
-export const noPhoto = (ten) => `<span class="ph" aria-hidden="true"><span lang="vi">${esc(ten)}</span></span>`;
+export const noPhoto = (ten, l = "vi") => `<span class="ph" aria-hidden="true"><span${l ? ` lang="${l}"` : ""}>${esc(ten)}</span></span>`;
 
 /** Thẻ món: ảnh 4:3 có badge thời gian, độ khó, calo, video. attrs = thêm data-* để lọc/sắp xếp phía trình duyệt. */
 export function recipeCard(r, attrs = false, lang = "vi") {
   const t = tr(lang);
+  // Chữ tiếng Việt chưa dịch (lv = "vi") hoặc không rõ (chưa qua localize) → lang="vi"; đã dịch → không đặt lang (theo trang).
+  const L = (lv) => (lv === undefined || lv ? "vi" : "");
+  const A = (l) => (l ? ` lang="${l}"` : "");
   const data = attrs ? ` data-k="${esc((r.do_kho || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase())}" data-m="${r.total || 0}" data-cal="${r.cal || 0}" data-d="${esc(r.cap_nhat || "")}"` : "";
   const k = (r.do_kho || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
   return `<a class="rcard${["de", "vua", "kho"].includes(k) ? ` k-${k}` : ""}" href="/mon/${r.slug}/"${data}>
-  <div class="rcard-img">${noPhoto(r.ten)}${r.img ? `<img src="${esc(r.img)}" alt="" loading="lazy" decoding="async" width="480" height="360">` : ""}
+  <div class="rcard-img">${noPhoto(r.ten, L(r.lv?.ten))}${r.img ? `<img src="${esc(r.img)}" alt="" loading="lazy" decoding="async" width="480" height="360">` : ""}
     ${r.yt ? `<span class="badge-video">${icon("play")} ${t("video")}</span>` : ""}
   </div>
-  <div class="rcard-body"><small class="rcard-cat" lang="vi">${esc(r.cat?.ten || "")}</small><strong lang="vi">${esc(r.ten)}</strong>
+  <div class="rcard-body"><small class="rcard-cat"${A(L(r.cat?.lv?.ten))}>${esc(r.cat?.ten || "")}</small><strong${A(L(r.lv?.ten))}>${esc(r.ten)}</strong>
     <span class="rcard-meta"><span>${r.total ? `${icon("clock")} ${t("min", r.total)}` : ""}</span>${r.do_kho ? `<b>${esc(diffText(t, k, r.do_kho))}</b>` : ""}</span></div>
 </a>`;
 }
