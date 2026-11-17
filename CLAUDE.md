@@ -31,7 +31,7 @@ Web tiếng Việt (giao diện có thêm bản tiếng Anh ở `/en/`) "Hôm Na
 - Tiếng Việt có dấu, câu ngắn, xưng "bạn"; tiếng Anh câu ngắn, xưng "you". Nội dung món (tên, nguyên liệu, các bước, danh mục) chưa dịch thì giữ tiếng Việt và đặt trong phần tử `lang="vi"`.
 - JS < 100KB, CSS < 30KB. Không thêm thư viện ngoài khi chưa hỏi.
 - Quảng cáo chỉ qua `adSlot()` (có nhãn "Quảng cáo", cách nội dung ≥ 16px) ở các vị trí: dưới khung quay món, giữa khối Nguyên liệu và Cách làm, cuối bài. Không đặt bên trong danh sách nguyên liệu, giữa các bước hay trong chế độ nấu.
-- Màu nhấn `#D95D39` chỉ để trang trí; chữ và nút dùng `--primary` `#B4421F` để đủ tương phản. Tiêu đề font Fraunces (đổi từ Lora theo yêu cầu làm lại giao diện, #77), nội dung Be Vietnam Pro. Màu nghệ `--nghe` chỉ trang trí.
+- Màu nhấn `#D95D39` chỉ để trang trí; chữ và nút dùng `--primary` `#B4421F` để đủ tương phản. Giao diện dùng thư viện **Basecoat** (shadcn/ui, MIT) theo yêu cầu chủ dự án (#79): chỉ một phần nằm trong `src/assets/basecoat.css` (tạo bằng `scripts/basecoat-tach.py`, không sửa tay), ghi đè trong `style.css`. Chữ Be Vietnam Pro cho cả tiêu đề và nội dung.
 - **Trước khi sửa giao diện, đọc `DESIGN.md`** (hệ thống thiết kế: token, thành phần, chuyển động, điều cấm). Sau khi sửa, chạy mục "Kiểm tra giao diện" trong đó và ghi điểm /20 vào PR. Đổi màu, cỡ chữ, khoảng cách thì sửa cả `:root` trong `style.css` lẫn token trong `DESIGN.md`.
 
 ## Cách làm việc

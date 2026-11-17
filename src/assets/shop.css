@@ -1,0 +1,11 @@
+/* Trang Đi chợ: danh sách gộp và món đã thêm. Chỉ trang /di-cho/ tải file này. Token ở style.css. */
+.shop-list { list-style: none; padding: 0; margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); }
+.shop-list li + li { border-top: 1px solid var(--line); }
+.shop-list label { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; cursor: pointer; }
+.shop-list input { width: 22px; height: 22px; accent-color: var(--herb); margin-top: 3px; flex: none; }
+.shop-list label:has(input:checked) span { text-decoration: line-through; color: var(--muted); }
+.shop-list small { display: block; color: var(--muted); }
+.shop-recipes { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 16px; }
+.shop-recipes .chip { padding-right: 4px; }
+.shop-recipes .chip a { display: inline-flex; align-items: center; min-height: 44px; }
+.shop-recipes .chip button { border: 0; background: none; cursor: pointer; font-size: 18px; min-width: 44px; min-height: 44px; padding: 0; color: var(--muted); }

@@ -24,7 +24,7 @@
 .cook-dots .xong i { background: var(--herb); }
 .cook-dots [aria-current] i { background: var(--primary); transform: scaleY(1.5); }
 /* Thẻ nội dung */
-.cook-body { flex: 1; overflow-y: auto; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 18px 22px; box-shadow: var(--shadow); }
+.cook-body { flex: 1; overflow-y: auto; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); padding: 18px 18px 22px; box-shadow: var(--shadow); }
 .cook-kick { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
 .cook-kick:has(> :empty + [hidden]) { display: none; }
 .cook-num { font-family: var(--serif); font-size: 3em; font-weight: 700; line-height: 1; color: var(--primary); font-variant-numeric: lining-nums; }

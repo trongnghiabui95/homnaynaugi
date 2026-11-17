@@ -852,7 +852,7 @@ const showTheme = () => {
   const dark = document.documentElement.dataset.theme !== "light";
   const label = dark ? S.light : S.dark;
   themeBtns.forEach((b) => { b.setAttribute("aria-label", label); b.setAttribute("title", label); });
-  $('meta[name="theme-color"]')?.setAttribute("content", dark ? "#171412" : "#f6f0e6");
+  $('meta[name="theme-color"]')?.setAttribute("content", dark ? "#0c0a09" : "#fafaf9");
 };
 showTheme();
 themeBtns.forEach((b) => b.addEventListener("click", () => {
