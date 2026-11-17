@@ -386,6 +386,89 @@ async def main():
         check("quản trị ẩn bài: trang món không còn bài đó", "người đầu tiên" in await p4.text_content("[data-tq-ds]"))
         await c4.close()
 
+        # Tiếng Anh (/en/): giao diện không còn chữ tiếng Việt (trừ nội dung món đánh dấu lang="vi" và bài của bạn đọc),
+        # nút đổi ngôn ngữ về đúng trang tương ứng, nhớ lựa chọn, link nội bộ ở lại /en/, hreflang + sitemap đủ 2 ngôn ngữ.
+        h = open(os.path.join(DIST, "en", "mon", "trung-chien-hanh", "index.html"), encoding="utf-8").read()
+        check("bản /en/: lang=en, hreflang vi/en/x-default, og:locale en_US", '<html lang="en"' in h and 'hreflang="vi" href="https://example.com/mon/trung-chien-hanh/"' in h and 'hreflang="en" href="https://example.com/en/mon/trung-chien-hanh/"' in h and 'hreflang="x-default"' in h and 'og:locale" content="en_US"' in h)
+        h = open(os.path.join(DIST, "mon", "trung-chien-hanh", "index.html"), encoding="utf-8").read()
+        check("bản tiếng Việt: lang=vi, có hreflang en", '<html lang="vi"' in h and 'hreflang="en" href="https://example.com/en/mon/trung-chien-hanh/"' in h and 'og:locale" content="vi_VN"' in h)
+        sm = open(os.path.join(DIST, "sitemap.xml"), encoding="utf-8").read()
+        check("sitemap có cả /en/, kèm link hreflang", "<loc>https://example.com/en/mon/trung-chien-hanh/</loc>" in sm and "<loc>https://example.com/mon/trung-chien-hanh/</loc>" in sm and 'hreflang="en"' in sm and "/en/danh-muc/an-vat/" not in sm)
+        manifest = open(os.path.join(DIST, "manifest.webmanifest"), encoding="utf-8").read()
+        check("manifest giữ tiếng Việt", "Hôm Nay Nấu Gì" in manifest)
+        VN = """()=>{const re=/[ăâđêôơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹàáèéìíòóùúýõã]/i,out=[];
+          const ui=e=>e.closest('[lang]').lang==='en'&&!e.closest('script,style,.tq-the,.credit');
+          const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
+          while(w.nextNode()){const n=w.currentNode;if(re.test(n.textContent)&&ui(n.parentElement))out.push(n.textContent.trim().slice(0,30))}
+          const nd=window.__nd||[];
+          for(const e of document.querySelectorAll('[aria-label],[placeholder],[title],[alt]'))for(const a of ['aria-label','placeholder','title','alt']){let v=e.getAttribute(a)||'';nd.forEach(x=>v=v.split(x).join(''));if(re.test(v)&&ui(e))out.push(a+': '+v.slice(0,30))}
+          return [...new Set(out)]}"""
+        # Tên món, nguyên liệu, danh mục là nội dung chưa dịch: được phép nằm trong aria-label (ví dụ "Need to buy Trứng gà")
+        ND = "fetch((document.documentElement.dataset.base||'')+'/data/recipes.json').then(r=>r.json()).then(a=>{window.__nd=[...new Set(a.flatMap(r=>[r.t,r.cn,...r.ig.map(i=>i[0])]))].sort((x,y)=>y.length-x.length)})"
+        c6 = await b.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, locale="en-US")
+        await c6.grant_permissions(["clipboard-read", "clipboard-write"], origin=B)
+        for host in ("lh3.googleusercontent.com", "i.ytimg.com", "upload.wikimedia.org"):
+            await c6.route(f"https://{host}/**", anh_that)
+        p6 = await c6.new_page()
+        p6.on("pageerror", lambda e: errs.append(str(e)))
+        p6.on("console", lambda m: errs.append(m.text) if m.type == "error" and not any(x in m.text for x in BO_QUA) else None)
+        await p6.goto(B + "/mon/trung-chien-hanh/"); await p6.wait_for_timeout(300)
+        nut = [await p6.get_attribute("[data-lang]", "href"), await p6.text_content("[data-lang]"), (await p6.evaluate("(()=>{const r=document.querySelector('[data-lang]').getBoundingClientRect();return [r.width,r.height]})()"))]
+        check("nút đổi ngôn ngữ ở đầu trang: EN, ≥ 44px, trỏ đúng trang tiếng Anh", nut[0] == "/en/mon/trung-chien-hanh/" and nut[1] == "EN" and min(nut[2]) >= 44 and await p6.get_attribute("[data-lang]", "aria-label") == "Switch to English", str(nut))
+        await p6.click("[data-lang]"); await p6.wait_for_load_state(); await p6.wait_for_timeout(300)
+        check("bấm EN ở trang công thức: sang đúng món bản tiếng Anh", p6.url == B + "/en/mon/trung-chien-hanh/" and await p6.evaluate("document.documentElement.lang") == "en", p6.url)
+        check("món chưa dịch: hiện dòng 'This recipe is not translated yet.'", (await p6.text_content("[data-not-translated]")) == "This recipe is not translated yet." and await p6.get_attribute("h1", "lang") == "vi")
+        await p6.reload(); await p6.wait_for_timeout(200)
+        check("tải lại vẫn tiếng Anh", p6.url == B + "/en/mon/trung-chien-hanh/")
+        await p6.goto(B + "/danh-muc/mon-man/"); await p6.wait_for_timeout(300)
+        check("đã chọn English: mở link tiếng Việt tự về trang tiếng Anh tương ứng", p6.url == B + "/en/danh-muc/mon-man/", p6.url)
+        # Trang công thức tiếng Anh: khẩu phần, chế độ nấu, đi chợ
+        await p6.goto(B + "/en/mon/trung-chien-hanh/"); await p6.wait_for_timeout(300)
+        await p6.click("[data-serv-inc]")
+        check("EN: đổi khẩu phần 2 → 3: 3 quả → 4½", await p6.text_content(".ings li:first-child .qty") == "4½")
+        await p6.click("[data-add-shop]"); await p6.wait_for_timeout(300)
+        await p6.screenshot(path=f"{OUT}/11-en-cong-thuc.png")
+        await p6.click("[data-cook]"); await p6.wait_for_timeout(200); await p6.click("[data-cook-next]")
+        check("EN: chế độ nấu ghi 'Step 2/5'", await p6.text_content("[data-cook-pos]") == "Step 2/5")
+        vn = await p6.evaluate(VN)
+        check("EN: chế độ nấu không còn chữ tiếng Việt ở giao diện", not vn, str(vn))
+        await p6.click("[data-cook-close]")
+        # Trang chủ tiếng Anh: quay món
+        await p6.goto(B + "/en/"); await p6.wait_for_timeout(400)
+        check("EN trang chủ: nút 'Spin', ngăn 'Picked for you'", await p6.text_content("[data-spin-go] span") == "Spin" and await p6.text_content(".slot-label") == "Picked for you")
+        await p6.click("[data-spin-go]"); await p6.wait_for_selector("[data-spin-go]:not([disabled])"); await p6.wait_for_timeout(60)
+        check("EN: quay xong, nút 'Spin again', link món ở /en/", await p6.text_content("[data-spin-go] span") == "Spin again" and (await p6.get_attribute('[data-slot="one"] a.more', "href")).startswith("/en/mon/"))
+        await p6.click('[data-spin-mode="mam"]'); await p6.wait_for_timeout(100)
+        labels = await p6.eval_on_selector_all("[data-spin-slots] .slot-label", "els=>els.map(e=>e.textContent)")
+        check("EN: mâm cơm 3 ngăn có nhãn tiếng Anh", labels == ["Main dish", "Soup", "Greens / stir-fry"], str(labels))
+        await p6.screenshot(path=f"{OUT}/11-en-trang-chu.png")
+        await p6.goto(B + "/en/tim-kiem/?mode=nl"); await p6.wait_for_timeout(400)
+        await p6.click('[data-fridge] [data-v="trung ga"]'); await p6.wait_for_timeout(200)
+        check("EN: tủ lạnh có gì ghi số nguyên liệu bằng tiếng Anh", "ingredients" in await p6.text_content("[data-results] .rcard:first-child"))
+        await p6.goto(B + "/en/tim-kiem/?q=trung"); await p6.wait_for_timeout(300)
+        # Mọi trang tiếng Anh: không còn chữ tiếng Việt ở giao diện, link nội bộ ở lại /en/, vùng bấm ≥ 44px, chữ ≥ 13px
+        for u in ["/en/", "/en/mon/", "/en/mon/trung-chien-hanh/", "/en/mon/mon-thu-video/", "/en/mon/thit-kho-trung/", "/en/danh-muc/", "/en/danh-muc/mon-man/", "/en/tim-kiem/", "/en/tim-kiem/?mode=nl", "/en/video/", "/en/di-cho/", "/en/da-luu/", "/en/gioi-thieu/", "/en/ban-quyen-video/", "/en/chinh-sach-bao-mat/", "/en/dieu-khoan/", "/en/lien-he/", "/en/404.html"]:
+            await p6.goto(B + u); await p6.wait_for_timeout(250)
+            if u == "/en/tim-kiem/?mode=nl": await p6.click('[data-fridge] [data-v="trung ga"]'); await p6.wait_for_timeout(100)
+            await p6.evaluate(ND)
+            vn = await p6.evaluate(VN)
+            ra = await p6.evaluate("[...document.querySelectorAll('a[href^=\"/\"]:not([data-lang])')].map(a=>a.getAttribute('href')).filter(h=>!h.startsWith('/en/'))")
+            nho, chu = await p6.evaluate(DO)
+            check(f"EN {u}: không chữ tiếng Việt ở giao diện, link ở lại /en/, vùng bấm ≥ 44px, chữ ≥ 13px", not vn and not ra and not nho and not chu, f"{vn[:4]} {ra[:3]} {nho[:3]} {chu[:3]}")
+        await p6.goto(B + "/en/404.html"); await p6.wait_for_timeout(200)
+        check("EN trang 404: không tự chuyển trang, nút đổi ngôn ngữ về trang chủ tiếng Việt", p6.url.endswith("/en/404.html") and await p6.get_attribute("[data-lang]", "href") == "/")
+        # Đổi về tiếng Việt: về đúng trang, nhớ lựa chọn
+        await p6.goto(B + "/en/video/"); await p6.wait_for_timeout(200)
+        check("nút ở bản tiếng Anh: VI, trỏ về trang tiếng Việt tương ứng", await p6.text_content("[data-lang]") == "VI" and await p6.get_attribute("[data-lang]", "href") == "/video/")
+        await p6.screenshot(path=f"{OUT}/11-en-video.png")
+        await p6.click("[data-lang]"); await p6.wait_for_load_state(); await p6.wait_for_timeout(300)
+        check("bấm VI: về /video/ tiếng Việt", p6.url == B + "/video/" and await p6.evaluate("document.documentElement.lang") == "vi", p6.url)
+        await p6.goto(B + "/en/mon/trung-chien-hanh/"); await p6.wait_for_timeout(300)
+        check("đã chọn Tiếng Việt: link /en/ tự về trang tiếng Việt", p6.url == B + "/mon/trung-chien-hanh/", p6.url)
+        await p6.goto(B + "/di-cho/"); await p6.wait_for_timeout(300)
+        check("Đi chợ dùng chung giữa 2 ngôn ngữ", len(await p6.query_selector_all(".shop-recipes .chip")) == 1)
+        await c6.close()
+
         # Service worker: sau khi web cập nhật, người dùng cũ nhận ngay CSS mới (không kẹt bản lưu); mất mạng vẫn mở được
         c3 = await b.new_context(viewport={"width": 390, "height": 844}, locale="vi-VN")
         p3 = await c3.new_page()

@@ -23,6 +23,15 @@ Phong cách tạp chí ẩm thực: nền kem `#FAF8F5`, thẻ trắng đổ bó
 | Đi chợ, Sổ tay món ngon (dữ liệu trên máy) | `/di-cho/`, `/da-luu/` |
 | Video | `/video/` |
 | Giới thiệu, Liên hệ, Chính sách bảo mật, Điều khoản sử dụng, Bản quyền video | `/gioi-thieu/`, `/lien-he/`, `/chinh-sach-bao-mat/`, `/dieu-khoan/`, `/ban-quyen-video/` |
+| Mọi trang trên bằng **tiếng Anh** (giao diện; nội dung món vẫn tiếng Việt tới khi có bản dịch) | `/en/…` cùng slug, ví dụ `/en/mon/<slug>/` |
+
+## Ngôn ngữ (Tiếng Việt / English)
+- Build dựng 2 bộ trang: `/` (tiếng Việt, đường dẫn cũ giữ nguyên) và `/en/` (tiếng Anh). Chữ giao diện lấy từ `scripts/i18n.mjs` (lúc build) và object `S` đầu `app.js`, `thanh-qua.js` (trên trình duyệt).
+- Nút **EN / VI** ở đầu trang chuyển sang đúng trang tương ứng ở ngôn ngữ kia; lựa chọn lưu ở `hnng-prefs.lang`. Lần sau mở link của ngôn ngữ kia, web tự chuyển về ngôn ngữ đã chọn (trừ trang 404).
+- Mỗi trang có `lang`, `<link rel="alternate" hreflang="vi|en|x-default">`, `og:locale` + `og:locale:alternate`; `sitemap.xml` có cả 2 ngôn ngữ kèm `xhtml:link` hreflang. `manifest.webmanifest` giữ tiếng Việt.
+- Sổ tay, Đi chợ, kết quả quay món dùng chung giữa 2 ngôn ngữ (cùng IndexedDB).
+- Trang công thức tiếng Anh: món chưa dịch hiện nội dung tiếng Việt (trong phần tử `lang="vi"`) kèm dòng "This recipe is not translated yet." Bản dịch món: Issue #40.
+- Câu giới thiệu trang chủ tiếng Anh: khoá `tagline_en` trong tab `settings`; để trống thì dùng câu mặc định trong `scripts/i18n.mjs`.
 
 ## Trang công thức
 - Thông số: sơ chế, nấu, độ khó, calo/phần, chi phí ước tính (chỉ hiện khi có số liệu), khẩu phần.
