@@ -62,7 +62,9 @@ function photoCredit(t, tag = "figcaption", attr = "") {
   if (!raw) return "";
   const link = raw.match(/https?:\/\/\S+/);
   const txt = raw.replace(/https?:\/\/\S+/, "").replace(/[\s,;·–-]+$/, "").trim();
-  return `<${tag} class="credit"${attr}>Ảnh: ${esc(txt || "xem nguồn")}${link ? ` · <a href="${esc(link[0])}" rel="noopener" target="_blank">Nguồn ảnh</a>` : ""}</${tag}>`;
+  // Một dòng nhỏ, màu nhạt: "Nguồn: tác giả, giấy phép"; cả dòng là link tới trang ảnh (CC BY/BY-SA bắt buộc ghi tên tác giả).
+  const chu = `Nguồn${txt ? `: ${esc(txt)}` : ""}`;
+  return `<${tag} class="credit"${attr}${txt ? ` title="Ảnh: ${esc(txt)}"` : ""}>${link ? `<a href="${esc(link[0])}" rel="noopener" target="_blank">${chu}</a>` : chu}</${tag}>`;
 }
 async function write(rel, content) {
   const file = path.join(DIST, rel);

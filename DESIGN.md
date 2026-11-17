@@ -238,7 +238,7 @@ Bộ ba "nền kem + serif + cam đất" bị nhiều bộ kiểm tra coi là gi
 - **Trạng thái rỗng** (`emptyState()`): nói cái gì đang trống, vì sao nó có ích, và một hành động. Ví dụ: "Sổ tay còn trống. Bấm Lưu ở món bạn thích để xem lại nhanh. [Quay món hôm nay]".
 - **Lỗi**: nói chuyện gì xảy ra, cách khắc phục, có nút thử lại. Mất mạng thì báo đang ngoại tuyến.
 - **Thành quả của bạn đọc** (`thanh-qua.css`, chỉ tải trên trang món): nút chính "Khoe món bạn nấu" có icon máy ảnh; lưới thẻ 2 cột (3 cột từ 700px), ảnh 4:3 trên, tên + thời gian + cảm nhận dưới; "Báo cáo" là nút chữ phụ, vùng bấm 44px. Hộp gửi là `<dialog>`: ô ảnh lớn khung đứt nét, cảm nhận, tên (máy nhớ), một nút Gửi. Chỉ một ô bắt buộc là tên.
-- **Ghi nguồn**: dưới ảnh không tự chụp luôn có "Ảnh: tác giả, giấy phép · Nguồn ảnh"; dưới video luôn có tên kênh và link YouTube.
+- **Ghi nguồn**: dưới ảnh không tự chụp luôn có một dòng nhỏ 13px màu `muted` "Nguồn: tác giả, giấy phép", cả dòng là link tới trang ảnh, quá dài thì cắt "…" (không bỏ tên tác giả: CC BY/BY-SA bắt buộc); dưới video luôn có tên kênh và link YouTube.
 
 ## Do's and Don'ts
 
