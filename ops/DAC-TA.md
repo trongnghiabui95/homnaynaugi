@@ -10,7 +10,7 @@
 Google Sheets → `scripts/build.mjs` (chỉ lấy món đã duyệt, đổi link Drive/YouTube, tra ảnh Wikimedia Commons kèm tác giả + giấy phép) → `dist/` HTML tĩnh + `data/recipes.json` → GitHub Pages (xem thử) / Cloudflare Pages (chạy thật). Không dùng Next.js để không cần máy chủ; web tĩnh tải nhanh tương đương.
 
 ## Giao diện
-Phong cách "tạp chí bếp Việt" (#77): nền giấy ấm `#F6F0E6`, thẻ trắng ngà đổ bóng mềm, màu nhấn cam đất `#D95D39` (chữ và nút dùng bản đậm `#B4421F` cho đủ tương phản (≥ 4.5:1 cả trên nền màu nhạt)), xanh thảo mộc `#3F6E4E`, nghệ vàng `#E7A33E` (chỉ trang trí; nền nhạt `#FBEBCB` cho khung quay món, Bí quyết), chữ `#231E19`. Tiêu đề Fraunces, nội dung Be Vietnam Pro. Thẻ món ảnh vuông bo góc, nút bo tròn, thanh tab nổi; thời gian và độ khó (chấm màu: Dễ xanh `#3F6E4E`, Vừa vàng đất `#96610F`, Khó cam đậm `#B4421F`) nằm dưới tên món. Đầu trang chủ có cụm 3 ảnh món tròn. CSS được nén lúc build. Mâm cơm 3 món hiện thành 3 ô nằm ngang trong một khay.
+Giao diện shadcn/ui qua thư viện **Basecoat** (#79): nền trung tính tông stone `#FAFAF9`, thẻ trắng viền mảnh `#E7E5E4` bóng rất nhẹ, bo 10–14px, chữ Be Vietnam Pro (tiêu đề 700 chữ khít), màu chính cam đất `#B4421F` cho nút và link (màu trang trí `#D95D39`), xanh thảo mộc `#3F6E4E`, chữ `#1C1917`. Thẻ món ảnh 4:3; thời gian và độ khó (chấm màu: Dễ xanh `#3F6E4E`, Vừa vàng đất `#96610F`, Khó cam đậm `#B4421F`) nằm dưới tên món. Đầu trang chủ có cụm 3 ảnh món tròn. CSS nén lúc build. Mâm cơm 3 món hiện thành 3 ô nằm ngang trong một khay.
 
 ## Trang
 | Trang | Đường dẫn |

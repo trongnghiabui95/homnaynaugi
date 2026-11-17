@@ -1,0 +1,7 @@
+/* Trang Video: khung phát lớn và nút chuyển. Chỉ trang /video/ tải file này. Token ở style.css. */
+.vstage { margin: 8px 0 28px; }
+.vstage .player-box.vertical { max-width: min(360px, calc(50vh * 9 / 16)); }
+.vstage h2 { margin: 2px 0 4px; }
+.vnav { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; margin: 12px 0 8px; }
+.vnav .btn { justify-content: center; padding: 0 12px; white-space: nowrap; }
+.vnav > a.btn { min-width: 0; white-space: normal; text-align: center; line-height: 1.2; } /* 320px: nút giữa xuống dòng thay vì tràn */

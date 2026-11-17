@@ -1,10 +1,10 @@
 /* Trang chủ: khung quay món. Chỉ trang chủ tải file này (templates.mjs). Token ở style.css. */
 /* Đầu trang: chữ lớn + cụm đĩa */
 .hero { position: relative; }
-.hero h1 { font-size: 2.45em; margin: .3em 0 .3em; max-width: calc(100% - 132px); }
-.hero h1 em { color: var(--primary); text-decoration: underline .1em var(--nghe); text-underline-offset: .14em; text-decoration-skip-ink: none; }
+.hero h1 { font-size: 2.35em; letter-spacing: -.035em; margin: .3em 0 .3em; max-width: calc(100% - 132px); }
+.hero h1 em { color: var(--primary); font-style: normal; }
 .plates { position: absolute; right: -4px; top: 6px; display: flex; }
-.plates img { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 4px solid var(--bg); box-shadow: var(--shadow); background: var(--surface-2); }
+.plates img { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 3px solid var(--bg); box-shadow: 0 4px 12px -2px rgb(0 0 0 / .15); background: var(--surface-2); }
 .plates img + img { margin-left: -26px; }
 .plates img:nth-child(2) { transform: translateY(34px); } .plates img:nth-child(3) { transform: translateY(4px); }
 @media (min-width: 700px) { .hero h1 { font-size: 3em; } .plates img { width: 104px; height: 104px; } }
@@ -15,12 +15,12 @@
 .fridge-cta p { margin: 0; }
 .fridge-cta .btn { background: var(--herb); color: var(--primary-ink); }
 /* Khung quay: nền nghệ, không viền, nổi nhất trang */
-.spin { position: relative; background: var(--nghe-soft); border: 0; box-shadow: none; padding: 18px 16px; }
-.spin h2 { font-size: 1.75em; line-height: 1.1; }
-.spin .seg { background: var(--surface); } .spin .seg button[aria-selected="true"] { background: var(--text); color: var(--bg); box-shadow: none; }
-.spin .spin-slots { background: color-mix(in srgb, var(--surface) 55%, transparent); }
+/* Khung quay: thẻ Basecoat, viền trên màu nhấn mảnh làm điểm nhận diện */
+.spin { position: relative; padding: 18px 16px; }
+.spin h2 { font-size: 1.5em; line-height: 1.15; }
+.spin .seg { display: flex; }
 .spin-filters { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 8px 0 4px; }
-.kind{display:flex;gap:8px;margin-bottom:12px}.kind label{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;border:2px solid transparent;border-radius:999px;background:var(--surface);font-weight:600;cursor:pointer}.kind label:has(:checked){border-color:var(--primary);color:var(--primary)}.kind input{accent-color:var(--primary);width:18px;height:18px;margin:0}.spin-more{margin-bottom:14px}.spin-more summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:600;color:var(--primary)}.rgrid.rrow{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:44%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding-bottom:6px}.rrow>*{scroll-snap-align:start}@media (min-width:700px){.rgrid.rrow{grid-auto-columns:30%}}
+.kind{display:flex;gap:8px;margin-bottom:12px}.kind label{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;border:1px solid var(--border);border-radius:var(--radius);background:var(--background);box-shadow:var(--shadow);font-weight:600;cursor:pointer}.kind label:has(:checked){border-color:var(--primary);color:var(--primary);box-shadow:0 0 0 1px var(--primary)}.kind input{accent-color:var(--primary);width:18px;height:18px;margin:0}.spin-more{margin-bottom:14px}.spin-more summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:600;color:var(--primary)}.rgrid.rrow{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:44%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding-bottom:6px}.rrow>*{scroll-snap-align:start}@media (min-width:700px){.rgrid.rrow{grid-auto-columns:30%}}
 .spin-filters label span { display: block; font-size: .8em; color: var(--muted); margin-bottom: 4px; }
 @media (max-width: 600px) { .spin-filters { grid-template-columns: 1fr 1fr; } .spin-filters label:last-child { grid-column: 1 / -1; } }
 .spin-go { margin: 0 0 14px; }
@@ -75,3 +75,16 @@
 @keyframes dice { to { transform: rotate(360deg); } }
 .lock { position: absolute; top: 8px; right: 8px; width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--muted); display: grid; place-items: center; cursor: pointer; }
 .lock[aria-pressed="true"] { background: var(--herb); color: #fff; border-color: var(--herb); }
+/* Dải video trang chủ */
+.vstrip { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x proximity; padding: 2px 18px 12px; margin: 0 -18px; scrollbar-width: none; }
+.vcard { flex: none; width: 190px; scroll-snap-align: center; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); overflow: hidden; box-shadow: var(--shadow); }
+.vcard-body strong { font-weight: 600; }
+.vcard:not(.doc) { width: 290px; }
+.vcard-media { aspect-ratio: 16/9; background: #000; }
+.vcard.doc .vcard-media { aspect-ratio: 9/16; }
+.vcard.playing { border-color: var(--accent); }
+.vcard-body { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px 6px; flex: 1; }
+.vcard-body strong { font-family: var(--serif); line-height: 1.3; }
+.vcard-body small { color: var(--muted); font-size: 13px; }
+.vcard-body p { margin: 2px 0; color: var(--muted); font-size: .88em; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; overflow: hidden; }
+.vcard-link { margin-top: auto; display: inline-flex; align-items: center; min-height: 44px; font-weight: 600; text-decoration: none; }
