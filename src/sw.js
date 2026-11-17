@@ -1,7 +1,7 @@
 // Service worker: trang HTML lấy mạng trước, mất mạng thì dùng bản đã lưu; tài nguyên tĩnh dùng bản lưu và cập nhật ngầm.
 const CACHE = "hnng-__BUILD_ID__";
 const BASE = "__BASE__";
-const PRECACHE = ["/", "/di-cho/", "/da-luu/", "/tim-kiem/", "/assets/style.css", "/assets/app.js", "/data/recipes.json", "/assets/icons/icon.svg"].map((p) => BASE + p);
+const PRECACHE = ["/", "/di-cho/", "/da-luu/", "/tim-kiem/", "/assets/style.css", "/assets/home.css", "/assets/recipe.css", "/assets/app.js", "/data/recipes.json", "/assets/icons/icon.svg"].map((p) => BASE + p);
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(PRECACHE)).then(() => self.skipWaiting()));
