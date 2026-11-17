@@ -19,13 +19,6 @@
   --serif: "Lora", Georgia, "Times New Roman", serif;
   color-scheme: light;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #1d1a17; --surface: #27231f; --surface-2: #322c27; --text: #f3ede6; --muted: #bdb3a8; --line: #3e3730;
-    --accent: #f08a62; --primary: #f39a74; --primary-ink: #2a1208; --primary-soft: #47291d; --herb: #92cfa2; --herb-soft: #24362a; --k-de: #92cfa2; --k-vua: #e3b660; --k-kho: #f39a74;
-    --shadow: none; color-scheme: dark;
-  }
-}
 :root[data-theme="dark"] {
   --bg: #1d1a17; --surface: #27231f; --surface-2: #322c27; --text: #f3ede6; --muted: #bdb3a8; --line: #3e3730;
   --accent: #f08a62; --primary: #f39a74; --primary-ink: #2a1208; --primary-soft: #47291d; --herb: #92cfa2; --herb-soft: #24362a; --k-de: #92cfa2; --k-vua: #e3b660; --k-kho: #f39a74;
