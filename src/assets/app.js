@@ -23,7 +23,11 @@ const S = {
     saved: "Đã lưu", save: "Lưu sổ tay", unsaved: "Đã bỏ khỏi sổ tay", savedT: "Đã lưu vào sổ tay",
     shopText: (n, s) => `🛒 Đi chợ: ${n} (${s} người)`, shopTitle: "Danh sách đi chợ", copiedNote: "Đã chép danh sách, dán vào Zalo hoặc Ghi chú.",
     addedIng: (n) => `Đã thêm ${n} nguyên liệu vào Đi chợ`, videoGuide: "Video hướng dẫn",
-    stepProg: (d, n) => `${d}/${n} bước`, stepPos: (i, n) => `Bước ${i}/${n}`, finish: "Hoàn thành", next: "Tiếp →", done: "Xong rồi! Chúc cả nhà ngon miệng.",
+    stepProg: (d, n) => `${d}/${n} bước`, stepPos: (i, n) => `Bước ${i}/${n}`,
+    prep: "Chuẩn bị", prepTitle: (n) => `Gom đủ nguyên liệu cho ${n} người`, prepHint: "Tích từng thứ khi đã để sẵn trên bếp.", prepReady: (d, n) => `Đã sẵn ${d}/${n}`,
+    useHere: "Dùng ở bước này", upNext: (t) => `Tiếp theo: ${t}`, lastStep: "Đây là bước cuối", seePart: "Xem đoạn này", timerN: (n) => `Hẹn giờ ${n} phút`,
+    startCook: "Bắt đầu bước 1 →", doneKicker: "Hoàn thành", doneTitle: "Xong món rồi!", doneText: "Chúc cả nhà ngon miệng. Chụp một tấm cho mọi người cùng xem nhé.",
+    showOff: "Khoe món bạn nấu", saveIt: "Lưu vào sổ tay", saved: "Đã lưu vào sổ tay", closeCook: "Đóng", finish: "Hoàn thành", next: "Tiếp →", done: "Xong rồi! Chúc cả nhà ngon miệng.",
     nDishes: (n) => `${n} món`, noFilter: "Không có món nào hợp bộ lọc.", pickOne: "Chọn ít nhất một nguyên liệu.",
     have: (full, g, n) => `${full ? "✅ Đủ" : "Có"} ${g}/${n} nguyên liệu`, canCook: (n) => `${n} món nấu được với nguyên liệu bạn chọn`,
     noneIng: "Chưa có món nào dùng các nguyên liệu này.", notFound: "Không tìm thấy món phù hợp. Thử từ khác ngắn hơn.",
@@ -45,7 +49,11 @@ const S = {
     saved: "Saved", save: "Save", unsaved: "Removed from saved", savedT: "Saved",
     shopText: (n, s) => `🛒 Shopping: ${n} (${s} ${s === 1 ? "person" : "people"})`, shopTitle: "Shopping list", copiedNote: "List copied. Paste it into a chat or your notes.",
     addedIng: (n) => `Added ${n} ${n === 1 ? "ingredient" : "ingredients"} to shopping`, videoGuide: "Video guide",
-    stepProg: (d, n) => `${d}/${n} steps`, stepPos: (i, n) => `Step ${i}/${n}`, finish: "Finish", next: "Next →", done: "All done! Enjoy your meal.",
+    stepProg: (d, n) => `${d}/${n} steps`, stepPos: (i, n) => `Step ${i}/${n}`,
+    prep: "Get ready", prepTitle: (n) => `Gather ingredients for ${n} ${n === 1 ? "person" : "people"}`, prepHint: "Tick each one once it is ready on the counter.", prepReady: (d, n) => `${d}/${n} ready`,
+    useHere: "Used in this step", upNext: (t) => `Next: ${t}`, lastStep: "This is the last step", seePart: "Watch this part", timerN: (n) => `Timer ${n} min`,
+    startCook: "Start step 1 →", doneKicker: "Finished", doneTitle: "Dish done!", doneText: "Enjoy your meal. Take a photo and share it with everyone.",
+    showOff: "Share your dish", saveIt: "Save to cookbook", saved: "Saved to cookbook", closeCook: "Close", finish: "Finish", next: "Next →", done: "All done! Enjoy your meal.",
     nDishes: (n) => `${n} ${n === 1 ? "dish" : "dishes"}`, noFilter: "No dishes match the filters.", pickOne: "Pick at least one ingredient.",
     have: (full, g, n) => `${full ? "✅ All" : "Have"} ${g}/${n} ingredients`, canCook: (n) => `${n} ${n === 1 ? "dish" : "dishes"} you can cook with your ingredients`,
     noneIng: "No dishes use these ingredients yet.", notFound: "No matching dishes. Try a shorter word.",
@@ -119,6 +127,9 @@ function qtyText(q) {
 
 const svg = (p) => `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
 const IC = {
+  camera: svg('<path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2L9 5h6l1.5 2h2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z"/><circle cx="12" cy="13" r="3.5"/>'),
+  heart: svg('<path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.4a4.3 4.3 0 0 1 7.5 2.4C19.5 15.4 12 20 12 20z"/>'),
+  timer: svg('<circle cx="12" cy="13.5" r="7"/><path d="M12 10v3.8l2.4 1.5M9.5 3.5h5"/>'),
   loa: svg('<path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>'),
   tat: svg('<path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z"/><path d="m16 10 4 4m0-4-4 4"/>'),
   play: svg('<circle cx="12" cy="12" r="8.5"/><path d="M10.2 8.8v6.4l5-3.2z"/>'),
@@ -415,6 +426,17 @@ async function pageHome() {
 }
 
 // ---------- Trang công thức ----------
+// ---------- Chế độ nấu: hàm thuần (kiểm thử trong e2e) ----------
+/** Các số phút nhắc trong câu ("2–3 phút" → 3) để gợi ý hẹn giờ. */
+const soPhut = (t) => [...t.matchAll(/(\d+)(?:\s*[–-]\s*(\d+))?\s*(?:phút|min)/gi)].map((m) => Number(m[2] || m[1]));
+/** Nạp CSS riêng của một màn khi cần (ví dụ cook.css lúc mở chế độ nấu). */
+const napCss = (ten) => new Promise((ok) => {
+  if (document.querySelector(`link[data-css="${ten}"]`)) return ok();
+  const v = (document.querySelector('link[href*="style.css"]')?.href.split("?")[1]) || "";
+  const l = Object.assign(document.createElement("link"), { rel: "stylesheet", href: `${BASE}/assets/${ten}.css${v ? `?${v}` : ""}` });
+  l.dataset.css = ten; l.onload = l.onerror = () => ok(); document.head.append(l);
+});
+
 async function pageRecipe() {
   const art = $(".recipe"), slug = art.dataset.slug, base = Number(art.dataset.baseServ) || 1;
   let serv = base;
@@ -498,38 +520,112 @@ async function pageRecipe() {
   // Ảnh bước: màn rộng là ảnh nhỏ bên phải, bấm để phóng to
   $$(".step-fig").forEach((f) => (f.onclick = () => f.classList.toggle("big")));
 
-  // Chế độ đang nấu: từng bước chữ to, đánh dấu xong, giữ màn hình sáng
-  const view = $("[data-cook-view]");
+  // Chế độ đang nấu: màn Chuẩn bị → từng bước (nguyên liệu dùng ở bước, chữ quan trọng tô đậm, hẹn giờ tự động,
+  // đoạn video của bước, xem trước bước sau, đọc to, vuốt để chuyển) → màn Hoàn thành. Giữ màn hình sáng.
+  const view = $("[data-cook-view]"), body = $("[data-cook-body]"), extra = $("[data-cook-extra]");
+  const lv = (el) => (el?.getAttribute("lang") ? ` lang="${el.getAttribute("lang")}"` : ""); // nội dung chưa dịch giữ lang="vi"
+  const ings = $$(".ings li").map((li) => ({ lv: lv(li), ten: $("strong", li).textContent, q: Number($(".qty", li).dataset.q) || 0, dv: $(".unit", li).textContent, gc: ($("small", li)?.textContent || "").replace(/^\(|\)$/g, "") }));
+  const luong = (g) => [g.q ? qtyText((g.q * serv) / base) : "", g.dv, g.q ? "" : g.gc].filter(Boolean).join(" ");
+  const daSan = new Set();
   let idx = 0, lock = null;
+  const say = (() => {
+    const ok = "speechSynthesis" in window;
+    const noi = (txt) => {
+      if (!ok || !prefs.say) return;
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(txt), l = LANG === "en" ? "en" : "vi";
+      u.lang = l === "vi" ? "vi-VN" : "en-US"; u.rate = 0.95;
+      const v = speechSynthesis.getVoices().find((x) => x.lang.toLowerCase().startsWith(l)); if (v) u.voice = v;
+      speechSynthesis.speak(u);
+    };
+    return { ok, noi, dung: () => ok && speechSynthesis.cancel() };
+  })();
+  const sayBtn = $("[data-cook-say]");
+  const veSay = () => { sayBtn.setAttribute("aria-pressed", !!prefs.say); sayBtn.innerHTML = prefs.say ? IC.loa : IC.tat; };
+  sayBtn.hidden = !say.ok; veSay();
+  const tiep = (li) => { const h = li?.querySelector("h3, h4"); $("[data-cook-upnext]").innerHTML = h ? `${esc(S.upNext(""))}<span${lv(h)}>${esc(h.textContent)}</span>` : ""; };
+  const ytId = $("[data-player]")?.dataset.id, doc = $("[data-player]")?.classList.contains("vertical");
   const show = () => {
-    const li = steps[idx], img = li.querySelector(".step-img"), cimg = $("[data-cook-img]");
-    $("[data-cook-pos]").textContent = S.stepPos(idx + 1, steps.length);
-    $("[data-cook-bar]").style.width = `${((idx + 1) / steps.length) * 100}%`;
-    $("[data-cook-title]").textContent = li.querySelector("h3, h4")?.textContent || "";
-    $("[data-cook-text]").innerHTML = li.querySelector("p").innerHTML; // chữ do build sinh, đã thoát HTML, giữ phần tô đậm
-    // "Dùng ở bước này", "Đạt khi" và "Lưu ý" của bước (do build sinh, đã thoát HTML)
-    for (const [sel, src] of [["[data-cook-uses]", ".uses"], ["[data-cook-sign]", ".sign"], ["[data-cook-note]", ".step-note"]]) {
-      const e = li.querySelector(src), c = $(sel); c.hidden = !e; c.innerHTML = e ? e.innerHTML : "";
-    }
+    const n = steps.length, li = steps[idx], img = li?.querySelector(".step-img"), cimg = $("[data-cook-img]");
+    const nut = (cls, txt, attr = "") => `<button class="btn${cls}" type="button" ${attr}>${txt}</button>`;
+    $("[data-cook-pos]").textContent = idx < 0 ? S.prep : idx >= n ? S.doneKicker : S.stepPos(idx + 1, n);
+    $("[data-cook-bar]").style.width = `${(Math.max(0, Math.min(idx + 1, n)) / n) * 100}%`;
+    $("[data-cook-done]").closest("label").hidden = idx < 0 || idx >= n;
+    $("[data-cook-prev]").disabled = idx < 0;
+    $("[data-cook-next]").hidden = idx >= n;
+    $("[data-cook-next]").textContent = idx < 0 ? S.startCook : idx === n - 1 ? S.finish : S.next;
     cimg.hidden = !img; if (img) cimg.src = img.src;
-    $("[data-cook-done]").checked = li.classList.contains("done");
-    $("[data-cook-tools]").innerHTML = $$("[data-timer]", li).map((b) => b.outerHTML).join("");
-    $("[data-cook-prev]").disabled = idx === 0;
-    $("[data-cook-next]").textContent = idx === steps.length - 1 ? S.finish : S.next;
+    $("[data-cook-tools]").innerHTML = "";
+    body.scrollTop = 0;
+    // "Đạt khi" và "Lưu ý" của bước (build sinh, đã thoát HTML); ẩn ở màn Chuẩn bị, Hoàn thành
+    for (const [sel, src] of [["[data-cook-sign]", ".sign"], ["[data-cook-note]", ".step-note"]]) {
+      const e = li?.querySelector(src), c = $(sel); c.hidden = !e || idx < 0 || idx >= n; c.innerHTML = e ? e.innerHTML : "";
+    }
+    let doc2 = "";
+    if (idx < 0) {
+      body.dataset.man = "prep";
+      $("[data-cook-title]").textContent = S.prepTitle(serv);
+      $("[data-cook-text]").textContent = S.prepHint;
+      extra.innerHTML = `<ul class="cook-prep">${ings.map((g, k) => `<li${g.lv}><label><input type="checkbox" data-prep="${k}"${daSan.has(k) ? " checked" : ""}><span><strong>${esc(g.ten)}</strong> ${esc(luong(g))}</span></label></li>`).join("")}</ul><p class="muted" data-prep-count>${S.prepReady(daSan.size, ings.length)}</p>`;
+      tiep(steps[0]);
+      doc2 = `${S.prepTitle(serv)}. ${ings.map((g) => `${g.ten} ${luong(g)}`).join(", ")}`;
+    } else if (idx >= n) {
+      body.dataset.man = "done";
+      $("[data-cook-title]").textContent = S.doneTitle;
+      $("[data-cook-text]").textContent = S.doneText;
+      const tq = $("[data-tq]:not([hidden]) [data-tq-mo]"), fav = $("[data-fav]");
+      extra.innerHTML = `<div class="cook-end">${tq ? nut("", `${IC.camera} ${S.showOff}`, "data-cook-tq") : ""}${fav && fav.getAttribute("aria-pressed") !== "true" ? nut(" ghost", `${IC.heart} ${S.saveIt}`, "data-cook-fav") : `<p class="muted">${S.saved}</p>`}${nut(" ghost", S.closeCook, "data-cook-x")}</div>`;
+      $("[data-cook-upnext]").textContent = "";
+      tungBong(body); amThanh.keng();
+      doc2 = `${S.doneTitle} ${S.doneText}`;
+    } else {
+      const p = li.querySelector("p").textContent, tit = li.querySelector("h3, h4")?.textContent || "";
+      body.dataset.man = "step";
+      $("[data-cook-title]").textContent = tit;
+      $("[data-cook-text]").innerHTML = li.querySelector("p").innerHTML; // build đã thoát HTML và tô đậm (scripts/buoc.mjs)
+      $("[data-cook-done]").checked = li.classList.contains("done");
+      const dung = $$(".uses > span", li); // build dò sẵn (doNguyenLieu), lượng đã đổi theo khẩu phần
+      const seek = $("[data-seek]", li)?.dataset.seek;
+      extra.innerHTML = (dung.length ? `<p class="cook-lbl">${S.useHere}</p><ul class="cook-dung">${dung.map((x) => `<li${lv(x)}>${x.innerHTML}</li>`).join("")}</ul>` : "")
+        + (ytId && seek != null ? `<div data-cook-vid>${nut(" ghost", `${IC.play} ${S.seePart}`, `data-cook-seek="${seek}"`)}</div>` : "");
+      const phut = new Set([...$$("[data-timer]", li).map((b) => Number(b.dataset.timer)), ...soPhut(p)]);
+      $("[data-cook-tools]").innerHTML = [...phut].filter((m) => m > 0 && m <= 180).map((m) => `<button class="mini" type="button" data-timer="${m}" data-label="${esc(tit || S.stepPos(idx + 1, n))}">${IC.timer} ${S.timerN(qtyText(m))}</button>`).join("");
+      if (idx < n - 1) tiep(steps[idx + 1]); else $("[data-cook-upnext]").textContent = S.lastStep;
+      doc2 = `${tit}. ${p}${dung.length ? `. ${S.useHere}: ${dung.map((x) => x.textContent.replace(/\s+/g, " ")).join(", ")}` : ""}`;
+    }
+    say.noi(doc2);
   };
-  const close = () => { view.hidden = true; lock?.release?.(); lock = null; document.body.style.overflow = ""; };
+  const close = () => { view.hidden = true; say.dung(); lock?.release?.(); lock = null; document.body.style.overflow = ""; };
+  const di = (d) => { const n = steps.length; if (d > 0 && idx >= 0 && idx < n) datXong(idx, true); idx = Math.max(-1, Math.min(n, idx + d)); show(); };
   $("[data-cook]").onclick = async () => {
-    idx = Math.max(0, steps.findIndex((li) => !li.classList.contains("done"))); show();
+    await napCss("cook");
+    const k = steps.findIndex((li) => !li.classList.contains("done"));
+    idx = k <= 0 ? -1 : k; show();
     view.hidden = false; document.body.style.overflow = "hidden";
     try { lock = await navigator.wakeLock?.request("screen"); } catch {}
   };
   $("[data-cook-done]").onchange = (e) => datXong(idx, e.target.checked);
   $("[data-cook-close]").onclick = close;
-  $("[data-cook-prev]").onclick = () => { if (idx > 0) { idx--; show(); } };
-  $("[data-cook-next]").onclick = () => {
-    datXong(idx, true);
-    if (idx < steps.length - 1) { idx++; show(); } else { close(); toast(S.done); }
+  $("[data-cook-prev]").onclick = () => { if (idx > -1) di(-1); };
+  $("[data-cook-next]").onclick = () => di(1);
+  sayBtn.onclick = () => { prefs.say = !prefs.say; savePrefs(); veSay(); if (prefs.say) show(); else say.dung(); };
+  extra.onclick = (e) => {
+    const pr = e.target.closest("[data-prep]");
+    if (pr) { pr.checked ? daSan.add(+pr.dataset.prep) : daSan.delete(+pr.dataset.prep); $("[data-prep-count]").textContent = S.prepReady(daSan.size, ings.length); return; }
+    const sk = e.target.closest("[data-cook-seek]");
+    if (sk) { sk.parentElement.innerHTML = `<div class="cook-player${doc ? " vertical" : ""}"><iframe src="https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&rel=0&playsinline=1&start=${sk.dataset.cookSeek}" title="${S.videoGuide}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>`; say.dung(); return; }
+    if (e.target.closest("[data-cook-tq]")) { close(); $("[data-tq-mo]").click(); }
+    if (e.target.closest("[data-cook-fav]")) { $("[data-fav]").click(); e.target.closest("button").outerHTML = `<p class="muted">${S.saved}</p>`; }
+    if (e.target.closest("[data-cook-x]")) close();
   };
+  // Vuốt trái/phải trên phần nội dung để chuyển bước (tay ướt cũng dễ thao tác)
+  let x0 = null, y0 = 0;
+  body.addEventListener("touchstart", (e) => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+  body.addEventListener("touchend", (e) => {
+    if (x0 === null) return;
+    const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0; x0 = null;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) { if (dx < 0 && idx < steps.length) di(1); if (dx > 0 && idx > -1) di(-1); }
+  });
   document.addEventListener("visibilitychange", async () => { if (!view.hidden && document.visibilityState === "visible") { try { lock = await navigator.wakeLock?.request("screen"); } catch {} } });
   document.addEventListener("keydown", (e) => {
     if (view.hidden) return;
