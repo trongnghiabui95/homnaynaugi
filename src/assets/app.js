@@ -158,10 +158,12 @@ document.addEventListener("error", (e) => e.target.matches?.(PHOTO) && photoBad(
 const scanPhotos = (root = document) => $$(PHOTO, root).forEach((i) => i.complete && (i.naturalWidth ? photoOk(i) : photoBad(i)));
 scanPhotos();
 
+// v = 2: ảnh là ảnh bìa YouTube Shorts (khung dọc giữa nền đen) → class yt-doc phóng to cho kín khung.
+const DOC = (r) => (r.v === 2 ? ' class="yt-doc"' : "");
 /** Thẻ món phía trình duyệt, giống recipeCard() lúc build. */
 function cardHTML(r, extra = "") {
   const k = fold(r.k);
-  return `<a class="rcard${["de", "vua", "kho"].includes(k) ? ` k-${k}` : ""}" href="${LP}/mon/${r.s}/"><div class="rcard-img">${noPhoto(r.t, r.tl ?? "vi")}${r.img ? `<img src="${esc(r.img)}" alt="" loading="lazy" decoding="async" width="480" height="360">` : ""}
+  return `<a class="rcard${["de", "vua", "kho"].includes(k) ? ` k-${k}` : ""}" href="${LP}/mon/${r.s}/"><div class="rcard-img">${noPhoto(r.t, r.tl ?? "vi")}${r.img ? `<img${DOC(r)} src="${esc(r.img)}" alt="" loading="lazy" decoding="async" width="480" height="360">` : ""}
   ${r.v ? `<span class="badge-video">${IC.play} Video</span>` : ""}</div>
   <div class="rcard-body"><small class="rcard-cat"${LA(r.cl)}>${esc(r.cn)}</small><strong${LA(r.tl)}>${esc(r.t)}</strong>${extra}
   <span class="rcard-meta"><span>${r.m ? `${IC.clock} ${S.min(r.m)}` : ""}</span>${r.k ? `<b>${esc(diffText(r.k))}</b>` : ""}</span></div></a>`;
@@ -294,7 +296,7 @@ async function pageHome() {
   const goBtn = $("[data-spin-go]", box), goText = $("span", goBtn);
   const rand = (a) => a[(Math.random() * a.length) | 0];
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-  const pic = (r) => noPhoto(r.t, r.tl ?? "vi") + (r.img ? `<img src="${esc(r.img)}" alt="" width="240" height="180">` : "");
+  const pic = (r) => noPhoto(r.t, r.tl ?? "vi") + (r.img ? `<img${DOC(r)} src="${esc(r.img)}" alt="" width="240" height="180">` : "");
   // Ưu tiên món có ảnh: món có ảnh có 3 phần cơ hội, món chưa có ảnh 1 phần (vẫn ra để mâm cơm đa dạng).
   const pickFin = (p) => rand([...p].sort((a, b) => !!b.img - !!a.img).flatMap((r) => (r.img ? [r, r, r] : [r])));
   const slotHTML = (d) => {

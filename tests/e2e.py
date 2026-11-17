@@ -307,6 +307,24 @@ async def main():
         h = open(os.path.join(DIST, "mon", "trung-chien-hanh", "index.html"), encoding="utf-8").read()
         check("món chưa có ảnh: dùng ảnh mặc định để chia sẻ, Recipe không gắn ảnh không phải món", "og-mac-dinh.png" in h and '"@type":"Recipe"' in h and '"image"' not in h.split('"@type":"Recipe"')[1].split("</script>")[0])
 
+        # Món có video nhưng chưa có ảnh: dùng ảnh bìa của chính video ở mọi nơi (Issue #67)
+        h = open(os.path.join(DIST, "mon", "mon-thu-video-ngang", "index.html"), encoding="utf-8").read()
+        rld = h.split('"@type":"Recipe"')[1].split("</script>")[0]
+        check("món chỉ có video: og:image và Recipe.image là ảnh bìa video", 'og:image" content="https://i.ytimg.com/vi/NGANGthu001/hqdefault.jpg"' in h and '"image":["https://i.ytimg.com/vi/NGANGthu001/hqdefault.jpg"]' in rld)
+        await pg.goto(B + "/mon/mon-thu-video-ngang/"); await pg.wait_for_timeout(400)
+        tm = await pg.evaluate("""()=>{const i=document.querySelector('.media [data-media-panel=video] .lite-yt img');return [!!i&&i.naturalWidth>0,!document.querySelector('.hero-img'),document.querySelector('.media figcaption').textContent.trim()]}""")
+        check("trang món chỉ có video: có ảnh bìa, ghi 'Ảnh và video từ kênh'", tm[:2] == [True, True] and tm[2].startswith("Ảnh và video từ kênh Kênh thử ngang"), str(tm))
+        await pg.goto(B + "/mon/mon-thu-video/"); await pg.wait_for_timeout(300)
+        check("món có ảnh riêng: vẫn ghi 'Video: kênh'", (await pg.text_content(".media [data-media-panel=video] figcaption")).strip().startswith("Video: kênh Kênh thử"))
+        await pg.goto(B + "/"); await pg.wait_for_timeout(600)
+        idx = await pg.evaluate("fetch((document.documentElement.dataset.base || '') + '/data/recipes.json').then(r=>r.json()).then(a=>Object.fromEntries(a.map(r=>[r.s,[r.img,r.v]])))")
+        check("chỉ mục: món chỉ có video lấy ảnh bìa, món không ảnh không video để trống", idx["mon-thu-video-ngang"] == ["https://i.ytimg.com/vi/NGANGthu001/hqdefault.jpg", 1] and idx["trung-chien-hanh"] == ["", 0], str(idx["mon-thu-video-ngang"]))
+        the = await pg.evaluate("""()=>{const i=document.querySelector('.rcard[href$="/mon/mon-thu-video-ngang/"] .rcard-img img');return i&&[i.src,i.loading,i.classList.contains('ok')]}""")
+        check("thẻ món chỉ có video: ảnh bìa tải lười, hiện rõ", the == ["https://i.ytimg.com/vi/NGANGthu001/hqdefault.jpg", "lazy", True], str(the))
+        # Ảnh bìa Shorts (khung dọc giữa nền đen 4:3): class yt-doc phóng ảnh 237% và lệch trái 68,55% để chỉ còn phần hình, không méo
+        doc = await pg.evaluate("""()=>{const i=document.querySelector('.rcard[href$="/mon/mon-thu-video-ngang/"] .rcard-img img');i.classList.add('yt-doc');const c=i.parentElement.getBoundingClientRect(),r=i.getBoundingClientRect(),o=[r.width/c.width,(r.left-c.left)/c.width,getComputedStyle(i).objectFit];i.classList.remove('yt-doc');return o}""")
+        check("ảnh bìa Shorts cắt vừa khung 4:3, không méo", abs(doc[0] - 480 / 202.5) < 0.01 and abs(doc[1] + (480 / 202.5 - 1) / 2) < 0.01 and doc[2] == "cover", str(doc))
+
         # Món chưa có ảnh: khung trung tính có tên món, không còn emoji lớn; món có ảnh xếp trước
         await pg.goto(B + "/"); await pg.wait_for_timeout(600)
         check("không còn emoji lớn thay ảnh món", await pg.evaluate("!document.querySelector('.rcard-emoji') && ![...document.querySelectorAll('.rcard-img, .slot-img')].some(e=>/\\p{Extended_Pictographic}/u.test(e.textContent))"))

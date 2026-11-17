@@ -177,7 +177,7 @@ export function recipeCard(r, attrs = false, lang = "vi") {
   const data = attrs ? ` data-k="${esc((r.do_kho || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase())}" data-m="${r.total || 0}" data-cal="${r.cal || 0}" data-d="${esc(r.cap_nhat || "")}"` : "";
   const k = (r.do_kho || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
   return `<a class="rcard${["de", "vua", "kho"].includes(k) ? ` k-${k}` : ""}" href="/mon/${r.slug}/"${data}>
-  <div class="rcard-img">${noPhoto(r.ten, L(r.lv?.ten))}${r.img ? `<img src="${esc(r.img)}" alt="" loading="lazy" decoding="async" width="480" height="360">` : ""}
+  <div class="rcard-img">${noPhoto(r.ten, L(r.lv?.ten))}${r.img ? `<img${r.imgDoc ? ' class="yt-doc"' : ""} src="${esc(r.img)}" alt="" loading="lazy" decoding="async" width="480" height="360">` : ""}
     ${r.yt ? `<span class="badge-video">${icon("play")} ${t("video")}</span>` : ""}
   </div>
   <div class="rcard-body"><small class="rcard-cat"${A(L(r.cat?.lv?.ten))}>${esc(r.cat?.ten || "")}</small><strong${A(L(r.lv?.ten))}>${esc(r.ten)}</strong>

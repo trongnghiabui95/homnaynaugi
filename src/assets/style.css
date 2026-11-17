@@ -142,6 +142,8 @@ select { min-height: 46px; padding: 0 12px; border: 1px solid var(--line); borde
 .rcard { display: flex; flex-direction: column; background: var(--surface); border-radius: var(--radius); overflow: hidden; text-decoration: none; color: var(--text); box-shadow: var(--shadow); border: 1px solid var(--line); border-top: 3px solid var(--k, var(--line)); }
 .rcard-img { position: relative; aspect-ratio: 4/3; overflow: hidden; background: var(--surface-2); }
 .rcard-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease, opacity .35s ease; }
+/* Ảnh bìa Shorts: khung 9:16 rộng 202,5/480 ảnh (42,2%) → rộng ảnh 237,1% khung, lệch trái 68,55% để chỉ còn phần hình, không méo. */
+.rcard-img img.yt-doc, .slot-img img.yt-doc { left: -68.55%; width: 237.1%; max-width: none; }
 /* Khung chờ khi chưa có ảnh */
 .ph { position: absolute; inset: 0; display: grid; place-items: center; padding: 14px; text-align: center; font-family: var(--serif); font-weight: 600; font-style: italic; line-height: 1.25; color: var(--muted); background: var(--surface-2); }
 .ph span { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }

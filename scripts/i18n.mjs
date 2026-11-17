@@ -40,7 +40,7 @@ const vi = {
   fridge_btn: "Chọn nguyên liệu", new_h2: "Công thức mới", all_n_dishes: (n) => `Tất cả ${n} món`,
   no_recipes: "Chưa có công thức", no_recipes_p: "Thêm công thức trong Google Sheets, web sẽ tự cập nhật.",
   // Video
-  play_video: (t) => `Phát video ${t}`, video_by: (k) => (k ? `Video: kênh <strong lang="vi">${k}</strong>` : "Video: YouTube"),
+  play_video: (t) => `Phát video ${t}`, video_by: (k) => (k ? `Video: kênh <strong lang="vi">${k}</strong>` : "Video: YouTube"), thumb_by: (k) => (k ? `Ảnh và video từ kênh <strong lang="vi">${k}</strong>` : "Ảnh và video từ YouTube"),
   watch_yt: "Xem trên YouTube", see_recipe_arrow: "Xem công thức →",
   // Danh sách, lọc
   difficulty: "Độ khó", any_diff: "Mọi độ khó", time: "Thời gian", any_time: "Mọi thời gian", le_min: (n) => `≤ ${n} phút`,
@@ -130,7 +130,7 @@ const en = {
   quick_h2: "Quick, under 20 minutes", fridge_h2: "What's in your fridge?", fridge_p: "Pick the ingredients you have and see what you can cook right now.",
   fridge_btn: "Pick ingredients", new_h2: "New recipes", all_n_dishes: (n) => `All ${n} dishes`,
   no_recipes: "No recipes yet", no_recipes_p: "Add recipes in Google Sheets and the site updates itself.",
-  play_video: (t) => `Play video ${t}`, video_by: (k) => (k ? `Video: <strong lang="vi">${k}</strong> channel` : "Video: YouTube"),
+  play_video: (t) => `Play video ${t}`, video_by: (k) => (k ? `Video: <strong lang="vi">${k}</strong> channel` : "Video: YouTube"), thumb_by: (k) => (k ? `Photo and video from the <strong lang="vi">${k}</strong> channel` : "Photo and video from YouTube"),
   watch_yt: "Watch on YouTube", see_recipe_arrow: "See the recipe →",
   difficulty: "Difficulty", any_diff: "Any difficulty", time: "Time", any_time: "Any time", le_min: (n) => `≤ ${n} min`,
   calories: "Calories", any_cal: "Any calories", sort: "Sort", sort_new: "Newest", sort_fast: "Quickest",
