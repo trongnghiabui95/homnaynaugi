@@ -111,7 +111,8 @@ select { min-height: 46px; padding: 0 12px; border: 1px solid var(--line); borde
 .sec-head a { font-weight: 600; text-decoration: none; white-space: nowrap; display: inline-flex; align-items: center; min-height: 44px; }
 
 .hero h1 { font-size: 2.05em; margin: .2em 0 .5em; }
-.spin h2 { margin-top: 0; font-size: 1.6em; }
+.spin h2 { margin-top: 0; font-size: 1.6em; padding-right: 40px; }
+.spin-am { position: absolute; top: 10px; right: 10px; }
 /* Khung quay món */
 .spin { position: relative; border-top: 3px solid var(--accent); }
 .spin::before { content: ""; position: absolute; inset: 7px; border: 1px solid var(--line); border-radius: 12px; pointer-events: none; }
@@ -156,7 +157,7 @@ select { min-height: 46px; padding: 0 12px; border: 1px solid var(--line); borde
 .hreel { position: relative; height: 108px; overflow: hidden; background: var(--surface-2); mask-image: linear-gradient(90deg, transparent, black 16%, black 84%, transparent); }
 .rolling .hreel::after { content: ""; position: absolute; left: calc(50% - 1px); top: 0; bottom: 0; width: 2px; background: var(--primary); }
 .hreel::before { content: ""; position: absolute; left: calc(50% - 7px); top: 0; width: 14px; height: 8px; background: var(--primary); clip-path: polygon(0 0, 100% 0, 50% 100%); z-index: 1; }
-.hreel-track { position: absolute; left: 50%; top: 12px; display: flex; gap: 8px; transform: translateX(var(--x)); transition: transform var(--d) cubic-bezier(.16,.72,.2,1); will-change: transform; }
+.hreel-track { position: absolute; left: 50%; top: 12px; display: flex; gap: 8px; transform: translateX(var(--x)); transition: transform var(--d) cubic-bezier(.15,.85,.15,1); will-change: transform; }
 .hreel .slot-img { flex: 0 0 112px; height: 84px; aspect-ratio: auto; opacity: .55; }
 .hreel .slot-img.on { opacity: 1; outline: 2px solid var(--primary); outline-offset: 2px; }
 .single-info { padding: 4px 12px 0; min-width: 0; }
@@ -164,7 +165,7 @@ select { min-height: 46px; padding: 0 12px; border: 1px solid var(--line); borde
 .single-act .lock { position: static; width: auto; padding: 0 12px; display: flex; gap: 4px; font-size: 13px; font-weight: 600; }
 .slot.single strong { font-size: 1.05em; }
 .slot.rolling strong { opacity: .6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.reel { position: absolute; inset: 0; transition: transform var(--d) cubic-bezier(.16,.72,.2,1); will-change: transform; }
+.reel { position: absolute; inset: 0; transition: transform var(--d) cubic-bezier(.15,.85,.15,1); will-change: transform; }
 .reel > div { position: relative; height: 100%; }
 .slot.landed { animation: land .6s cubic-bezier(.2,1.3,.4,1); }
 @keyframes land { 0% { transform: scale(.96); box-shadow: 0 0 0 0 var(--accent); } 45% { transform: scale(1.025); box-shadow: 0 0 0 6px var(--primary-soft); } 100% { transform: none; box-shadow: 0 0 0 0 transparent; } }
