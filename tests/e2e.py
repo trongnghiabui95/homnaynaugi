@@ -500,7 +500,12 @@ async def main():
         p6.on("console", lambda m: errs.append(m.text) if m.type == "error" and not any(x in m.text for x in BO_QUA) else None)
         await p6.goto(B + "/mon/trung-chien-hanh/"); await p6.wait_for_timeout(300)
         nut = [await p6.get_attribute("[data-lang]", "href"), await p6.text_content("[data-lang]"), (await p6.evaluate("(()=>{const r=document.querySelector('[data-lang]').getBoundingClientRect();return [r.width,r.height]})()"))]
-        check("nút đổi ngôn ngữ ở đầu trang: EN, ≥ 44px, trỏ đúng trang tiếng Anh", nut[0] == "/en/mon/trung-chien-hanh/" and nut[1] == "EN" and min(nut[2]) >= 44 and await p6.get_attribute("[data-lang]", "aria-label") == "Switch to English", str(nut))
+        check("nút đổi ngôn ngữ ở đầu trang: EN, ≥ 44px, trỏ đúng trang tiếng Anh", nut[0] == "/en/mon/trung-chien-hanh/" and nut[1] == "EN" and min(nut[2]) >= 44 and await p6.get_attribute("[data-lang]", "aria-label") == "EN, Switch to English", str(nut))
+        # Rà giao diện (#69): màn 320px + chữ lớn, nút khẩu phần xuống hàng thay vì tràn ngang
+        await p6.set_viewport_size({"width": 320, "height": 700}); await p6.evaluate("document.documentElement.dataset.big='1'"); await p6.wait_for_timeout(100)
+        sv = await p6.evaluate("(()=>{const b=[...document.querySelectorAll('.serv-quick .chip')].map(e=>e.getBoundingClientRect());return [document.documentElement.scrollWidth<=innerWidth, Math.min(...b.map(r=>r.width)) >= 44, Math.max(...b.map(r=>r.right)) <= innerWidth]})()")
+        check("320px + chữ lớn: nút khẩu phần không tràn ngang, mỗi nút ≥ 44px", sv == [True, True, True], str(sv))
+        await p6.evaluate("delete document.documentElement.dataset.big"); await p6.set_viewport_size({"width": 390, "height": 844})
         await p6.click("[data-lang]"); await p6.wait_for_load_state(); await p6.wait_for_timeout(300)
         check("bấm EN ở trang công thức: sang đúng món bản tiếng Anh", p6.url == B + "/en/mon/trung-chien-hanh/" and await p6.evaluate("document.documentElement.lang") == "en", p6.url)
         check("món chưa dịch: hiện dòng 'This recipe is not translated yet.'", (await p6.text_content("[data-not-translated]")) == "This recipe is not translated yet." and await p6.get_attribute("h1", "lang") == "vi")
