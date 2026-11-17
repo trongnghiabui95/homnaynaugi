@@ -344,10 +344,16 @@ async function pageHome() {
   };
 
   // Hiệu ứng máy quay: mỗi ngăn cuộn một dải ảnh món, chậm dần rồi dừng lần lượt
-  // Lâu và hồi hộp hơn: món lẻ ~3 giây; mâm cơm 3 ngăn dừng lần lượt ~2 / 2,8 / 3,6 giây.
+  // Lâu và hồi hộp hơn: món lẻ ~4,5 giây; mâm cơm 3 ngăn dừng lần lượt ~3 / 4 / 5 giây.
+  // Tên món dưới ngăn đổi nhanh lúc đầu rồi thưa dần theo nhịp dải ảnh chậm lại.
+  const nhayTen = (el, p, dur) => {
+    const t0 = performance.now(); let h;
+    const f = () => { const k = Math.min(1, (performance.now() - t0) / dur); el.textContent = rand(p).t; h = setTimeout(f, 80 + 420 * k * k); };
+    f(); return () => clearTimeout(h);
+  };
   const roll = async ({ d, p, fin }, i, all) => {
     const el = $(`[data-slot="${d.key}"]`, slotsEl), cuoi = i === all.length - 1;
-    const n = single(d) ? 24 : 14 + i * 6, dur = single(d) ? 2600 : 2000 + i * 800;
+    const n = single(d) ? 32 : 18 + i * 8, dur = single(d) ? 4100 : 3000 + i * 1000;
     const strip = Array.from({ length: n }, () => rand(p)).concat(fin);
     if (single(d)) {
       const cards = [rand(p), rand(p), ...strip, rand(p), rand(p)], at = n + 2;
@@ -358,9 +364,9 @@ async function pageHome() {
       tr.style.setProperty("--d", dur + 400 + "ms");
       tr.style.setProperty("--x", -(at * STEP + HALF) + "px");
       if (cuoi) amThanh.tach(n, dur + 400);
-      const tk = setInterval(() => (nm.textContent = rand(p).t), 90);
+      const dungTen = nhayTen(nm, p, dur + 400);
       await wait(dur + 400);
-      clearInterval(tk);
+      dungTen();
       st.picks[d.key] = fin.s;
       el.outerHTML = singleHTML(d, fin, !!st.locks[d.key], cards.slice(at - 2, at + 3));
       $(`[data-slot="${d.key}"]`, slotsEl).classList.add("landed");
@@ -374,9 +380,9 @@ async function pageHome() {
     reel.getBoundingClientRect();
     reel.style.transform = `translateY(-${n * 100}%)`;
     if (cuoi) amThanh.tach(n, dur);
-    const tick = setInterval(() => (name.textContent = rand(p).t), 90);
+    const dungTen = nhayTen(name, p, dur);
     await wait(dur);
-    clearInterval(tick);
+    dungTen();
     st.picks[d.key] = fin.s;
     el.outerHTML = slotHTML(d);
     $(`[data-slot="${d.key}"]`, slotsEl).classList.add("landed");
