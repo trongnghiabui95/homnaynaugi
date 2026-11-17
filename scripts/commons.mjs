@@ -41,7 +41,8 @@ function pageInfo(p) {
   const v = (k) => plain(meta[k]?.value);
   const license = v("LicenseShortName");
   if (!license) return { why: "không rõ giấy phép" };
-  const author = (v("Artist") || v("Credit")).slice(0, 120);
+  // Commons hay gắn link trang thảo luận sau tên: "Phương Huy (thảo luận)", "Name (talk)" – bỏ phần đó.
+  const author = (v("Artist") || v("Credit")).replace(/\s*\(\s*(thảo luận|talk|discussion|contribs|đóng góp)[^)]*\)/gi, "").trim().slice(0, 120);
   if (!author && !/public domain|cc0|pd/i.test(license)) return { why: "không rõ tác giả" };
   const src = (ii.thumburl || ii.url || "").replace(/\?.*$/, ""); // bỏ ?utm_… Wikimedia gắn thêm
   // Ảnh thu nhỏ có thể nằm ở upload.wikimedia.org hoặc thumb.wikimedia.org (máy chủ ảnh mới của Wikimedia)
@@ -72,7 +73,7 @@ async function fetchBatch(batch) {
       const res = await fetch(`${API}?${q}`, { headers: { "User-Agent": "HomNayNauGi-build/1.0 (static recipe site builder)" }, signal: AbortSignal.timeout(20000) });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return await res.json();
-    } catch (e) { err = e; await new Promise((ok) => setTimeout(ok, 1500 * (lan + 1))); }
+    } catch (e) { err = e; await new Promise((ok) => setTimeout(ok, [2000, 8000, 20000][lan])); } // 429: chờ lâu dần
   }
   throw err;
 }

@@ -50,6 +50,8 @@ test("tên đã được API chuẩn hoá vẫn khớp; thiếu giấy phép ho�
       { title: "File:C.jpg", imageinfo: ii({ LicenseShortName: { value: "CC BY-SA 3.0" } }) },
     ] } }]);
   assert.equal(info.get("File:a.jpg").author, "Thử");
+  const tl = parseResponses(["File:P.jpg"], [{ query: { pages: [{ title: "File:P.jpg", imageinfo: ii({ Artist: { value: '<a href="//x">Người thử</a> (<a href="//y">thảo luận</a>)' }, LicenseShortName: { value: "CC BY-SA 4.0" } }) }] } }]);
+  assert.equal(tl.get("File:P.jpg").author, "Người thử");
   // Ảnh thu nhỏ ở máy chủ thumb.wikimedia.org cũng được nhận
   const t = parseResponses(["File:T.jpg"], [{ query: { pages: [{ title: "File:T.jpg", imageinfo: [{ thumburl: "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ab/T.jpg/1280px-T.jpg?utm_source=commons.wikimedia.org&utm_content=thumbnail", descriptionurl: "https://commons.wikimedia.org/wiki/File:T.jpg", extmetadata: { Artist: { value: "Thử" }, LicenseShortName: { value: "CC0" } } }] }] } }]);
   assert.equal(t.get("File:T.jpg").src, "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ab/T.jpg/1280px-T.jpg");
