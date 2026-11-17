@@ -5,7 +5,7 @@ Web tiếng Việt (giao diện có thêm bản tiếng Anh ở `/en/`) "Hôm Na
 ## Ngăn xếp (không đổi khi chưa được chủ dự án đồng ý)
 - Web tĩnh HTML/CSS/JS thuần, **không framework, không bước bundle**. Node ≥ 20 chỉ dùng để build.
 - Nội dung nằm trong **Google Sheets** (tab `settings`, `categories`, `recipes`, `ingredients`, `steps`; cấu trúc cột trong `data/README.md`). Ảnh có thể là link chia sẻ Google Drive (build tự đổi sang `lh3.googleusercontent.com/d/ID`). `scripts/build.mjs` tải Sheet (ID trong `sheet.json`, hoặc biến `SHEET_ID`) hoặc CSV trong `data/sample/` (`--sample`) / `DATA_DIR`, kiểm tra, rồi sinh `dist/`. Môi trường Claude không truy cập được docs.google.com nên kiểm thử bằng `--sample` và fixtures; build thật chạy trên GitHub Actions.
-- Deploy: bản xem thử trên GitHub Pages (`.github/workflows/github-pages.yml`, tự lấy tên repo làm `BASE_PATH`); bản chạy thật trên Cloudflare Pages, build command `node scripts/build.mjs`, output `dist`.
+- Deploy: bản xem thử trên GitHub Pages (`.github/workflows/github-pages.yml`, tự lấy tên repo làm `BASE_PATH`, build với `PREVIEW=1` nên noindex, canonical về bản chính); bản chạy thật trên Cloudflare Pages, build command `node scripts/build.mjs`, output `dist`.
 - Link nội bộ trong HTML viết bắt đầu bằng `/`; build tự thêm `BASE_PATH`. Trong `app.js` luôn ghép `BASE` vào trước đường dẫn.
 - PWA: `src/sw.js`, `src/manifest.webmanifest`. Sau này đóng gói Android bằng Capacitor từ `dist/`.
 - Sổ tay món ngon, danh sách đi chợ, kết quả quay món chỉ lưu trên máy người dùng (IndexedDB). Không gửi dữ liệu người dùng ra ngoài.
@@ -15,7 +15,7 @@ Web tiếng Việt (giao diện có thêm bản tiếng Anh ở `/en/`) "Hôm Na
 ## Lệnh
 - `node scripts/build.mjs --sample` – build bằng dữ liệu mẫu
 - `DATA_DIR=tests/fixtures node scripts/build.mjs && python3 tests/e2e.py` – kiểm thử trên trình duyệt; mọi dòng phải là `OK` và `errors: []`
-- `node --test tests/commons.test.mjs tests/thanh-qua.test.mjs tests/buoc.test.mjs` – kiểm thử ảnh Wikimedia Commons, API Thành quả, hàm tô đậm và dò nguyên liệu trong bước (không cần mạng; D1 giả lập bằng `node:sqlite`). Không chạy `node --test tests/` vì `tests/may-chu-thu.mjs` là máy chủ chạy mãi
+- `node --test tests/commons.test.mjs tests/thanh-qua.test.mjs tests/buoc.test.mjs tests/seo.test.mjs` – kiểm thử ảnh Wikimedia Commons, API Thành quả, hàm tô đậm và dò nguyên liệu trong bước, SEO (mô tả trang, Recipe, bản xem thử noindex) (không cần mạng; D1 giả lập bằng `node:sqlite`). Không chạy `node --test tests/` vì `tests/may-chu-thu.mjs` là máy chủ chạy mãi
 
 ## Quy tắc nội dung
 - Món chỉ lên web khi `trang_thai` = `duyệt`, có danh mục hợp lệ, ít nhất 1 nguyên liệu và 1 bước. Không nới lỏng cổng này.

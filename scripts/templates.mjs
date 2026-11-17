@@ -102,7 +102,7 @@ export function layout(site, p) {
 <meta name="description" content="${esc(p.description)}">
 <link rel="canonical" href="${esc(url)}">
 ${p.path === "/404" ? "" : LANGS.map((l) => `<link rel="alternate" hreflang="${l}" href="${esc(abs(site, l, p.path))}">`).join("\n") + `\n<link rel="alternate" hreflang="x-default" href="${esc(abs(site, "vi", p.path))}">`}
-${p.noindex ? '<meta name="robots" content="noindex">' : ""}
+${p.noindex || site.preview ? '<meta name="robots" content="noindex">' : ""}${p.path === "/" && site.google_site_verification && !site.preview ? `\n<meta name="google-site-verification" content="${esc(site.google_site_verification)}">` : ""}
 <meta property="og:type" content="${p.ogType || "website"}">
 <meta property="og:title" content="${esc(p.title)}">
 <meta property="og:description" content="${esc(p.description)}">

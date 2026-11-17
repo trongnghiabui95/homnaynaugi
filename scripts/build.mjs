@@ -2,11 +2,12 @@
 // Dựng web "Hôm Nay Nấu Gì" tĩnh từ Google Sheets (hoặc CSV mẫu) ra thư mục dist/.
 //   node scripts/build.mjs            → đọc Google Sheet nếu có SHEET_ID, không thì đọc data/sample
 //   node scripts/build.mjs --sample   → luôn đọc data/sample
-// Biến môi trường: SHEET_ID, DATA_DIR (thư mục CSV), BASE_PATH (chạy trong thư mục con), SITE_URL.
+// Biến môi trường: SHEET_ID, DATA_DIR (thư mục CSV), BASE_PATH (chạy trong thư mục con), SITE_URL, OUT_DIR (thư mục ra, mặc định dist),
+// PREVIEW=1 + CANONICAL_URL (bản xem thử: noindex, canonical về bản chính).
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { parseCSV, esc, fold, md, isSlug, imgUrl, parseYouTube } from "./lib.mjs";
+import { parseCSV, esc, fold, md, isSlug, imgUrl, parseYouTube, moTaNgan, thieuTruongRecipe } from "./lib.mjs";
 import { commonsFile, resolveCommons, creditText } from "./commons.mjs";
 import { layout, adSlot, emptyState, ytThumb, icon, recipeCard, abs } from "./templates.mjs";
 import { LANGS, PREFIX, tr, diffText } from "./i18n.mjs";
@@ -14,7 +15,7 @@ import { toDam, doNguyenLieu } from "./buoc.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const SRC = path.join(ROOT, "src");
-const DIST = path.join(ROOT, "dist");
+const DIST = process.env.OUT_DIR ? path.resolve(process.env.OUT_DIR) : path.join(ROOT, "dist"); // OUT_DIR: build ra thư mục khác (kiểm thử)
 const TABS = ["settings", "categories", "recipes", "ingredients", "steps"];
 const report = { skipped: [], warnings: [], errors: [] };
 const skip = (tab, r, why) => report.skipped.push(`${tab} dòng ${r._row}${r.slug ? ` (${r.slug})` : ""}: ${why}`);
@@ -91,7 +92,12 @@ async function main() {
   const site = { site_name: "Hôm Nay Nấu Gì", tagline: "", site_url: "" };
   for (const r of raw.settings) if (r.key) site[r.key] = r.value;
   site.base = (process.env.BASE_PATH || "").replace(/\/+$/, "");
-  site.site_url = (process.env.SITE_URL || site.site_url || "https://example.com").replace(/\/+$/, "");
+  // PREVIEW=1 (bản xem thử GitHub Pages): mọi trang noindex, robots.txt chặn hết; canonical, hreflang, og, sitemap trỏ về bản chính
+  // (CANONICAL_URL, không có thì site_url trong Sheet) để Google không thấy 2 bản trùng nội dung.
+  // Mã xác minh Google Search Console: nhận cả mã lẫn nguyên thẻ <meta … content="…"> dán vào Sheet
+  if (site.google_site_verification) site.google_site_verification = (String(site.google_site_verification).match(/content=["']([^"']+)/)?.[1] || site.google_site_verification).trim();
+  site.preview = /^(1|true|yes)$/i.test(process.env.PREVIEW || "");
+  site.site_url = ((site.preview ? process.env.CANONICAL_URL || site.site_url : process.env.SITE_URL || site.site_url) || "https://example.com").replace(/\/+$/, "");
   site.build_id = Date.now().toString(36);
 
   // Ảnh Wikimedia Commons: tra link ảnh, tác giả, giấy phép một lần cho cả web.
@@ -163,6 +169,7 @@ async function main() {
   }));
   await write("data/recipes.json", JSON.stringify(index));
 
+  const ldThieuAnh = []; // món mà dữ liệu có cấu trúc Recipe chưa có image
   for (lang of LANGS) {
   t = tr(lang);
   localize(lang, cats, recipes);
@@ -273,6 +280,8 @@ ${rs.length ? filterBar(rs) + grid(rs, true) : emptyState(t("cat_empty"), t("cat
   }
 
   // ----- Trang công thức -----
+  const sumCount = new Map();
+  for (const r of recipes) if (r.tom_tat) sumCount.set(fold(r.tom_tat), (sumCount.get(fold(r.tom_tat)) || 0) + 1);
   for (const r of recipes) {
     const groups = groupMap(r.ings, "nhom");
     const ingHTML = [...groups].map(([g, gl]) => `${g ? `<h3${A(gl[0].lv.nhom)}>${esc(g)}</h3>` : ""}<ul class="ings">${gl.map((i) => {
@@ -330,6 +339,10 @@ ${rs.length ? filterBar(rs) + grid(rs, true) : emptyState(t("cat_empty"), t("cat
       }),
       ...(r.yt ? { video: { "@type": "VideoObject", name: r.ten, description: r.tom_tat, thumbnailUrl: [ytThumb(r.yt.id)], embedUrl: `https://www.youtube-nocookie.com/embed/${r.yt.id}`, contentUrl: watch } } : {}),
     };
+    // Trình kiểm tra cục bộ Recipe (Google): thiếu ảnh gom thành một dòng cảnh báo, thiếu trường khác báo từng món
+    const thieuLD = thieuTruongRecipe(ld), khac = thieuLD.filter((k) => k !== "image");
+    if (lang === "vi" && thieuLD.includes("image")) ldThieuAnh.push(r.slug);
+    if (lang === "vi" && khac.length) report.warnings.push(`recipes ${r.slug}: dữ liệu có cấu trúc Recipe thiếu ${khac.join(", ")}`);
     const facts = [
       r.prep ? ["clock", t("min", r.prep), t("f_prep")] : null,
       r.cook ? ["flame", t("min", r.cook), t("f_cook")] : null,
@@ -351,7 +364,8 @@ ${rs.length ? filterBar(rs) + grid(rs, true) : emptyState(t("cat_empty"), t("cat
     await page(L, {
       path: `/mon/${r.slug}/`, page: "recipe", title: r.ten, ogType: "article", ogImage: r.img, lastmod: r.cap_nhat,
       crumbs: [[r.cat.ten, `/danh-muc/${r.danh_muc}/`, !!r.cat.lv.ten], [r.ten, `/mon/${r.slug}/`, !!r.lv.ten]],
-      description: t("recipe_desc", r.tom_tat, r.total, r.serv, !!r.yt),
+      // ≤ 160 ký tự, không trùng giữa các món: tóm tắt trống hoặc trùng món khác thì thêm tên món ở đầu
+      description: moTaNgan(!r.tom_tat || sumCount.get(fold(r.tom_tat)) > 1 ? [r.ten, r.tom_tat].filter(Boolean).join(": ") : r.tom_tat, t("recipe_desc", "", r.total, r.serv, !!r.yt)),
       jsonld: [ld],
       body: `<article class="recipe" data-slug="${r.slug}" data-name="${esc(r.ten)}" data-base-serv="${r.serv}">
 <p class="kicker"><a href="/danh-muc/${r.danh_muc}/"${A(r.cat.lv.ten)}>${esc(r.cat.ten)}</a></p>
@@ -466,12 +480,13 @@ ${related.length ? `<section><h2 class="section-title">${t("more_in", r.cat.lv.t
     body: `<h1>${t("admin_title")}</h1><div data-qt><form class="row" data-qt-dang-nhap><label class="grow"><span class="muted small">${t("admin_code")}</span><input type="password" data-qt-ma autocomplete="current-password" required></label><button class="btn" type="submit">${t("admin_open")}</button></form><div data-qt-ds></div></div>` });
   await page(L, { path: "/404", page: "404", title: t("nf_title"), noindex: true, description: t("nf_desc"), body: `<h1>${t("nf_title")}</h1>${t("nf_body")}` });
   } // hết vòng lặp ngôn ngữ
+  if (ldThieuAnh.length) report.warnings.push(`dữ liệu có cấu trúc Recipe thiếu image ở ${ldThieuAnh.length} món (Google cần ảnh để hiện kết quả nhiều định dạng; điền cột anh hoặc video): ${ldThieuAnh.join(", ")}`);
 
   // ----- sitemap, robots, ads.txt, service worker, manifest, đường dẫn gốc -----
   // Sitemap có cả 2 ngôn ngữ; mỗi URL kèm link bản ngôn ngữ kia (hreflang) để Google ghép cặp.
   const alts = (p) => LANGS.map((l) => `<xhtml:link rel="alternate" hreflang="${l}" href="${esc(abs(site, l, p.alt))}"/>`).join("");
   await write("sitemap.xml", `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${pages.map((p) => `<url><loc>${esc(site.site_url + p.path)}</loc>${alts(p)}${p.lastmod ? `<lastmod>${esc(p.lastmod)}</lastmod>` : ""}</url>`).join("\n")}\n</urlset>\n`);
-  await write("robots.txt", `User-agent: *\nAllow: /\nSitemap: ${site.site_url}/sitemap.xml\n`);
+  await write("robots.txt", site.preview ? "# Bản xem thử, không lập chỉ mục. Bản chính: " + site.site_url + "\nUser-agent: *\nDisallow: /\n" : `User-agent: *\nAllow: /\nSitemap: ${site.site_url}/sitemap.xml\n`);
   if (site.adsense_client) await write("ads.txt", `google.com, ${site.adsense_client.replace(/^ca-/, "")}, DIRECT, f08c47fec0942fa0\n`);
   const sw = await fs.readFile(path.join(DIST, "sw.js"), "utf8");
   await write("sw.js", sw.replace("__BUILD_ID__", site.build_id).replace("__BASE__", site.base));

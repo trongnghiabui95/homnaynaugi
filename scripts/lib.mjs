@@ -81,6 +81,27 @@ export function parseSources(s) {
   });
 }
 
+/** Mô tả trang (meta description) ≤ max ký tự: giữ nguyên phần đuôi (thời gian, khẩu phần), cắt bớt phần tóm tắt ở ranh giới từ và thêm "…". */
+export function moTaNgan(sum, tail = "", max = 160) {
+  sum = String(sum || "").replace(/\s+/g, " ").trim(); tail = String(tail || "").trim();
+  const full = [sum, tail].filter(Boolean).join(" ");
+  if (full.length <= max) return full;
+  const room = max - (tail ? tail.length + 1 : 0) - 1;
+  if (room < 20) return full.slice(0, max - 1).replace(/\s+\S*$/, "") + "…";
+  const head = sum.slice(0, room + 1), cut = (/\s/.test(head) ? head.replace(/\s+\S*$/, "") : head.slice(0, room)).replace(/[\s,.;:–-]+$/, "");
+  return `${cut}…${tail ? " " + tail : ""}`;
+}
+
+/** Trình kiểm tra cục bộ dữ liệu có cấu trúc Recipe: trả về tên các trường Google cần/khuyên dùng mà còn thiếu. */
+export function thieuTruongRecipe(ld) {
+  const thieu = [];
+  for (const k of ["name", "image", "recipeIngredient", "recipeInstructions", "totalTime"]) {
+    const v = ld?.[k];
+    if (v == null || v === "" || (Array.isArray(v) && !v.length)) thieu.push(k);
+  }
+  return thieu;
+}
+
 export const isSlug = (s) => /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(s || "");
 
 /** Link chia sẻ Google Drive → link ảnh trực tiếp (lh3.googleusercontent.com). Link khác giữ nguyên. */

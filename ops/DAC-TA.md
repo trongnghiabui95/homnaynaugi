@@ -33,6 +33,19 @@ Phong cách tạp chí ẩm thực: nền kem `#FAF8F5`, thẻ trắng đổ bó
 - Trang công thức tiếng Anh: dùng cột bản dịch `*_en` trong Sheet (xem `data/README.md`). Món dịch đủ hiện tiếng Anh, `Recipe` ghi `inLanguage: "en"`; phần chưa dịch hiện tiếng Việt (trong phần tử `lang="vi"`) kèm dòng "This recipe is not translated yet."
 - Câu giới thiệu trang chủ tiếng Anh: khoá `tagline_en` trong tab `settings`; để trống thì dùng câu mặc định trong `scripts/i18n.mjs`.
 
+## SEO
+- **Bản chính**: `https://homnaynaugi.pages.dev` (Cloudflare Pages). Mọi `canonical`, `hreflang`, `og:url`, `og:image`, sitemap dùng địa chỉ này (`SITE_URL` hoặc `site_url` trong tab `settings`). `robots.txt` cho phép tất cả và trỏ tới `sitemap.xml`.
+- **Bản xem thử** GitHub Pages build với `PREVIEW=1` + `CANONICAL_URL=https://homnaynaugi.pages.dev`: mọi trang có `<meta name="robots" content="noindex">`, canonical/hreflang/sitemap trỏ về bản chính, `robots.txt` là `Disallow: /`. Link nội bộ vẫn chạy trong thư mục con (`BASE_PATH`).
+- **Xác minh Search Console**: điền khoá `google_site_verification` trong tab `settings` (mã, hoặc dán nguyên thẻ `<meta name="google-site-verification" …>`). Build in thẻ ở trang chủ `/` và `/en/` của bản chính.
+- **Mô tả trang món** (`meta description`) ≤ 160 ký tự: tóm tắt + thời gian + khẩu phần (+ "có video hướng dẫn"). Tóm tắt dài thì cắt ở ranh giới từ. Tóm tắt trống hoặc trùng món khác thì thêm tên món ở đầu cho khỏi trùng.
+- **Dữ liệu có cấu trúc `Recipe`**: build tự kiểm tra `name`, `image`, `recipeIngredient`, `recipeInstructions`, `totalTime` và in CẢNH BÁO khi thiếu. `image` lấy từ cột `anh`, không có thì lấy ảnh bìa video. Món không có cả hai thì thiếu `image`: cần bổ sung ảnh hoặc video.
+- **Gửi sitemap lên Search Console** (chủ dự án làm một lần):
+  1. Vào https://search.google.com/search-console → *Thêm tài sản* → chọn **Tiền tố URL** → nhập `https://homnaynaugi.pages.dev/`. (Không chọn *Miền* vì pages.dev không sửa được DNS.)
+  2. Chọn cách xác minh **Thẻ HTML**, chép mã trong `content="…"` (hoặc cả thẻ), dán vào tab `settings` dòng `google_site_verification`.
+  3. Chờ bản chính build lại (Cloudflare Pages tự build khi `main` đổi, hoặc bấm *Retry deployment*). Mở trang chủ, xem nguồn trang và kiểm tra có thẻ `google-site-verification`, rồi bấm **Xác minh**.
+  4. Vào *Sơ đồ trang web* → nhập `sitemap.xml` → *Gửi*. Sau vài ngày xem *Trang* và *Công thức nấu ăn* (kết quả nhiều định dạng) để biết lỗi.
+  5. Không thêm bản GitHub Pages vào Search Console vì bản đó đã đặt noindex.
+
 ## Trang công thức
 - Thông số: sơ chế, nấu, độ khó, calo/phần, chi phí ước tính (chỉ hiện khi có số liệu), khẩu phần.
 - Chuyển giữa ảnh món và video (Shorts khung dọc); bấm "Xem đoạn mm:ss" ở bước để nhảy đúng giây.
