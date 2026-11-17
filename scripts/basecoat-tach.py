@@ -55,6 +55,9 @@ def bo_khoi(t):
         out.append(t[k]); k += 1
     return ''.join(out)
 css = bo_khoi(css)
+# Bỏ dòng dự phòng cho trình duyệt chưa có color-mix (mọi trình duyệt từ 2023 đều có): giữ đúng giá trị trong @supports
+css = re.sub(r"([\w-]+):[^;{}]+;\s*@supports \(color: color-mix\(in lab, red, red\)\) \{\s*\1:([^;{}]+);\s*\}", r"\1:\2;", css)
+css = css.replace("-webkit-user-select: none;", "")
 # &:is(dark *) chỉ còn rỗng thì bỏ
 for _ in range(3):
     css = re.sub(r"&:is\(html\.dark \*\)\s*\{\s*\}", "", css)
@@ -90,6 +93,8 @@ while need - seen:
     if v in tdecl: need |= set(re.findall(r'var\((--[\w-]+)', tdecl[v]))
 theme_css = ':root {\n  --color-sc-muted: var(--sc-muted);\n' + ''.join(f'  {k}: {tdecl[k]};\n' for k in sorted(seen) if k in tdecl and k not in ('--font-sans', '--font-mono')) + '}\n'
 pdefs = [p for p in props if re.match(r'@property (--[\w-]+)', p).group(1) in seen]
+# @property không có initial-value chỉ để chặn kế thừa; bỏ cho nhẹ (không ảnh hưởng hiển thị trên web này)
+pdefs = [p for p in pdefs if 'initial-value' in p]
 css = re.sub(r'oklch\(0\.708 0 0\)', 'var(--ring)', css)
 head = """/*! Một phần Basecoat 1.1.0 (https://basecoat.ui, MIT License, Copyright (c) 2025 Ronan Berder),
    biên dịch bằng Tailwind CSS v4 (MIT). Chỉ lấy: btn, card, tabs. Biến thể đổi sang lớp của web:

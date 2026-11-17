@@ -328,7 +328,7 @@ Ma trận: độ rộng 320, 390, 768, 1280 · chế độ sáng, đêm (`data-t
 8. Giả lập reduced-motion: bấm quay vẫn ra kết quả, không còn chuyển động dịch chuyển.
 9. Tắt JS: trang món vẫn đọc được tên món, nguyên liệu, các bước.
 10. Quảng cáo đúng vị trí, có nhãn, cách nội dung ≥ 16px.
-11. Ngân sách: **mỗi trang** tải CSS < 30 KB, JS < 100 KB. CSS chia theo trang: `style.css` (mọi trang) + `home.css` (trang chủ) hoặc `recipe.css` + `thanh-qua.css` (trang món). Đo bằng `wc -c dist/assets/*.css dist/assets/*.js` (CSS đã nén lúc build) rồi cộng theo trang.
+11. Ngân sách: **mỗi trang** tải CSS < 35 KB (tính cả `cook.css` khi mở chế độ nấu; nâng từ 30 KB khi dùng Basecoat, #79), JS < 100 KB. CSS chia theo trang: `basecoat.css` + `style.css` (mọi trang) + `home.css` (trang chủ), `recipe.css` + `thanh-qua.css` + `cook.css` (trang món), `list.css` (danh mục), `video.css`, `shop.css`. Thành phần chỉ vài trang dùng (ô danh mục) đặt ở CSS của các trang đó, không ở `style.css`. Đo bằng `wc -c dist/assets/*.css dist/assets/*.js` (CSS đã nén lúc build) rồi cộng theo trang.
 12. `tests/e2e.py`: mọi dòng `OK`, `errors: []`.
 
 **Reflex** (dò nhanh trong `style.css`)
@@ -359,7 +359,7 @@ Những chỗ hiện tại còn lệch hệ thống này (đo ngày 2026-11-17).
 8. Bo góc đang có 7 giá trị (10, 12, 14, 16, 18, 50%, 999px) và khoảng 15 cỡ chữ đặt tay: gom về thang ở trên.
 9. Khoảng 30 màu viết trực tiếp ngoài `:root`.
 10. `.cat-emoji` dùng emoji khi danh mục chưa có ảnh.
-11. (Cập nhật #79) CSS chia theo trang và nén lúc build (`nenCss()`): `basecoat.css` 9 KB + `style.css` 15,5 KB chung; trang chủ +8 KB (`home.css`) = 32 KB, trang món 29,4 KB (34 KB khi mở chế độ nấu), Video 24,6 KB, Đi chợ 25 KB. **Trang chủ và chế độ nấu vượt trần 30 KB**: chờ chủ dự án duyệt nâng trần (đề xuất 35 KB) hoặc bớt thành phần.
+11. (Đã xử lý, #79) CSS chia theo trang và nén lúc build (`nenCss()`): `basecoat.css` 7,9 KB + `style.css` dùng chung; trang chủ 31,2 KB, trang món 30,3 KB (35,0 KB khi mở thêm chế độ nấu và có Thành quả), danh mục 23,6 KB, Video 22,7 KB, Đi chợ 23,2 KB. Trần 35 KB: thêm CSS vào trang món thì phải bớt chỗ khác.
 
 Đã sửa ngày 2026-11-17 (PR khung quay ngang): mục 1 (bỏ IN HOA giãn chữ ở `.kicker`, `.slot-label`, `.rcard-meta b`, `.ing-box h3`, `.ad-label`, nút quay), mục 2 (bỏ sọc trái `.sec-head h2`, `.tip`), mục 3 (hover nhấc thẻ trong `@media (hover: hover)`, bỏ phóng ảnh), mục 6 (khung chờ ảnh nền phẳng). Bỏ thêm lớp phủ gradient và hiệu ứng `filter` khi quay.
 
