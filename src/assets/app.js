@@ -506,9 +506,9 @@ async function pageRecipe() {
     $("[data-cook-pos]").textContent = S.stepPos(idx + 1, steps.length);
     $("[data-cook-bar]").style.width = `${((idx + 1) / steps.length) * 100}%`;
     $("[data-cook-title]").textContent = li.querySelector("h3, h4")?.textContent || "";
-    $("[data-cook-text]").textContent = li.querySelector("p").textContent;
-    // "Đạt khi" và "Lưu ý" của bước (do build sinh, đã thoát HTML)
-    for (const [sel, src] of [["[data-cook-sign]", ".sign"], ["[data-cook-note]", ".step-note"]]) {
+    $("[data-cook-text]").innerHTML = li.querySelector("p").innerHTML; // chữ do build sinh, đã thoát HTML, giữ phần tô đậm
+    // "Dùng ở bước này", "Đạt khi" và "Lưu ý" của bước (do build sinh, đã thoát HTML)
+    for (const [sel, src] of [["[data-cook-uses]", ".uses"], ["[data-cook-sign]", ".sign"], ["[data-cook-note]", ".step-note"]]) {
       const e = li.querySelector(src), c = $(sel); c.hidden = !e; c.innerHTML = e ? e.innerHTML : "";
     }
     cimg.hidden = !img; if (img) cimg.src = img.src;

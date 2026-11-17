@@ -10,6 +10,7 @@ import { parseCSV, esc, fold, md, isSlug, imgUrl, parseYouTube } from "./lib.mjs
 import { commonsFile, resolveCommons, creditText } from "./commons.mjs";
 import { layout, adSlot, emptyState, ytThumb, icon, recipeCard, abs } from "./templates.mjs";
 import { LANGS, PREFIX, tr, diffText } from "./i18n.mjs";
+import { toDam, doNguyenLieu } from "./buoc.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const SRC = path.join(ROOT, "src");
@@ -288,10 +289,15 @@ ${rs.length ? filterBar(rs) + grid(rs, true) : emptyState(t("cat_empty"), t("cat
         r.yt && sec >= 0 ? `<button class="mini" type="button" data-seek="${sec}">${icon("play")} ${t("see_part", mmss(sec))}</button>` : "",
         tmin ? `<button class="mini" type="button" data-timer="${tmin}" data-label="${esc(s.tieu_de || t("step_n", i + 1))}">${icon("timer")} ${t("timer_min", qtyText(tmin))}</button>` : "",
       ].join("");
+      // "Dùng ở bước này": dò tên nguyên liệu (tiếng Việt) trong chữ gốc của bước; lượng có class qty để đổi theo khẩu phần.
+      const uses = doNguyenLieu(s.vi.noi_dung, r.ings.map((x) => x.vi.ten)).map((k) => {
+        const g = r.ings[k], q = num(g.so_luong, 0);
+        return `<span${A(g.lv.ten)}>${esc(g.ten)}${q ? `&nbsp;<b class="qty" data-q="${q}">${qtyText(q)}</b>${g.don_vi ? `&nbsp;<span${A(g.lv.don_vi)}>${esc(g.don_vi)}</span>` : ""}` : ""}</span>`;
+      }).join(" · ");
       const sign = s.dau_hieu ? `<p class="sign">${icon("eye")} <span><b>${t("step_sign")}:</b> <span${A(s.lv.dau_hieu)}>${esc(s.dau_hieu)}</span></span></p>` : "";
       const note = s.luu_y ? `<div class="step-note"><b>${t("step_note")}:</b> <span${A(s.lv.luu_y)}>${esc(s.luu_y)}</span></div>` : "";
       // Dòng thời gian: số bước là ô tích (vùng bấm 44px), nhãn thời gian chờ cạnh tiêu đề. Chế độ nấu đọc h3/h4, p, .sign, .step-note, .step-img, [data-timer].
-      return `<li data-step id="buoc-${i + 1}"><label class="step-ck"><input type="checkbox" data-step-done aria-label="${esc(t("step_mark", i + 1))}"><span>${i + 1}</span></label><div class="step-head"><${hs}${s.tieu_de ? A(s.lv.tieu_de) : ""}>${esc(s.tieu_de || t("step_n", i + 1))}</${hs}>${tmin ? `<span class="step-time">${icon("clock")} ${t("min", qtyText(tmin))}</span>` : ""}</div><p${A(s.lv.noi_dung)}>${esc(s.noi_dung)}</p>${sign}${note}${s.img ? `<figure class="step-fig"><img class="step-img" src="${esc(s.img)}" alt="${esc(s.tieu_de || t("step_n", i + 1))}"${s.tieu_de ? A(s.lv.tieu_de) : ""} loading="lazy" width="800" height="600">${photoCredit(s.credit)}</figure>` : ""}${tools ? `<div class="step-tools">${tools}</div>` : ""}</li>`;
+      return `<li data-step id="buoc-${i + 1}"><label class="step-ck"><input type="checkbox" data-step-done aria-label="${esc(t("step_mark", i + 1))}"><span>${i + 1}</span></label><div class="step-head"><${hs}${s.tieu_de ? A(s.lv.tieu_de) : ""}>${esc(s.tieu_de || t("step_n", i + 1))}</${hs}>${tmin ? `<span class="step-time">${icon("clock")} ${t("min", qtyText(tmin))}</span>` : ""}</div><p${A(s.lv.noi_dung)}>${toDam(s.noi_dung)}</p>${uses ? `<div class="uses">${t("step_uses")}: ${uses}</div>` : ""}${sign}${note}${s.img ? `<figure class="step-fig"><img class="step-img" src="${esc(s.img)}" alt="${esc(s.tieu_de || t("step_n", i + 1))}"${s.tieu_de ? A(s.lv.tieu_de) : ""} loading="lazy" width="800" height="600">${photoCredit(s.credit)}</figure>` : ""}${tools ? `<div class="step-tools">${tools}</div>` : ""}</li>`;
     };
     const stepHTML = phases.map((g) => `${g.ten ? `<h3 class="phase"><span${A(g.lv)}>${esc(g.ten)}</span> <small>${t("n_steps", g.steps.length)}</small></h3>` : ""}<ol class="steps"${g.from ? ` start="${g.from + 1}"` : ""}>${g.steps.map((s, k) => stepLi(s, g.from + k)).join("")}</ol>`).join("");
     const cho = r.steps.map((s) => num(s.hen_gio_phut, 0)).filter(Boolean);
@@ -388,7 +394,7 @@ ${related.length ? `<section><h2 class="section-title">${t("more_in", r.cat.lv.t
 <div class="cook" data-cook-view hidden role="dialog" aria-modal="true" aria-label="${t("cook_dlg")}">
   <div class="cook-top"><span data-cook-pos></span><button class="icon-btn" type="button" data-cook-close aria-label="${t("cook_exit")}">✕</button></div>
   <div class="cook-bar"><span data-cook-bar></span></div>
-  <div class="cook-body"><h2 class="cook-title" data-cook-title${r.dich ? "" : LV}></h2><p class="cook-text" data-cook-text${r.dich ? "" : LV}></p><p class="sign" data-cook-sign hidden></p><div class="step-note" data-cook-note hidden></div><img class="cook-img" data-cook-img alt="" hidden></div>
+  <div class="cook-body"><h2 class="cook-title" data-cook-title${r.dich ? "" : LV}></h2><p class="cook-text" data-cook-text${r.dich ? "" : LV}></p><div class="uses" data-cook-uses hidden></div><p class="sign" data-cook-sign hidden></p><div class="step-note" data-cook-note hidden></div><img class="cook-img" data-cook-img alt="" hidden></div>
   <label class="cook-done"><input type="checkbox" data-cook-done> ${t("cook_done")}</label>
   <div class="cook-tools" data-cook-tools></div>
   <div class="cook-nav"><button class="btn ghost" type="button" data-cook-prev>${t("prev")}</button><button class="btn" type="button" data-cook-next>${t("next")}</button></div>
