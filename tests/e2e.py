@@ -36,11 +36,30 @@ async def main():
         BO_QUA = ("Failed to load resource", "Permissions policy violation")
         pg.on("console", lambda m: errs.append(m.text) if m.type == "error" and not any(x in m.text for x in BO_QUA) else None)
 
-        # Hôm nay nấu gì: mâm cơm 3 món đúng ngăn, khoá giữ món
-        await pg.goto(B + "/"); await pg.wait_for_timeout(500)
+        # Lần đầu vào: khung quay mặc định "Gợi ý 1 món", HTML dựng sẵn đúng chế độ nên không nhảy bố cục
+        await pg.add_init_script("window.__cls=0;new PerformanceObserver(l=>l.getEntries().forEach(e=>{if(!e.hadRecentInput)window.__cls+=e.value})).observe({type:'layout-shift',buffered:true})")
+        r = await pg.goto(B + "/")
+        html = await r.text()
+        check("HTML dựng sẵn: 'Gợi ý 1 món' được chọn, một ngăn chờ quay", re.search(r'data-spin-mode="one" aria-selected="true"', html) is not None and 'data-slot="one"' in html and "Thêm cả mâm" not in html)
+        await pg.wait_for_timeout(500)
+        dau = await pg.evaluate("[document.querySelector('[data-spin-mode=one]').getAttribute('aria-selected'), document.querySelectorAll('[data-spin-slots] .slot').length, document.querySelector('[data-spin-slots]').classList.contains('mam'), document.querySelector('[data-spin-go] span').textContent]")
+        check("lần đầu vào: chế độ 1 món, một ngăn, nút Quay món", dau == ["true", 1, False, "Quay món"], str(dau))
+        cls = await pg.evaluate("window.__cls")
+        check("không nhảy bố cục khi tải trang chủ (CLS < 0.1)", cls < 0.1, str(cls))
+        await pg.screenshot(path=f"{OUT}/1b-mot-mon-truoc-quay.png")
         async def quay():
             await pg.click("[data-spin-go]")
             await pg.wait_for_selector("[data-spin-go]:not([disabled])"); await pg.wait_for_timeout(60)
+        await quay()
+        check("lần đầu bấm quay: ra 1 món", len(await pg.query_selector_all("[data-spin-slots] .slot")) == 1 and bool(await pg.text_content('[data-slot="one"] strong')))
+        check("1 món: nút ghi 'Thêm vào Đi chợ'", await pg.text_content("[data-spin-shop] span") == "Thêm vào Đi chợ")
+        await pg.screenshot(path=f"{OUT}/1c-mot-mon-sau-quay.png")
+        # Chọn mâm cơm, tải lại vẫn là mâm cơm
+        await pg.click('[data-spin-mode="mam"]'); await pg.wait_for_timeout(200)
+        await pg.reload(); await pg.wait_for_timeout(500)
+        check("chọn mâm cơm rồi tải lại: vẫn là mâm cơm 3 món", await pg.get_attribute('[data-spin-mode="mam"]', "aria-selected") == "true" and len(await pg.query_selector_all("[data-spin-slots] .slot")) == 3)
+
+        # Hôm nay nấu gì: mâm cơm 3 món đúng ngăn, khoá giữ món
         await pg.click("[data-spin-go]"); await pg.wait_for_timeout(250)
         dang = await pg.evaluate("[document.querySelectorAll('.slot.rolling .reel').length, document.querySelector('[data-spin-go]').disabled]")
         check("đang quay: 3 ngăn cuộn, nút bị khoá", dang == [3, True], str(dang))
@@ -52,6 +71,7 @@ async def main():
         check("mâm cơm có đủ 3 ngăn mặn/canh/rau", len(names) == 3 and labels == ["Món mặn", "Món canh", "Món rau / xào"], f"{labels} {names}")
         canh = ["Canh bí đỏ thịt bằm", "Canh rau ngót thịt bằm"]
         check("ngăn canh chỉ ra món canh", names and names[1] in canh, str(names))
+        check("mâm cơm: nút ghi 'Thêm cả mâm vào Đi chợ'", await pg.text_content("[data-spin-shop] span") == "Thêm cả mâm vào Đi chợ")
         await pg.click('[data-lock="m0"]'); await pg.wait_for_timeout(200)
         locked = names[0]
         same = True
@@ -148,7 +168,7 @@ async def main():
         check("món chưa duyệt không xuất bản", r.status == 404)
 
         # Ảnh xem trước khi chia sẻ: mọi trang có og:image là URL tuyệt đối
-        import glob, re
+        import glob
         thieu = [f for f in glob.glob(os.path.join(DIST, "**", "index.html"), recursive=True)
                  if not re.search(r'<meta property="og:image" content="https?://', open(f, encoding="utf-8").read())]
         check("mọi trang có og:image tuyệt đối", not thieu, str(thieu[:3]))

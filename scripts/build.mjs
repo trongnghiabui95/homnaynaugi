@@ -187,8 +187,8 @@ async function main() {
     <label><input type="radio" name="spin-kind" value="uong" data-spin-kind><span>Đồ uống</span></label>
   </div>
   <div class="seg" role="tablist" aria-label="Kiểu gợi ý" data-spin-modes>
-    <button type="button" role="tab" data-spin-mode="one" aria-selected="false">Gợi ý 1 món</button>
-    <button type="button" role="tab" data-spin-mode="mam" aria-selected="true">Mâm cơm 3 món</button>
+    <button type="button" role="tab" data-spin-mode="one" aria-selected="true">Gợi ý 1 món</button>
+    <button type="button" role="tab" data-spin-mode="mam" aria-selected="false">Mâm cơm 3 món</button>
   </div>
   <details class="spin-more"><summary>Bộ lọc<span data-spin-fcount></span></summary><div class="spin-filters">
     <label><span>Bữa</span><select data-spin-f="b"><option value="">Mọi bữa</option><option value="sang">Bữa sáng</option><option value="trua">Bữa trưa</option><option value="toi">Bữa tối</option></select></label>
@@ -196,8 +196,8 @@ async function main() {
     <label><span>Nguyên liệu chính</span><select data-spin-f="n"><option value="">Mọi nguyên liệu</option>${mains.map((n) => `<option>${esc(n)}</option>`).join("")}</select></label>
   </div></details>
   <div class="row spin-go"><button class="btn big" type="button" data-spin-go>${icon("dice")}<span>Quay món</span></button></div>
-  <div class="spin-slots" data-spin-slots aria-live="polite" data-mam='${esc(JSON.stringify(MAM))}'></div>
-  <div class="row spin-shop"><button class="btn ghost" type="button" data-spin-shop hidden>${icon("cart")}<span>Thêm cả mâm vào Đi chợ</span></button></div>
+  <div class="spin-slots" data-spin-slots aria-live="polite" data-mam='${esc(JSON.stringify(MAM))}'><div class="slot empty-slot" data-slot="one"><div><div class="slot-label">Gợi ý cho bạn</div><p>Chờ quay</p></div></div></div>
+  <div class="row spin-shop"><button class="btn ghost" type="button" data-spin-shop hidden>${icon("cart")}<span>Thêm vào Đi chợ</span></button></div>
   <p class="muted small">Bấm “Giữ” để giữ món ưng ý. Lần quay sau chỉ đổi món còn lại.</p>
 </section>
 ${adSlot(site, "home")}
