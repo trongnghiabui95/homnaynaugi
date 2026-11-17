@@ -23,7 +23,10 @@ const S = {
     saved: "Đã lưu", save: "Lưu sổ tay", unsaved: "Đã bỏ khỏi sổ tay", savedT: "Đã lưu vào sổ tay",
     shopText: (n, s) => `🛒 Đi chợ: ${n} (${s} người)`, shopTitle: "Danh sách đi chợ", copiedNote: "Đã chép danh sách, dán vào Zalo hoặc Ghi chú.",
     addedIng: (n) => `Đã thêm ${n} nguyên liệu vào Đi chợ`, videoGuide: "Video hướng dẫn",
-    stepProg: (d, n) => `${d}/${n} bước`, stepPos: (i, n) => `Bước ${i}/${n}`, finish: "Hoàn thành", next: "Tiếp →", done: "Xong rồi! Chúc cả nhà ngon miệng.",
+    stepProg: (d, n) => `${d}/${n} bước`, stepPos: (i, n) => `Bước ${i}/${n}`, finish: "Hoàn thành", next: "Tiếp →",
+    prepPos: "Chuẩn bị", prepSum: (n) => `Lượng cho ${n} người. Tích những thứ bạn đã để sẵn.`, startCook: "Bắt đầu bước 1",
+    upNext: (t) => `Tiếp theo: ${t}`, upNextFin: "Tiếp theo: hoàn thành món", seeStep: "Xem đoạn này", timerN: (n) => `Hẹn ${n} phút`,
+    noVoice: "Máy chưa có giọng đọc tiếng Việt. Bạn cài thêm trong phần Cài đặt giọng nói của máy.",
     nDishes: (n) => `${n} món`, noFilter: "Không có món nào hợp bộ lọc.", pickOne: "Chọn ít nhất một nguyên liệu.",
     have: (full, g, n) => `${full ? "✅ Đủ" : "Có"} ${g}/${n} nguyên liệu`, canCook: (n) => `${n} món nấu được với nguyên liệu bạn chọn`,
     noneIng: "Chưa có món nào dùng các nguyên liệu này.", notFound: "Không tìm thấy món phù hợp. Thử từ khác ngắn hơn.",
@@ -45,7 +48,10 @@ const S = {
     saved: "Saved", save: "Save", unsaved: "Removed from saved", savedT: "Saved",
     shopText: (n, s) => `🛒 Shopping: ${n} (${s} ${s === 1 ? "person" : "people"})`, shopTitle: "Shopping list", copiedNote: "List copied. Paste it into a chat or your notes.",
     addedIng: (n) => `Added ${n} ${n === 1 ? "ingredient" : "ingredients"} to shopping`, videoGuide: "Video guide",
-    stepProg: (d, n) => `${d}/${n} steps`, stepPos: (i, n) => `Step ${i}/${n}`, finish: "Finish", next: "Next →", done: "All done! Enjoy your meal.",
+    stepProg: (d, n) => `${d}/${n} steps`, stepPos: (i, n) => `Step ${i}/${n}`, finish: "Finish", next: "Next →",
+    prepPos: "Get ready", prepSum: (n) => `Amounts for ${n} ${n === 1 ? "person" : "people"}. Tick what you have ready.`, startCook: "Start step 1",
+    upNext: (t) => `Up next: ${t}`, upNextFin: "Up next: finish the dish", seeStep: "Watch this part", timerN: (n) => `${n} min timer`,
+    noVoice: "Your device has no voice for this language. Add one in your device's speech settings.",
     nDishes: (n) => `${n} ${n === 1 ? "dish" : "dishes"}`, noFilter: "No dishes match the filters.", pickOne: "Pick at least one ingredient.",
     have: (full, g, n) => `${full ? "✅ All" : "Have"} ${g}/${n} ingredients`, canCook: (n) => `${n} ${n === 1 ? "dish" : "dishes"} you can cook with your ingredients`,
     noneIng: "No dishes use these ingredients yet.", notFound: "No matching dishes. Try a shorter word.",
@@ -237,7 +243,7 @@ const amThanh = (() => {
   };
 })();
 /** Bông giấy màu của web bung ra từ khung kết quả, rơi xuống rồi tự xoá (~1,5 giây). Bỏ qua khi bật giảm chuyển động. */
-function tungBong(el) {
+function tungBong(el, z = 60) {
   if (matchMedia("(prefers-reduced-motion: reduce)").matches || !el.animate) return;
   const r = el.getBoundingClientRect(), cs = getComputedStyle(document.documentElement);
   const mau = ["--accent", "--herb", "--k-vua", "--primary"].map((v) => cs.getPropertyValue(v).trim());
@@ -245,7 +251,7 @@ function tungBong(el) {
   for (let i = 0; i < 90; i++) {
     const s = document.createElement("i"), w = 8 + Math.random() * 7;
     s.className = "bong";
-    s.style.cssText = `position:fixed;left:${x0}px;top:${y0}px;width:${w}px;height:${w * 0.45}px;background:${mau[i % mau.length]};border-radius:2px;pointer-events:none;z-index:60`;
+    s.style.cssText = `position:fixed;left:${x0}px;top:${y0}px;width:${w}px;height:${w * 0.45}px;background:${mau[i % mau.length]};border-radius:2px;pointer-events:none;z-index:${z}`;
     document.body.append(s);
     const a = Math.random() * Math.PI * 2, v = 110 + Math.random() * 220, dx = Math.cos(a) * v, dy = Math.sin(a) * v - 150, q = Math.random() * 720 - 360;
     s.animate([{ transform: "none", opacity: 1 }, { transform: `translate(${dx}px,${dy}px) rotate(${q / 2}deg)`, opacity: 1, offset: 0.45 }, { transform: `translate(${dx * 1.3}px,${dy + 320}px) rotate(${q}deg)`, opacity: 0 }],
@@ -498,41 +504,157 @@ async function pageRecipe() {
   // Ảnh bước: màn rộng là ảnh nhỏ bên phải, bấm để phóng to
   $$(".step-fig").forEach((f) => (f.onclick = () => f.classList.toggle("big")));
 
-  // Chế độ đang nấu: từng bước chữ to, đánh dấu xong, giữ màn hình sáng
-  const view = $("[data-cook-view]");
-  let idx = 0, lock = null;
-  const show = () => {
-    const li = steps[idx], img = li.querySelector(".step-img"), cimg = $("[data-cook-img]");
-    $("[data-cook-pos]").textContent = S.stepPos(idx + 1, steps.length);
-    $("[data-cook-bar]").style.width = `${((idx + 1) / steps.length) * 100}%`;
-    $("[data-cook-title]").textContent = li.querySelector("h3")?.textContent || "";
-    $("[data-cook-text]").textContent = li.querySelector("p").textContent;
-    cimg.hidden = !img; if (img) cimg.src = img.src;
-    $("[data-cook-done]").checked = li.classList.contains("done");
-    $("[data-cook-tools]").innerHTML = $$("[data-timer]", li).map((b) => b.outerHTML).join("");
-    $("[data-cook-prev]").disabled = idx === 0;
-    $("[data-cook-next]").textContent = idx === steps.length - 1 ? S.finish : S.next;
+  // Chế độ đang nấu: Chuẩn bị → từng bước (chữ to, nguyên liệu của bước, hẹn giờ, đọc to, vuốt) → Hoàn thành. Giữ màn hình sáng.
+  const view = $("[data-cook-view]"), cv = (k) => $(`[data-cook-${k}]`, view), N = steps.length, LC = view.dataset.cookLv;
+  const ings = $$(".ings li", art).map((li) => ({ ten: li.querySelector("strong").textContent, q: Number(li.querySelector(".qty").dataset.q) || 0,
+    u: li.querySelector(".unit").textContent.trim(), note: li.querySelector("small")?.textContent || "", nl: li.querySelector("small")?.closest("[lang]")?.lang, l: li.getAttribute("lang") }));
+  const ingHTML = (g) => `<span${g.l ? ` lang="${g.l}"` : ""}>${esc(g.ten)}${g.q ? `&nbsp;<b>${qtyText((g.q * serv) / base)}</b>${g.u ? `&nbsp;${esc(g.u)}` : ""}` : ""}</span>`;
+  const info = steps.map((li) => {
+    const s = li.querySelector("p").textContent, h = li.querySelector("h3")?.textContent || "";
+    const min = [...new Set([...$$("[data-timer]", li).map((b) => Number(b.dataset.timer)), ...phutTrong(s)])].filter((m) => m > 0);
+    return { s, h, min, uses: doNL(s, ings.map((g) => g.ten)), seek: li.querySelector("[data-seek]")?.dataset.seek };
+  });
+  const kPrep = "prep-" + slug, ready = new Set(await store.get(kPrep, []));
+  const player = $("[data-player]"), credit = $('[data-media-panel="video"] figcaption');
+  const synth = window.speechSynthesis, spk = cv("speak");
+  let idx = -1, lock = null;
+  const noi = () => {
+    if (!synth || idx < 0 || idx >= N) return;
+    synth.cancel();
+    const l = LC === "en" ? "en" : "vi", u = new SpeechSynthesisUtterance(`${info[idx].h}. ${info[idx].s}`), vs = synth.getVoices();
+    const v = vs.find((x) => x.lang.toLowerCase().replace("_", "-").startsWith(l));
+    if (vs.length && !v) { prefs.speak = false; savePrefs(); veSpk(); return toast(S.noVoice); }
+    u.lang = l === "en" ? "en-US" : "vi-VN"; if (v) u.voice = v;
+    synth.speak(u);
   };
-  const close = () => { view.hidden = true; lock?.release?.(); lock = null; document.body.style.overflow = ""; };
+  const veSpk = () => spk.setAttribute("aria-pressed", !!prefs.speak);
+  if (synth && window.SpeechSynthesisUtterance) {
+    spk.hidden = false; veSpk();
+    spk.onclick = () => { prefs.speak = !prefs.speak; savePrefs(); veSpk(); if (prefs.speak) noi(); else synth.cancel(); };
+  }
+  const veSave = async () => {
+    const on = (await store.get("saved", [])).includes(slug), b = cv("save");
+    b.setAttribute("aria-pressed", on); b.querySelector("span").textContent = on ? S.saved : S.save;
+  };
+  const upnext = (i) => (i < N ? S.upNext(`<span lang="${LC}">${esc(info[i].h)}</span>`) : S.upNextFin);
+  const show = () => {
+    synth?.cancel(); cv("vid").hidden = true; cv("vid").innerHTML = "";
+    const prep = idx < 0, fin = idx >= N;
+    ["prep", "step", "fin"].forEach((k) => (cv(k).hidden = k !== (prep ? "prep" : fin ? "fin" : "step")));
+    cv("pos").textContent = prep ? S.prepPos : fin ? S.finish : S.stepPos(idx + 1, N);
+    cv("bar").style.transform = `scaleX(${fin ? 1 : (idx + 1) / N})`;
+    cv("ck").hidden = cv("tools").hidden = prep || fin;
+    cv("upnext").hidden = $(".cook-nav", view).hidden = fin;
+    cv("prev").disabled = prep;
+    cv("next").textContent = prep ? S.startCook : idx === N - 1 ? S.finish : S.next;
+    if (prep) {
+      cv("prep-sum").textContent = S.prepSum(serv);
+      cv("list").innerHTML = ings.map((g, i) => `<li><label><input type="checkbox" data-prep="${i}"${ready.has(i) ? " checked" : ""}><span>${ingHTML(g)}${!g.q && g.note ? ` <small${g.nl ? ` lang="${g.nl}"` : ""}>${esc(g.note)}</small>` : ""}</span></label></li>`).join("");
+      cv("upnext").innerHTML = upnext(0);
+      return;
+    }
+    if (fin) {
+      const tq = $("[data-tq]");
+      cv("show").hidden = !tq || tq.hidden;
+      veSave(); tungBong(cv("fin"), 75);
+      return;
+    }
+    const li = steps[idx], f = info[idx], img = li.querySelector(".step-img"), cimg = cv("img");
+    cv("title").textContent = f.h;
+    cv("text").innerHTML = toDam(f.s);
+    cv("uses").hidden = !f.uses.length; cv("uses-list").innerHTML = f.uses.map((k) => ingHTML(ings[k])).join(", ");
+    cimg.hidden = !img; if (img) cimg.src = img.src;
+    cv("done").checked = li.classList.contains("done");
+    cv("tools").innerHTML = (player && f.seek != null ? `<button class="mini" type="button" data-cook-seek>${IC.play} ${S.seeStep}</button>` : "")
+      + f.min.map((m) => `<button class="mini" type="button" data-timer="${m}" data-label="${esc(f.h)}">${IC.clock} ${S.timerN(qtyText(m))}</button>`).join("");
+    cv("upnext").innerHTML = upnext(idx + 1);
+    if (prefs.speak) noi();
+  };
+  const close = () => { view.hidden = true; synth?.cancel(); cv("vid").innerHTML = ""; lock?.release?.(); lock = null; document.body.style.overflow = ""; };
   $("[data-cook]").onclick = async () => {
-    idx = Math.max(0, steps.findIndex((li) => !li.classList.contains("done"))); show();
+    await napCook();
+    const k = steps.findIndex((li) => !li.classList.contains("done"));
+    idx = k > 0 ? k : -1; show(); // chưa làm bước nào (hoặc đã xong hết) thì mở màn Chuẩn bị
     view.hidden = false; document.body.style.overflow = "hidden";
     try { lock = await navigator.wakeLock?.request("screen"); } catch {}
   };
-  $("[data-cook-done]").onchange = (e) => datXong(idx, e.target.checked);
-  $("[data-cook-close]").onclick = close;
-  $("[data-cook-prev]").onclick = () => { if (idx > 0) { idx--; show(); } };
-  $("[data-cook-next]").onclick = () => {
-    datXong(idx, true);
-    if (idx < steps.length - 1) { idx++; show(); } else { close(); toast(S.done); }
+  cv("list").onchange = (e) => {
+    const i = Number(e.target.dataset.prep);
+    if (e.target.checked) ready.add(i); else ready.delete(i);
+    store.set(kPrep, [...ready]);
   };
+  cv("tools").addEventListener("click", (e) => {
+    if (!e.target.closest("[data-cook-seek]")) return;
+    const box = cv("vid"), sec = Number(info[idx].seek) || 0;
+    box.innerHTML = `<div class="player-box${player.classList.contains("vertical") ? " vertical" : ""}"><iframe src="https://www.youtube-nocookie.com/embed/${player.dataset.id}?autoplay=1&rel=0&playsinline=1${sec ? `&start=${sec}` : ""}" title="${S.videoGuide}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>${credit ? `<p class="muted small">${credit.innerHTML}</p>` : ""}`;
+    box.hidden = false; synth?.cancel();
+  });
+  cv("done").onchange = (e) => idx >= 0 && idx < N && datXong(idx, e.target.checked);
+  cv("close").onclick = close;
+  cv("back").onclick = close;
+  cv("show").onclick = () => { close(); $("[data-tq-mo]")?.click(); };
+  cv("save").onclick = async () => { if (!(await store.get("saved", [])).includes(slug)) await fav.onclick(); veSave(); };
+  cv("prev").onclick = () => { if (idx >= 0) { idx--; show(); } };
+  cv("next").onclick = () => {
+    if (idx >= N) return;
+    if (idx >= 0) datXong(idx, true);
+    idx++; show();
+  };
+  // Vuốt ngang trên màn nấu: trái là bước sau, phải là bước trước
+  let tx = null;
+  view.addEventListener("touchstart", (e) => { const t = e.touches[0]; tx = [t.clientX, t.clientY]; }, { passive: true });
+  view.addEventListener("touchend", (e) => {
+    if (!tx || idx >= N) return;
+    const t = e.changedTouches[0], dx = t.clientX - tx[0], dy = t.clientY - tx[1];
+    tx = null;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) cv(dx < 0 ? "next" : "prev").click();
+  });
   document.addEventListener("visibilitychange", async () => { if (!view.hidden && document.visibilityState === "visible") { try { lock = await navigator.wakeLock?.request("screen"); } catch {} } });
   document.addEventListener("keydown", (e) => {
     if (view.hidden) return;
-    if (e.key === "ArrowRight") $("[data-cook-next]").click();
-    if (e.key === "ArrowLeft") $("[data-cook-prev]").click();
+    if (e.key === "ArrowRight") cv("next").click();
+    if (e.key === "ArrowLeft") cv("prev").click();
     if (e.key === "Escape") close();
   });
+}
+
+// CSS chế độ nấu chỉ tải khi mở lần đầu (cùng phiên bản với style.css).
+const napCook = () => new Promise((ok) => {
+  if ($("link[data-cook-css]")) return ok();
+  const l = document.createElement("link");
+  l.rel = "stylesheet"; l.dataset.cookCss = "";
+  l.href = ($('link[href*="/assets/style.css"]')?.href || BASE + "/assets/style.css").replace("style.css", "cook.css");
+  l.onload = l.onerror = () => ok();
+  document.head.append(l); setTimeout(ok, 2000);
+});
+// Đọc chữ của bước (cùng quy tắc với scripts/buoc.mjs lúc build): tô đậm thời gian, nhiệt độ, kích cỡ, mức lửa; lấy số phút để hẹn giờ.
+const SO_ = "\\d+(?:[.,]\\d+)?(?:\\s*[–-]\\s*\\d+(?:[.,]\\d+)?)?", NB = "(?<![\\p{L}\\p{N}])", NA = "(?![\\p{L}\\p{N}])";
+const DAM = new RegExp(`${NB}(?:${SO_}\\s*(?:phút|giờ|tiếng|giây|ngày|đêm|°C|°F|độ C|độ|cm|mm|minutes|minute|mins|min|hours|hour|hrs|hr|seconds|second|secs|sec|days|day|inches|inch)|lửa (?:thật |rất )?(?:liu riu|riu riu|nhỏ vừa|vừa lớn|nhỏ|vừa|lớn|to|mạnh)|(?:low|medium-low|medium-high|medium|high) heat)${NA}`, "giu");
+const PHUT = new RegExp(`${NB}(\\d+(?:[.,]\\d+)?)(?:\\s*[–-]\\s*\\d+(?:[.,]\\d+)?)?\\s*(?:phút|minutes|minute|mins|min)${NA}`, "giu");
+const toDam = (s) => {
+  let o = "", k = 0;
+  for (const m of s.matchAll(DAM)) { o += esc(s.slice(k, m.index)) + `<strong>${esc(m[0]).replace(/\s+/g, "&nbsp;")}</strong>`; k = m.index + m[0].length; }
+  return o + esc(s.slice(k));
+};
+/** Số phút nhắc trong câu ("10 phút", "10–15 phút" lấy số đầu để xem sớm). */
+const phutTrong = (s) => [...s.matchAll(PHUT)].map((m) => Number(m[1].replace(",", ".")));
+/** Chỉ số nguyên liệu có tên trong chữ của bước: nguyên từ, tên dài trước; chỉ bỏ dấu khi chữ trong bước viết không dấu. Không dò được thì trả rỗng. */
+function doNL(text, names) {
+  const fd = (x) => x.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").toLowerCase();
+  const s = text.normalize("NFC"), f = fd(s);
+  if (f.length !== s.length) return [];
+  const taken = new Array(s.length).fill(false), hit = new Set(), isL = (c) => c !== undefined && /[\p{L}\p{N}]/u.test(c);
+  const order = names.map((n, i) => ({ i, n: n.normalize("NFC").replace(/\s*\(.*?\)\s*/g, " ").trim() })).filter((x) => x.n).sort((a, b) => b.n.length - a.n.length);
+  for (const { i, n } of order) {
+    const fn = fd(n), low = n.toLowerCase();
+    for (let at = f.indexOf(fn); at >= 0; at = f.indexOf(fn, at + 1)) {
+      const end = at + fn.length, doan = s.slice(at, end);
+      if (isL(s[at - 1]) || isL(s[end]) || taken.slice(at, end).some(Boolean)) continue;
+      if (doan.toLowerCase() !== low && fd(doan) !== doan.toLowerCase()) continue;
+      taken.fill(true, at, end); hit.add(i);
+    }
+  }
+  return [...hit].sort((a, b) => a - b);
 }
 
 // ---------- Trang danh mục / tất cả món: lọc và sắp xếp ----------

@@ -245,7 +245,11 @@ Bộ ba "nền kem + serif + cam đất" bị nhiều bộ kiểm tra coi là gi
   - Bước phải chờ có nhãn đồng hồ + số phút cạnh tiêu đề.
   - Bước đang làm (bước đầu chưa xong): số nền `primary`; bước khác chữ `muted`; bước xong: số nền `herb` có dấu tích, thu gọn còn tiêu đề.
   - Tiến độ lưu theo món trên máy. Ảnh bước trên màn rộng là ảnh nhỏ bên phải, bấm để phóng to.
-- **Chế độ nấu**: chữ hướng dẫn là chính; ảnh bước là khung 4:3 nhỏ (cao ≤ 190px và ≤ 22% màn hình), canh trái.
+- **Chế độ nấu** (`cook.css`, app.js chỉ tải khi bấm "Bắt đầu nấu"): lớp phủ toàn màn, ba màn nối nhau.
+  - **Chuẩn bị**: danh sách nguyên liệu theo số người đang chọn, ô tích 24px (vùng bấm cả dòng ≥ 52px), thứ đã sẵn thì gạch và chữ `muted`. Nút chính "Bắt đầu bước 1".
+  - **Bước**: chữ hướng dẫn là chính (1.65em); thời gian, nhiệt độ, mức lửa, kích cỡ in đậm màu `primary`, không tách số khỏi đơn vị. Hộp "Dùng ở bước này" nền `surface-2` (chỉ hiện khi dò được tên nguyên liệu). Ảnh bước là khung 4:3 nhỏ (cao ≤ 190px và ≤ 22% màn hình), canh trái. Hàng nút nhỏ: "Xem đoạn này", "Hẹn N phút". Dòng "Tiếp theo: …" 0.85em `muted` ngay trên hàng nút Trước/Tiếp. Nội dung dài thì cuộn, không bị cắt mép trên.
+  - **Hoàn thành**: tiêu đề Lora 1.9em, tung bông (bỏ khi giảm chuyển động), nút "Khoe món bạn nấu" (chỉ khi mục Thành quả bật), "Lưu sổ tay", "Về trang món".
+  - Đầu màn: vị trí ("Chuẩn bị", "Bước 2/6", "Hoàn thành"), nút loa đọc to (`aria-pressed`, nền `primary-soft` khi bật), nút thoát. Thanh tiến độ dùng `transform: scaleX`.
 - **Ghi nguồn**: dưới ảnh không tự chụp luôn có một dòng nhỏ 13px màu `muted` "Nguồn: tác giả, giấy phép", cả dòng là link tới trang ảnh, quá dài thì cắt "…" (không bỏ tên tác giả: CC BY/BY-SA bắt buộc); dưới video luôn có tên kênh và link YouTube.
 
 ## Do's and Don'ts
@@ -312,7 +316,7 @@ Ma trận: độ rộng 320, 390, 768, 1280 · chế độ sáng, đêm (`data-t
 8. Giả lập reduced-motion: bấm quay vẫn ra kết quả, không còn chuyển động dịch chuyển.
 9. Tắt JS: trang món vẫn đọc được tên món, nguyên liệu, các bước.
 10. Quảng cáo đúng vị trí, có nhãn, cách nội dung ≥ 16px.
-11. Ngân sách: **mỗi trang** tải CSS < 30 KB, JS < 100 KB. CSS chia theo trang: `style.css` (mọi trang) + `home.css` (trang chủ) hoặc `recipe.css` + `thanh-qua.css` (trang món). Đo bằng `wc -c src/assets/*.css src/assets/*.js` rồi cộng theo trang.
+11. Ngân sách: **mỗi trang** tải CSS < 30 KB, JS < 100 KB. CSS chia theo trang: `style.css` (mọi trang) + `home.css` (trang chủ) hoặc `recipe.css` + `thanh-qua.css` + `cook.css` khi mở chế độ nấu (trang món). Đo bằng `wc -c src/assets/*.css src/assets/*.js` rồi cộng theo trang.
 12. `tests/e2e.py`: mọi dòng `OK`, `errors: []`.
 
 **Reflex** (dò nhanh trong `style.css`)
@@ -337,13 +341,13 @@ Những chỗ hiện tại còn lệch hệ thống này (đo ngày 2026-11-17).
 2. `.sec-head h2` có sọc trái 4px, `.tip` có sọc trái 5px: bỏ sọc, dùng khoảng trắng và cỡ chữ để phân cấp.
 3. `.rcard:hover img` phóng to ảnh, `.cat-card:hover` chưa bọc `@media (hover: hover)`.
 4. `@media (prefers-reduced-motion)` đang tắt sạch mọi transition: giữ lại chuyển màu/độ mờ ngắn.
-5. `.cook-bar span` animate `width`: đổi sang `transform: scaleX`.
+5. (Đã sửa ở #60) `.cook-bar span` dùng `transform: scaleX`.
 6. Khung ảnh chờ `.rcard-img` dùng sọc chéo lặp: đổi thành nền phẳng `surface-2`.
 7. Các nút chưa có phản hồi `:active`.
 8. Bo góc đang có 7 giá trị (10, 12, 14, 16, 18, 50%, 999px) và khoảng 15 cỡ chữ đặt tay: gom về thang ở trên.
 9. Khoảng 30 màu viết trực tiếp ngoài `:root`.
 10. `.cat-emoji` dùng emoji khi danh mục chưa có ảnh.
-11. (Đã xử lý 2026-11-17) CSS chia theo trang: trang chủ tải 25,6 KB, trang món 28,7 KB. Trang món còn khoảng 1,3 KB trước trần 30 KB.
+11. (Đã xử lý 2026-11-17) CSS chia theo trang: trang chủ tải 25,6 KB, trang món 27,1 KB khi tải và 29,97 KB sau khi mở chế độ nấu (`cook.css` tải lười). Gần trần 30 KB: thêm CSS cho trang món thì phải bớt chỗ khác.
 
 Đã sửa ngày 2026-11-17 (PR khung quay ngang): mục 1 (bỏ IN HOA giãn chữ ở `.kicker`, `.slot-label`, `.rcard-meta b`, `.ing-box h3`, `.ad-label`, nút quay), mục 2 (bỏ sọc trái `.sec-head h2`, `.tip`), mục 3 (hover nhấc thẻ trong `@media (hover: hover)`, bỏ phóng ảnh), mục 6 (khung chờ ảnh nền phẳng). Bỏ thêm lớp phủ gradient và hiệu ứng `filter` khi quay.
 

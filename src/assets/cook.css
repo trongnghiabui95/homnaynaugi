@@ -1,0 +1,36 @@
+.cook{position:fixed;inset:0;z-index:70;background:var(--bg);display:flex;flex-direction:column;gap:12px;padding:calc(16px + env(safe-area-inset-top)) 18px calc(16px + env(safe-area-inset-bottom))}
+.cook > *{max-width:720px;width:100%;margin:0 auto}
+.cook-top{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-weight:600;font-variant-numeric:tabular-nums}
+.cook-acts{display:flex;gap:4px}
+.cook-acts [aria-pressed="true"]{background:var(--primary-soft);color:var(--primary)}
+.cook-bar{height:6px;background:var(--surface-2);border-radius:9999px;overflow:hidden;flex:none}
+.cook-bar span{display:block;height:100%;background:var(--accent);transform-origin:left;transform:scaleX(0);transition:transform .32s cubic-bezier(.23,1,.32,1)}
+.cook-pane{flex:1;min-height:0;overflow-y:auto}
+.cook-body{display:flex;flex-direction:column}
+.cook-body::before,.cook-body::after{content:"";margin:auto}
+.cook-title{margin:0 0 8px;font-size:1.35em;color:var(--primary)}
+.cook-text{font-size:1.65em;line-height:1.45;font-weight:500;margin:0}
+.cook-text strong{font-weight:700;color:var(--primary);white-space:nowrap}
+.cook-uses{margin:16px 0 0;padding:12px 16px;background:var(--surface-2);border-radius:14px;font-variant-numeric:tabular-nums}
+.cook-img{align-self:flex-start;height:min(22vh, 190px);width:auto;max-width:100%;aspect-ratio:4/3;border-radius:10px;margin-top:12px;object-fit:cover;flex:none}
+.cook-vid{margin-top:12px}
+.cook-vid p{margin:4px 0 0}
+.cook-vid .player-box:not(.vertical){aspect-ratio:16/9}
+.cook-vid .player-box.vertical{max-width:200px;margin:0}
+.cook-list{list-style:none;padding:0;margin:8px 0 0;font-size:1.1em;font-variant-numeric:tabular-nums}
+.cook-list li + li{border-top:1px solid var(--line)}
+.cook-list label{display:flex;gap:12px;align-items:center;min-height:52px;padding:4px 8px;margin:0 -8px;border-radius:10px;cursor:pointer}
+.cook-list input,.cook-done input{width:24px;height:24px;flex:none;accent-color:var(--herb)}
+.cook-list small,.cook-list label:has(input:checked) span{color:var(--muted)}
+.cook-list label:has(input:checked) span{text-decoration:line-through}
+.cook-done{display:flex;align-items:center;gap:10px;font-weight:600;min-height:44px}
+.cook-tools{display:flex;gap:8px;flex-wrap:wrap}
+.cook-tools:empty{display:none}
+.cook-upnext{margin:0;color:var(--muted);font-size:.85em;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cook-upnext span{color:var(--text)}
+.cook-nav{display:grid;grid-template-columns:1fr 1.4fr;gap:12px}
+.cook-nav .btn{min-height:60px;font-size:1.1em}
+.cook-fin{display:flex;flex-direction:column;justify-content:safe center;align-items:center;text-align:center}
+.cook-fin .cook-title{font-size:1.9em}
+.cook-fin p{margin:0 0 24px;color:var(--muted)}
+.cook-fin-acts{display:grid;gap:12px;width:min(100%, 360px)}

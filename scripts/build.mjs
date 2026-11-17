@@ -376,12 +376,15 @@ ${site.turnstile_site_key ? `<section class="tq" data-tq data-mon="${r.slug}" da
 </section>` : ""}
 ${adSlot(L, "bottom")}
 ${related.length ? `<section><h2 class="section-title">${t("more_in", r.cat.lv.ten ? vi(esc(r.cat.ten)) : esc(r.cat.ten))}</h2>${grid(related, false, true)}</section>` : ""}
-<div class="cook" data-cook-view hidden role="dialog" aria-modal="true" aria-label="${t("cook_dlg")}">
-  <div class="cook-top"><span data-cook-pos></span><button class="icon-btn" type="button" data-cook-close aria-label="${t("cook_exit")}">✕</button></div>
+<div class="cook" data-cook-view hidden role="dialog" aria-modal="true" aria-label="${t("cook_dlg")}" data-cook-lv="${r.dich ? lang : "vi"}">
+  <div class="cook-top"><span data-cook-pos></span><span class="cook-acts"><button class="icon-btn" type="button" data-cook-speak aria-pressed="false" aria-label="${t("cook_speak")}" title="${t("cook_speak")}" hidden>${icon("loa")}</button><button class="icon-btn" type="button" data-cook-close aria-label="${t("cook_exit")}">✕</button></span></div>
   <div class="cook-bar"><span data-cook-bar></span></div>
-  <div class="cook-body"><h2 class="cook-title" data-cook-title${r.dich ? "" : LV}></h2><p class="cook-text" data-cook-text${r.dich ? "" : LV}></p><img class="cook-img" data-cook-img alt="" hidden></div>
-  <label class="cook-done"><input type="checkbox" data-cook-done> ${t("cook_done")}</label>
+  <section class="cook-pane" data-cook-prep hidden aria-labelledby="cook-prep-h"><h2 class="cook-title" id="cook-prep-h">${t("cook_prep")}</h2><p class="muted" data-cook-prep-sum></p><ul class="cook-list" data-cook-list></ul></section>
+  <div class="cook-pane cook-body" data-cook-step><h2 class="cook-title" data-cook-title${r.dich ? "" : LV}></h2><p class="cook-text" data-cook-text${r.dich ? "" : LV}></p><p class="cook-uses" data-cook-uses hidden><b>${t("cook_uses")}:</b> <span data-cook-uses-list></span></p><img class="cook-img" data-cook-img alt="" hidden><div class="cook-vid" data-cook-vid hidden></div></div>
+  <section class="cook-pane cook-fin" data-cook-fin hidden aria-labelledby="cook-fin-h"><h2 class="cook-title" id="cook-fin-h">${t("cook_fin_h")}</h2><p>${t("cook_fin_p")}</p><div class="cook-fin-acts"><button class="btn" type="button" data-cook-show hidden>${icon("camera")}<span>${t("tq_btn")}</span></button><button class="btn ghost" type="button" data-cook-save aria-pressed="false">${icon("heart")}<span>${t("save")}</span></button><button class="btn ghost" type="button" data-cook-back>${t("cook_back")}</button></div></section>
+  <label class="cook-done" data-cook-ck><input type="checkbox" data-cook-done> ${t("cook_done")}</label>
   <div class="cook-tools" data-cook-tools></div>
+  <p class="cook-upnext" data-cook-upnext></p>
   <div class="cook-nav"><button class="btn ghost" type="button" data-cook-prev>${t("prev")}</button><button class="btn" type="button" data-cook-next>${t("next")}</button></div>
 </div>`,
     });
