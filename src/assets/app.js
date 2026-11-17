@@ -549,11 +549,20 @@ async function pageRecipe() {
   sayBtn.hidden = !say.ok; veSay();
   const tiep = (li) => { const h = li?.querySelector("h3, h4"); $("[data-cook-upnext]").innerHTML = h ? `${esc(S.upNext(""))}<span${lv(h)}>${esc(h.textContent)}</span>` : ""; };
   const ytId = $("[data-player]")?.dataset.id, doc = $("[data-player]")?.classList.contains("vertical");
+  // Ảnh món làm dải đầu chế độ nấu (ảnh bìa, hoặc ảnh bìa video); không có ảnh thì dải chỉ còn tên món
+  const anhMon = $(".hero-img")?.src || $("[data-player] img")?.src, photo = $("[data-cook-photo]");
+  if (anhMon) { photo.src = anhMon; photo.hidden = false; $("[data-cook-hero]").classList.add("has-photo"); }
   const show = () => {
     const n = steps.length, li = steps[idx], img = li?.querySelector(".step-img"), cimg = $("[data-cook-img]");
     const nut = (cls, txt, attr = "") => `<button class="btn${cls}" type="button" ${attr}>${txt}</button>`;
     $("[data-cook-pos]").textContent = idx < 0 ? S.prep : idx >= n ? S.doneKicker : S.stepPos(idx + 1, n);
-    $("[data-cook-bar]").style.transform = `scaleX(${Math.max(0, Math.min(idx + 1, n)) / n})`;
+    // Thanh bước: mỗi đoạn là một nút (bấm để nhảy bước); xong = xanh thảo mộc, đang làm = primary
+    $("[data-cook-dots]").innerHTML = [-1, ...steps.keys()].map((k) => `<button type="button" data-go="${k}" aria-label="${k < 0 ? S.prep : S.stepPos(k + 1, n)}"${k === idx ? ' aria-current="step"' : ""}${(k < 0 ? idx >= 0 : steps[k].classList.contains("done")) ? ' class="xong"' : ""}><i></i></button>`).join("");
+    $("[data-cook-dots] [aria-current]")?.scrollIntoView?.({ block: "nearest", inline: "center" });
+    view.dataset.man = idx < 0 ? "prep" : idx >= n ? "done" : "step";
+    $("[data-cook-num]").textContent = idx >= 0 && idx < n ? idx + 1 : "";
+    const ph = li?.closest("ol")?.previousElementSibling, phc = $("[data-cook-phase]");
+    phc.hidden = !ph?.matches(".phase") || idx < 0 || idx >= n; phc.innerHTML = phc.hidden ? "" : ph.querySelector("span").outerHTML;
     $("[data-cook-done]").closest("label").hidden = idx < 0 || idx >= n;
     $("[data-cook-prev]").disabled = idx < 0;
     $("[data-cook-next]").hidden = idx >= n;
@@ -609,6 +618,7 @@ async function pageRecipe() {
     try { lock = await navigator.wakeLock?.request("screen"); } catch {}
   };
   $("[data-cook-done]").onchange = (e) => datXong(idx, e.target.checked);
+  $("[data-cook-dots]").onclick = (e) => { const b = e.target.closest("[data-go]"); if (b) { idx = +b.dataset.go; show(); } };
   $("[data-cook-close]").onclick = close;
   $("[data-cook-prev]").onclick = () => { if (idx > -1) di(-1); };
   $("[data-cook-next]").onclick = () => di(1);
@@ -829,18 +839,18 @@ function pageVideo() {
 const prefs = (() => { try { return JSON.parse(localStorage.getItem("hnng-prefs") || "{}"); } catch { return {}; } })();
 const savePrefs = () => { try { localStorage.setItem("hnng-prefs", JSON.stringify(prefs)); } catch {} };
 // Mặc định tối (data-theme="dark" có sẵn trong HTML); chỉ nhớ lựa chọn khi người dùng bấm nút.
-const themeBtn = $('[data-toggle="theme"]');
+const themeBtns = $$('[data-toggle="theme"]'); // header và chế độ nấu
 const showTheme = () => {
   const dark = document.documentElement.dataset.theme !== "light";
   const label = dark ? S.light : S.dark;
-  themeBtn?.setAttribute("aria-label", label); themeBtn?.setAttribute("title", label);
+  themeBtns.forEach((b) => { b.setAttribute("aria-label", label); b.setAttribute("title", label); });
   $('meta[name="theme-color"]')?.setAttribute("content", dark ? "#1d1a17" : "#faf8f5");
 };
 showTheme();
-themeBtn?.addEventListener("click", () => {
+themeBtns.forEach((b) => b.addEventListener("click", () => {
   prefs.theme = document.documentElement.dataset.theme === "light" ? "dark" : "light";
   document.documentElement.dataset.theme = prefs.theme; savePrefs(); showTheme();
-});
+}));
 $('[data-toggle="big"]')?.addEventListener("click", () => {
   prefs.big = !prefs.big;
   if (prefs.big) document.documentElement.dataset.big = "1"; else delete document.documentElement.dataset.big;

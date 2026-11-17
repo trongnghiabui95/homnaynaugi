@@ -248,6 +248,10 @@ Bộ ba "nền kem + serif + cam đất" bị nhiều bộ kiểm tra coi là gi
 - **Chế độ nấu** (`cook.css`, chỉ tải khi mở): màn **Chuẩn bị** (nguyên liệu theo khẩu phần, tích khi đã sẵn) → từng bước → màn **Hoàn thành** (tung bông, Khoe món, Lưu sổ tay).
   - Mỗi bước: chữ to; thời gian, nhiệt độ, mức lửa, kích cỡ tô đậm màu `primary`; khối "Dùng ở bước này" là các chip nền `surface-2` (tên đậm + lượng màu `primary`), chỉ hiện nguyên liệu dò được, không đoán; nút hẹn giờ cho mọi "N phút" trong câu; "Xem đoạn này" khi bước có `giay_video`; dòng "Tiếp theo: …".
   - Nút loa ở góc trên: đọc to từng bước bằng giọng có sẵn trên máy, nhớ lựa chọn. Vuốt trái/phải để chuyển bước.
+  - **Dải đầu**: ảnh món (ảnh bìa, không có thì ảnh bìa video) tràn ngang, lớp che phẳng `rgb(20 16 12 / .6)` (không gradient) để chữ trắng đủ tương phản; tên món Lora + vị trí bước; nút sáng/tối, loa, thoát màu trắng. Màn Chuẩn bị, Hoàn thành ảnh cao 34vh; màn bước cao 132px. Món không có ảnh: dải nền `surface`, chữ thường.
+  - **Thanh bước**: mỗi đoạn là một nút ≥ 44×44px (nhiều bước thì cuộn ngang) (Chuẩn bị + từng bước), vạch 6px: xong `herb`, đang làm `primary` (dày hơn bằng `scaleY`), còn lại `line`. Bấm để nhảy bước (không tự đánh dấu xong).
+  - **Thẻ nội dung**: nền `surface`, viền `line`, bo `lg`. Số bước Lora 3em màu `primary`; giai đoạn (cột `giai_doan`) là chip `herb-soft`/`herb` cạnh số.
+  - Nút sáng/tối có cả trong chế độ nấu (bếp sáng thì đọc nền sáng dễ hơn).
 - **Chế độ nấu, ảnh bước**: chữ hướng dẫn là chính; ảnh bước là khung 4:3 nhỏ (cao ≤ 190px và ≤ 22% màn hình), canh trái.
 - **Ghi nguồn**: dưới ảnh không tự chụp luôn có một dòng nhỏ 13px màu `muted` "Nguồn: tác giả, giấy phép", cả dòng là link tới trang ảnh, quá dài thì cắt "…" (không bỏ tên tác giả: CC BY/BY-SA bắt buộc); dưới video luôn có tên kênh và link YouTube.
 
@@ -340,13 +344,13 @@ Những chỗ hiện tại còn lệch hệ thống này (đo ngày 2026-11-17).
 2. `.sec-head h2` có sọc trái 4px, `.tip` có sọc trái 5px: bỏ sọc, dùng khoảng trắng và cỡ chữ để phân cấp.
 3. `.rcard:hover img` phóng to ảnh, `.cat-card:hover` chưa bọc `@media (hover: hover)`.
 4. `@media (prefers-reduced-motion)` đang tắt sạch mọi transition: giữ lại chuyển màu/độ mờ ngắn.
-5. `.cook-bar span` animate `width`: đổi sang `transform: scaleX`.
+5. (Đã sửa) `.cook-bar` bỏ hẳn, thay bằng thanh bước bấm được `.cook-dots`.
 6. Khung ảnh chờ `.rcard-img` dùng sọc chéo lặp: đổi thành nền phẳng `surface-2`.
 7. Các nút chưa có phản hồi `:active`.
 8. Bo góc đang có 7 giá trị (10, 12, 14, 16, 18, 50%, 999px) và khoảng 15 cỡ chữ đặt tay: gom về thang ở trên.
 9. Khoảng 30 màu viết trực tiếp ngoài `:root`.
 10. `.cat-emoji` dùng emoji khi danh mục chưa có ảnh.
-11. (Đã xử lý 2026-11-17) CSS chia theo trang: trang chủ tải 25,6 KB, trang món 28,7 KB. Trang món còn khoảng 1,3 KB trước trần 30 KB.
+11. (Đã xử lý 2026-11-17) CSS chia theo trang: trang chủ tải 25,6 KB, trang món 25 KB lúc mở; mở chế độ nấu tải thêm `cook.css` 5,5 KB (tổng 30,5 KB < 30 KiB). Không thêm CSS vào `cook.css` khi chưa bớt chỗ khác.
 
 Đã sửa ngày 2026-11-17 (PR khung quay ngang): mục 1 (bỏ IN HOA giãn chữ ở `.kicker`, `.slot-label`, `.rcard-meta b`, `.ing-box h3`, `.ad-label`, nút quay), mục 2 (bỏ sọc trái `.sec-head h2`, `.tip`), mục 3 (hover nhấc thẻ trong `@media (hover: hover)`, bỏ phóng ảnh), mục 6 (khung chờ ảnh nền phẳng). Bỏ thêm lớp phủ gradient và hiệu ứng `filter` khi quay.
 

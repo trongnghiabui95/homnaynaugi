@@ -392,9 +392,9 @@ ${site.turnstile_site_key ? `<section class="tq" data-tq data-mon="${r.slug}" da
 ${adSlot(L, "bottom")}
 ${related.length ? `<section><h2 class="section-title">${t("more_in", r.cat.lv.ten ? vi(esc(r.cat.ten)) : esc(r.cat.ten))}</h2>${grid(related, false, true)}</section>` : ""}
 <div class="cook" data-cook-view hidden role="dialog" aria-modal="true" aria-label="${t("cook_dlg")}">
-  <div class="cook-top"><span data-cook-pos></span><span><button class="icon-btn" type="button" data-cook-say aria-pressed="false" aria-label="${t("cook_say")}" title="${t("cook_say")}" hidden>${icon("loa")}</button><button class="icon-btn" type="button" data-cook-close aria-label="${t("cook_exit")}">✕</button></span></div>
-  <div class="cook-bar"><span data-cook-bar></span></div>
-  <div class="cook-body" data-cook-body aria-live="polite"><h2 class="cook-title" data-cook-title${r.dich ? "" : LV}></h2><p class="cook-text" data-cook-text${r.dich ? "" : LV}></p><p class="sign" data-cook-sign hidden></p><div class="step-note" data-cook-note hidden></div><div data-cook-extra></div><img class="cook-img" data-cook-img alt="" hidden></div>
+  <div class="cook-hero" data-cook-hero><img alt="" data-cook-photo hidden><div class="cook-top"><span class="cook-where"><b class="cook-dish"${r.dich ? "" : LV}>${esc(r.ten)}</b><span data-cook-pos></span></span><span><button class="icon-btn" type="button" data-toggle="theme" aria-label="${t("light_mode")}" title="${t("light_mode")}">${icon("moon")}</button><button class="icon-btn" type="button" data-cook-say aria-pressed="false" aria-label="${t("cook_say")}" title="${t("cook_say")}" hidden>${icon("loa")}</button><button class="icon-btn" type="button" data-cook-close aria-label="${t("cook_exit")}">✕</button></span></div></div>
+  <nav class="cook-dots" data-cook-dots aria-label="${t("cook_dots")}"></nav>
+  <div class="cook-body" data-cook-body aria-live="polite"><div class="cook-kick"><span class="cook-num" data-cook-num aria-hidden="true"></span><span class="cook-phase" data-cook-phase hidden></span></div><h2 class="cook-title" data-cook-title${r.dich ? "" : LV}></h2><p class="cook-text" data-cook-text${r.dich ? "" : LV}></p><p class="sign" data-cook-sign hidden></p><div class="step-note" data-cook-note hidden></div><div data-cook-extra></div><img class="cook-img" data-cook-img alt="" hidden></div>
   <p class="cook-next" data-cook-upnext></p>
   <label class="cook-done"><input type="checkbox" data-cook-done> ${t("cook_done")}</label>
   <div class="cook-tools" data-cook-tools></div>
