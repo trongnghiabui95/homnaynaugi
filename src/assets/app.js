@@ -188,12 +188,23 @@ async function pageHome() {
     const r = bySlug[st.picks[d.key]];
     if (!r) return `<div class="slot empty-slot" data-slot="${d.key}"><div><div class="slot-label">${esc(d.label)}</div><p>Chờ quay</p></div></div>`;
     const locked = !!st.locks[d.key];
+    if (single(d)) return singleHTML(d, r, locked, around(r, d));
     return `<div class="slot${["de", "vua", "kho"].includes(fold(r.k)) ? ` k-${fold(r.k)}` : ""}" data-slot="${d.key}">
         <div class="slot-img">${pic(r)}</div>
-        <div><div class="slot-label">${esc(d.label)}</div><strong>${esc(r.t)}</strong><span class="meta">${IC.clock} ${r.m} phút · ${esc(r.k || "")}</span><br><a class="more" href="${BASE}/mon/${r.s}/">Cách nấu →</a></div>
+        <div><div class="slot-label">${esc(d.label)}</div><strong>${esc(r.t)}</strong><span class="meta">${IC.clock} ${r.m} phút · ${esc(r.k || "")}</span><br><a class="more" href="${BASE}/mon/${r.s}/">Cách nấu</a></div>
         <button class="lock" type="button" data-lock="${d.key}" aria-pressed="${locked}" aria-label="${locked ? "Bỏ khoá" : "Khoá"} món ${esc(r.t)}">${locked ? IC.lock : IC.unlock}<span>${locked ? "Đã giữ" : "Giữ"}</span></button>
       </div>`;
   };
+  // Ngăn 1 món / đồ uống: dải thẻ nằm ngang, vạch chỉ ở giữa, hai mép mờ; tên món và nút nằm dưới dải.
+  const single = (d) => d.key === "one" || d.key === "uong";
+  const STEP = 120, HALF = 56; // rộng thẻ 112 + khe 8
+  const around = (r, d) => { const p = pool(d).filter((x) => x.s !== r.s), q = p.length ? p : [r]; return [rand(q), rand(q), r, rand(q), rand(q)]; };
+  const track = (cards, at, dur = 0) => `<div class="hreel" aria-hidden="true"><div class="hreel-track" style="--x:${-(at * STEP + HALF)}px;--d:${dur}ms">${cards.map((c, i) => `<div class="slot-img${i === at && !dur ? " on" : ""}">${pic(c)}</div>`).join("")}</div></div>`;
+  const singleHTML = (d, r, locked, cards) => `<div class="slot single${["de", "vua", "kho"].includes(fold(r.k)) ? ` k-${fold(r.k)}` : ""}" data-slot="${d.key}">
+        ${track(cards, 2)}
+        <div class="single-info"><div class="slot-label">${esc(d.label)}</div><strong>${esc(r.t)}</strong><span class="meta">${IC.clock} ${r.m} phút · ${esc(r.k || "")}</span></div>
+        <div class="single-act"><a class="more" href="${BASE}/mon/${r.s}/">Cách nấu</a><button class="lock" type="button" data-lock="${d.key}" aria-pressed="${locked}" aria-label="${locked ? "Bỏ khoá" : "Khoá"} món ${esc(r.t)}">${locked ? IC.lock : IC.unlock}<span>${locked ? "Đã giữ" : "Giữ"}</span></button></div>
+      </div>`;
   const sync = () => {
     const defs = slotDefs();
     $$("[data-spin-mode]", box).forEach((b) => b.setAttribute("aria-selected", b.dataset.spinMode === st.mode));
@@ -222,6 +233,23 @@ async function pageHome() {
     const el = $(`[data-slot="${d.key}"]`, slotsEl);
     const n = 9 + i * 4, dur = 950 + i * 380;
     const strip = Array.from({ length: n }, () => rand(p)).concat(fin);
+    if (single(d)) {
+      const cards = [rand(p), rand(p), ...strip, rand(p), rand(p)], at = n + 2;
+      el.className = "slot single rolling";
+      el.innerHTML = track(cards, 2) + `<div class="single-info"><div class="slot-label">${esc(d.label)}</div><strong>${esc(rand(p).t)}</strong><span class="meta">Đang chọn…</span></div>`;
+      const tr = $(".hreel-track", el), nm = $("strong", el);
+      tr.getBoundingClientRect();
+      tr.style.setProperty("--d", dur + 400 + "ms");
+      tr.style.setProperty("--x", -(at * STEP + HALF) + "px");
+      const tk = setInterval(() => (nm.textContent = rand(p).t), 90);
+      await wait(dur + 400);
+      clearInterval(tk);
+      st.picks[d.key] = fin.s;
+      el.outerHTML = singleHTML(d, fin, !!st.locks[d.key], cards.slice(at - 2, at + 3));
+      $(`[data-slot="${d.key}"]`, slotsEl).classList.add("landed");
+      try { navigator.vibrate && navigator.vibrate(12); } catch {}
+      return;
+    }
     el.className = "slot rolling";
     el.innerHTML = `<div class="slot-img"><div class="reel" style="--d:${dur}ms" aria-hidden="true">${strip.map((r) => `<div>${pic(r)}</div>`).join("")}</div></div><div><div class="slot-label">${esc(d.label)}</div><strong>${esc(rand(p).t)}</strong><span class="meta">Đang chọn…</span></div>`;
     const reel = $(".reel", el), name = $("strong", el);
