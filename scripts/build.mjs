@@ -228,8 +228,8 @@ async function main() {
     <label><input type="radio" name="spin-kind" value="uong" data-spin-kind><span>${t("kind_drink")}</span></label>
   </div>
   <div class="seg" role="tablist" aria-label="${t("spin_modes")}" data-spin-modes>
-    <button type="button" role="tab" data-spin-mode="one" aria-selected="true">${t("mode_one")}</button>
-    <button type="button" role="tab" data-spin-mode="mam" aria-selected="false">${t("mode_mam")}</button>
+    <button type="button" role="tab" data-spin-mode="one" aria-selected="false">${t("mode_one")}</button>
+    <button type="button" role="tab" data-spin-mode="mam" aria-selected="true">${t("mode_mam")}</button>
   </div>
   <details class="spin-more"><summary>${t("filters")}<span data-spin-fcount></span></summary><div class="spin-filters">
     <label><span>${t("f_meal")}</span><select data-spin-f="b"><option value="">${t("f_meal_any")}</option><option value="sang">${t("meal_sang")}</option><option value="trua">${t("meal_trua")}</option><option value="toi">${t("meal_toi")}</option></select></label>
@@ -237,7 +237,7 @@ async function main() {
     <label><span>${t("f_main")}</span><select data-spin-f="n"><option value="">${t("f_main_any")}</option>${mains.map((n) => `<option${LV}>${esc(n)}</option>`).join("")}</select></label>
   </div></details>
   <div class="row spin-go"><button class="btn big" type="button" data-spin-go>${icon("dice")}<span>${t("spin_go")}</span></button></div>
-  <div class="spin-slots" data-spin-slots aria-live="polite" data-mam='${esc(JSON.stringify(MAM.map(([c, k]) => [c, t(k)])))}'><div class="slot empty-slot" data-slot="one"><div><div class="slot-label">${t("for_you")}</div><p>${t("waiting")}</p></div></div></div>
+  <div class="spin-slots mam" data-spin-slots aria-live="polite" data-mam='${esc(JSON.stringify(MAM.map(([c, k]) => [c, t(k)])))}'>${MAM.map(([, k], i) => `<div class="slot empty-slot" data-slot="m${i}"><div><div class="slot-label">${t(k)}</div><p>${t("waiting")}</p></div></div>`).join("")}</div>
   <div class="row spin-shop"><button class="btn ghost" type="button" data-spin-shop hidden>${icon("cart")}<span>${t("add_shop")}</span></button></div>
   <p class="muted small">${t("spin_hint")}</p>
 </section>

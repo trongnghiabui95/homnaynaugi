@@ -40,17 +40,20 @@ async def main():
         BO_QUA = ("Failed to load resource", "Permissions policy violation")
         pg.on("console", lambda m: errs.append(m.text) if m.type == "error" and not any(x in m.text for x in BO_QUA) else None)
 
-        # Lần đầu vào: khung quay mặc định "Gợi ý 1 món", HTML dựng sẵn đúng chế độ nên không nhảy bố cục
+        # Lần đầu vào: khung quay mặc định "Mâm cơm 3 món", HTML dựng sẵn đúng chế độ (3 ngăn chờ) nên không nhảy bố cục
         await pg.add_init_script("window.__cls=0;new PerformanceObserver(l=>l.getEntries().forEach(e=>{if(!e.hadRecentInput)window.__cls+=e.value})).observe({type:'layout-shift',buffered:true})")
         r = await pg.goto(B + "/")
         html = await r.text()
-        check("HTML dựng sẵn: 'Gợi ý 1 món' được chọn, một ngăn chờ quay", re.search(r'data-spin-mode="one" aria-selected="true"', html) is not None and 'data-slot="one"' in html and "Thêm cả mâm" not in html)
+        check("HTML dựng sẵn: 'Mâm cơm 3 món' được chọn, ba ngăn chờ quay", re.search(r'data-spin-mode="mam" aria-selected="true"', html) is not None and all(f'data-slot="m{i}"' in html for i in range(3)) and 'data-slot="one"' not in html)
         await pg.wait_for_timeout(500)
-        dau = await pg.evaluate("[document.querySelector('[data-spin-mode=one]').getAttribute('aria-selected'), document.querySelectorAll('[data-spin-slots] .slot').length, document.querySelector('[data-spin-slots]').classList.contains('mam'), document.querySelector('[data-spin-go] span').textContent]")
-        check("lần đầu vào: chế độ 1 món, một ngăn, nút Quay món", dau == ["true", 1, False, "Quay món"], str(dau))
+        dau = await pg.evaluate("[document.querySelector('[data-spin-mode=mam]').getAttribute('aria-selected'), document.querySelectorAll('[data-spin-slots] .slot').length, document.querySelector('[data-spin-slots]').classList.contains('mam'), document.querySelector('[data-spin-go] span').textContent]")
+        check("lần đầu vào: chế độ mâm cơm, ba ngăn, nút Quay món", dau == ["true", 3, True, "Quay món"], str(dau))
         cls = await pg.evaluate("window.__cls")
         check("không nhảy bố cục khi tải trang chủ (CLS < 0.1)", cls < 0.1, str(cls))
-        await pg.screenshot(path=f"{OUT}/1b-mot-mon-truoc-quay.png")
+        await pg.screenshot(path=f"{OUT}/1b-mam-truoc-quay.png")
+        # Chuyển sang "Gợi ý 1 món" để kiểm tra quay 1 món
+        await pg.click('[data-spin-mode="one"]'); await pg.wait_for_timeout(200)
+        check("bấm 'Gợi ý 1 món': còn một ngăn", len(await pg.query_selector_all("[data-spin-slots] .slot")) == 1 and await pg.get_attribute('[data-spin-mode="one"]', "aria-selected") == "true")
         async def quay():
             await pg.click("[data-spin-go]")
             await pg.wait_for_selector("[data-spin-go]:not([disabled])"); await pg.wait_for_timeout(60)
@@ -583,12 +586,13 @@ async def main():
         await p6.click("[data-cook-close]")
         # Trang chủ tiếng Anh: quay món
         await p6.goto(B + "/en/"); await p6.wait_for_timeout(400)
-        check("EN trang chủ: nút 'Spin', ngăn 'Picked for you'", await p6.text_content("[data-spin-go] span") == "Spin" and await p6.text_content(".slot-label") == "Picked for you")
+        labels = await p6.eval_on_selector_all("[data-spin-slots] .slot-label", "els=>els.map(e=>e.textContent)")
+        check("EN trang chủ: nút 'Spin', mặc định mâm cơm 3 ngăn nhãn tiếng Anh", await p6.text_content("[data-spin-go] span") == "Spin" and labels == ["Main dish", "Soup", "Greens / stir-fry"], str(labels))
+        await p6.click('[data-spin-mode="one"]'); await p6.wait_for_timeout(100)
+        check("EN: chế độ 1 món có ngăn 'Picked for you'", await p6.text_content(".slot-label") == "Picked for you")
         await p6.click("[data-spin-go]"); await p6.wait_for_selector("[data-spin-go]:not([disabled])"); await p6.wait_for_timeout(60)
         check("EN: quay xong, nút 'Spin again', link món ở /en/", await p6.text_content("[data-spin-go] span") == "Spin again" and (await p6.get_attribute('[data-slot="one"] a.more', "href")).startswith("/en/mon/"))
         await p6.click('[data-spin-mode="mam"]'); await p6.wait_for_timeout(100)
-        labels = await p6.eval_on_selector_all("[data-spin-slots] .slot-label", "els=>els.map(e=>e.textContent)")
-        check("EN: mâm cơm 3 ngăn có nhãn tiếng Anh", labels == ["Main dish", "Soup", "Greens / stir-fry"], str(labels))
         await p6.screenshot(path=f"{OUT}/11-en-trang-chu.png")
         await p6.goto(B + "/en/tim-kiem/?mode=nl"); await p6.wait_for_timeout(400)
         await p6.click('[data-fridge] [data-v="trung ga"]'); await p6.wait_for_timeout(200)
