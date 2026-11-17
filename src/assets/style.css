@@ -264,12 +264,18 @@ select { min-height: 46px; padding: 0 12px; border: 1px solid var(--line); borde
 .ings label:has(input:checked) { background: var(--primary-soft); }
 .ings small { color: var(--muted); }
 .qty { color: var(--primary); }
-.steps { list-style: none; padding: 0; margin: 0; counter-reset: step; display: grid; gap: 10px; }
+.steps-sec { counter-reset: step; }
+.steps { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+.phase { margin: 24px 0 8px; display: flex; align-items: baseline; gap: 8px; }
+.phase small { color: var(--muted); font-weight: 500; }
 .steps li { counter-increment: step; position: relative; padding: 12px 14px 12px 58px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); scroll-margin-top: 80px; }
 .steps li::before { content: counter(step); position: absolute; left: 12px; top: 12px; width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; font: 700 1.15em var(--serif); }
 .steps li.done { opacity: .55; }
 .steps li.done::before { content: "✓"; background: var(--herb); }
-.steps h3 { margin: 4px 0 2px; font-family: var(--serif); font-size: 1.1em; }
+.steps :is(h3, h4) { margin: 4px 0 2px; font-family: var(--serif); font-size: 1.1em; }
+.sign { display: flex; gap: 8px; margin: 8px 0; }
+.sign svg { flex: none; width: 20px; height: 20px; margin-top: 3px; color: var(--herb); }
+.step-note { background: var(--herb-soft); border-radius: var(--radius); padding: 8px 12px; margin: 8px 0; }
 .steps p { margin: 4px 0; cursor: pointer; }
 .step-img { border-radius: 12px; margin-top: 10px; width: 100%; aspect-ratio: 16/10; object-fit: cover; }
 .step-tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }

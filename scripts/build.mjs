@@ -141,7 +141,7 @@ async function main() {
   for (const r of recipes) {
     r.vi = { ten: r.ten, tom_tat: r.tom_tat, meo: r.meo };
     for (const i of r.ings) i.vi = { ten: i.ten, ghi_chu: i.ghi_chu, nhom: i.nhom, don_vi: i.don_vi };
-    for (const s of r.steps) s.vi = { tieu_de: s.tieu_de, noi_dung: s.noi_dung };
+    for (const s of r.steps) s.vi = { tieu_de: s.tieu_de, noi_dung: s.noi_dung, giai_doan: s.giai_doan, dau_hieu: s.dau_hieu, luu_y: s.luu_y };
     r.dich = daDich(r, "en");
   }
   const catCount = (c) => recipes.filter((r) => r.danh_muc === c.slug).length;
@@ -280,14 +280,19 @@ ${rs.length ? filterBar(rs) + grid(rs, true) : emptyState(t("cat_empty"), t("cat
       const con = (l) => (l === i.lv.ten ? "" : ` lang="${l || lang}"`);
       return `<li${A(i.lv.ten)}><label><input type="checkbox" aria-label="${esc(t("need_buy", i.ten))}"><span><b class="qty" data-q="${q || ""}">${qtyText(q)}</b> <span class="unit"${con(i.lv.don_vi)}>${esc(i.don_vi)}</span> <strong>${esc(i.ten)}</strong>${i.ghi_chu ? ` <small${con(i.lv.ghi_chu)}>(${esc(i.ghi_chu)})</small>` : ""}</span></label></li>`;
     }).join("")}</ul>`).join("");
-    const stepHTML = r.steps.map((s, i) => {
+    // Giai đoạn (cột giai_doan): gom các bước liền nhau cùng giai đoạn; có giai đoạn thì tiêu đề bước xuống h4.
+    const phases = stepPhases(r.steps), hs = phases.some((g) => g.ten) ? "h4" : "h3";
+    const stepLi = (s, i) => {
       const sec = num(s.giay_video, -1), tmin = num(s.hen_gio_phut, 0);
       const tools = [
         r.yt && sec >= 0 ? `<button class="mini" type="button" data-seek="${sec}">${icon("play")} ${t("see_part", mmss(sec))}</button>` : "",
         tmin ? `<button class="mini" type="button" data-timer="${tmin}" data-label="${esc(s.tieu_de || t("step_n", i + 1))}">${icon("timer")} ${t("timer_min", qtyText(tmin))}</button>` : "",
       ].join("");
-      return `<li data-step id="buoc-${i + 1}">${s.tieu_de ? `<h3${A(s.lv.tieu_de)}>${esc(s.tieu_de)}</h3>` : ""}<p${A(s.lv.noi_dung)}>${esc(s.noi_dung)}</p>${s.img ? `<figure class="step-fig"><img class="step-img" src="${esc(s.img)}" alt="${esc(s.tieu_de || t("step_n", i + 1))}"${s.tieu_de ? A(s.lv.tieu_de) : ""} loading="lazy" width="800" height="600">${photoCredit(s.credit)}</figure>` : ""}${tools ? `<div class="step-tools">${tools}</div>` : ""}</li>`;
-    }).join("");
+      const sign = s.dau_hieu ? `<p class="sign">${icon("eye")} <span><b>${t("step_sign")}:</b> <span${A(s.lv.dau_hieu)}>${esc(s.dau_hieu)}</span></span></p>` : "";
+      const note = s.luu_y ? `<p class="step-note"><b>${t("step_note")}:</b> <span${A(s.lv.luu_y)}>${esc(s.luu_y)}</span></p>` : "";
+      return `<li data-step id="buoc-${i + 1}">${s.tieu_de ? `<${hs}${A(s.lv.tieu_de)}>${esc(s.tieu_de)}</${hs}>` : ""}<p${A(s.lv.noi_dung)}>${esc(s.noi_dung)}</p>${sign}${note}${s.img ? `<figure class="step-fig"><img class="step-img" src="${esc(s.img)}" alt="${esc(s.tieu_de || t("step_n", i + 1))}"${s.tieu_de ? A(s.lv.tieu_de) : ""} loading="lazy" width="800" height="600">${photoCredit(s.credit)}</figure>` : ""}${tools ? `<div class="step-tools">${tools}</div>` : ""}</li>`;
+    };
+    const stepHTML = phases.map((g) => `${g.ten ? `<h3 class="phase"><span${A(g.lv)}>${esc(g.ten)}</span> <small>${t("n_steps", g.steps.length)}</small></h3>` : ""}<ol class="steps"${g.from ? ` start="${g.from + 1}"` : ""}>${g.steps.map((s, k) => stepLi(s, g.from + k)).join("")}</ol>`).join("");
 
     // Món ăn kèm: lấy từ cột an_kem, thiếu thì gợi ý theo mâm cơm (mặn ↔ canh, rau)
     let pair = r.anKem.map((s) => bySlug[s]).filter(Boolean);
@@ -308,7 +313,11 @@ ${rs.length ? filterBar(rs) + grid(rs, true) : emptyState(t("cat_empty"), t("cat
       recipeYield: t("recipe_yield", r.serv), recipeCategory: r.cat.ten, recipeCuisine: t("cuisine"), keywords: r.tagList.join(", "),
       ...(r.cal ? { nutrition: { "@type": "NutritionInformation", calories: `${r.cal} kcal` } } : {}),
       recipeIngredient: r.ings.map((i) => [qtyText(num(i.so_luong, 0)), i.don_vi, i.ten, i.ghi_chu ? `(${i.ghi_chu})` : ""].filter(Boolean).join(" ")),
-      recipeInstructions: r.steps.map((s, i) => ({ "@type": "HowToStep", position: i + 1, ...(s.tieu_de ? { name: s.tieu_de } : {}), text: s.noi_dung, url: `${abs(site, lang, `/mon/${r.slug}/`)}#buoc-${i + 1}`, ...(s.img ? { image: s.img } : {}) })),
+      // Có giai đoạn thì gom bằng HowToSection; bước không có giai đoạn vẫn là HowToStep. text luôn là nội dung bước.
+      recipeInstructions: phases.flatMap((g) => {
+        const st = g.steps.map((s, k) => ({ "@type": "HowToStep", position: g.from + k + 1, ...(s.tieu_de ? { name: s.tieu_de } : {}), text: s.noi_dung, url: `${abs(site, lang, `/mon/${r.slug}/`)}#buoc-${g.from + k + 1}`, ...(s.img ? { image: s.img } : {}) }));
+        return g.ten ? [{ "@type": "HowToSection", name: g.ten, itemListElement: st }] : st;
+      }),
       ...(r.yt ? { video: { "@type": "VideoObject", name: r.ten, description: r.tom_tat, thumbnailUrl: [ytThumb(r.yt.id)], embedUrl: `https://www.youtube-nocookie.com/embed/${r.yt.id}`, contentUrl: watch } } : {}),
     };
     const facts = [
@@ -357,7 +366,7 @@ ${media}
 </section>
 </div><div class="r-main">
 ${adSlot(L, "mid")}
-<section aria-labelledby="steps-title"><h2 id="steps-title">${t("steps")}</h2><ol class="steps">${stepHTML}</ol></section>
+<section class="steps-sec" aria-labelledby="steps-title"><h2 id="steps-title">${t("steps")}</h2>${stepHTML}</section>
 ${r.meo ? `<aside class="tip"><h2>${icon("leaf")} ${t("tip")}</h2>${r.lv.meo ? vi(md(r.meo)) : md(r.meo)}</aside>` : ""}
 </div></div>
 ${pair.length ? `<section><h2>${t("pair")}</h2>${grid(pair, false, true)}</section>` : ""}
@@ -375,7 +384,7 @@ ${related.length ? `<section><h2 class="section-title">${t("more_in", r.cat.lv.t
 <div class="cook" data-cook-view hidden role="dialog" aria-modal="true" aria-label="${t("cook_dlg")}">
   <div class="cook-top"><span data-cook-pos></span><button class="icon-btn" type="button" data-cook-close aria-label="${t("cook_exit")}">✕</button></div>
   <div class="cook-bar"><span data-cook-bar></span></div>
-  <div class="cook-body"><h2 class="cook-title" data-cook-title${r.dich ? "" : LV}></h2><p class="cook-text" data-cook-text${r.dich ? "" : LV}></p><img class="cook-img" data-cook-img alt="" hidden></div>
+  <div class="cook-body"><h2 class="cook-title" data-cook-title${r.dich ? "" : LV}></h2><p class="cook-text" data-cook-text${r.dich ? "" : LV}></p><p class="sign" data-cook-sign hidden></p><p class="step-note" data-cook-note hidden></p><img class="cook-img" data-cook-img alt="" hidden></div>
   <label class="cook-done"><input type="checkbox" data-cook-done> ${t("cook_done")}</label>
   <div class="cook-tools" data-cook-tools></div>
   <div class="cook-nav"><button class="btn ghost" type="button" data-cook-prev>${t("prev")}</button><button class="btn" type="button" data-cook-next>${t("next")}</button></div>
@@ -503,7 +512,7 @@ function localize(lang, cats, recipes) {
       const u = lang === "vi" ? undefined : i[`don_vi_${lang}`] || t("unit", fold(i.vi.don_vi || ""));
       if (u === undefined) set(i, "don_vi", ""); else { i.don_vi = u; i.lv.don_vi = ""; }
     }
-    for (const s of r.steps) for (const k of ["tieu_de", "noi_dung"]) set(s, k);
+    for (const s of r.steps) for (const k of ["tieu_de", "noi_dung", "giai_doan", "dau_hieu", "luu_y"]) set(s, k);
   }
 }
 function topIngredients(recipes, n) {
@@ -513,6 +522,16 @@ function topIngredients(recipes, n) {
     const e = count.get(k) || { name: i.ten, n: 0 }; e.n++; count.set(k, e);
   }
   return [...count.values()].sort((a, b) => b.n - a.n || a.name.localeCompare(b.name, "vi")).slice(0, n).map((e) => e.name);
+}
+/** Gom các bước liền nhau cùng giai đoạn (so theo chữ gốc tiếng Việt). Trả về [{ ten, lv, from, steps }]. */
+function stepPhases(steps) {
+  const out = [];
+  steps.forEach((s, i) => {
+    const key = String(s.vi.giai_doan || "").trim(), last = out[out.length - 1];
+    if (last && last.key === key) last.steps.push(s);
+    else out.push({ key, ten: s.giai_doan, lv: s.lv.giai_doan, from: i, steps: [s] });
+  });
+  return out;
 }
 function groupMap(arr, key) {
   const m = new Map();

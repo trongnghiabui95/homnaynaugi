@@ -37,8 +37,8 @@ Phong cách tạp chí ẩm thực: nền kem `#FAF8F5`, thẻ trắng đổ bó
 - Thông số: sơ chế, nấu, độ khó, calo/phần, chi phí ước tính (chỉ hiện khi có số liệu), khẩu phần.
 - Chuyển giữa ảnh món và video (Shorts khung dọc); bấm "Xem đoạn mm:ss" ở bước để nhảy đúng giây.
 - Nguyên liệu: nút −/+ và chọn nhanh 1/2/4/6 người; tích món cần mua → "Chép danh sách đi chợ" hoặc "Thêm vào Đi chợ".
-- Từng bước có tiêu đề, ảnh minh hoạ, hẹn giờ.
-- Chế độ đang nấu: chữ to, thanh tiến độ, đánh dấu bước xong, giữ màn hình sáng.
+- Từng bước có tiêu đề, ảnh minh hoạ, hẹn giờ. Tuỳ chọn: gom bước theo giai đoạn (`giai_doan`), dòng "Đạt khi" (`dau_hieu`), ghi chú "Lưu ý" (`luu_y`).
+- Chế độ đang nấu: chữ to, thanh tiến độ, đánh dấu bước xong, giữ màn hình sáng; hiện "Đạt khi" và "Lưu ý" của bước.
 - Bí quyết nấu ngon (hộp xanh thảo mộc), Ăn kèm hợp vị (3 món, tự gợi ý theo mâm cơm nếu Sheet không ghi).
 - schema.org `Recipe` + `VideoObject` + `NutritionInformation`.
 
