@@ -111,16 +111,16 @@ ${p.noindex || site.preview ? '<meta name="robots" content="noindex">' : ""}${p.
 <meta property="og:locale" content="${LOCALE[lang]}">
 <meta property="og:locale:alternate" content="${LOCALE[other]}">
 ${ogTags(site, p)}
-<meta name="theme-color" content="#0c0a09">
+<meta name="theme-color" content="#1a1210">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/assets/icons/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/icons/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Nunito:wght@800;900&display=swap">
 <link rel="stylesheet" href="/assets/basecoat.css?v=${site.build_id}">
 <link rel="stylesheet" href="/assets/style.css?v=${site.build_id}">${{ home: 1, recipe: 1, video: 1, shop: 1, list: 1 }[p.page] ? `\n<link rel="stylesheet" href="/assets/${p.page}.css?v=${site.build_id}">` : ""}
-<script>document.documentElement.classList.add("js");try{var s=JSON.parse(localStorage.getItem("hnng-prefs")||"{}");if(s.theme==="light"){document.documentElement.dataset.theme="light";document.querySelector('meta[name="theme-color"]').content="#fafaf9"}if(s.big)document.documentElement.dataset.big="1"${p.path === "/404" ? "" : `;var h=document.documentElement,b=h.dataset.base||"",q=location.pathname.slice(b.length);if(s.lang&&s.lang!==h.lang)location.replace(b+(s.lang==="en"?"/en"+q:q.replace(/^\\/en(\\/|$)/,"/"))+location.search+location.hash)`}}catch(e){}</script>
+<script>document.documentElement.classList.add("js");try{var s=JSON.parse(localStorage.getItem("hnng-prefs")||"{}");if(s.theme==="light"){document.documentElement.dataset.theme="light";document.querySelector('meta[name="theme-color"]').content="#fff8ef"}if(s.big)document.documentElement.dataset.big="1"${p.path === "/404" ? "" : `;var h=document.documentElement,b=h.dataset.base||"",q=location.pathname.slice(b.length);if(s.lang&&s.lang!==h.lang)location.replace(b+(s.lang==="en"?"/en"+q:q.replace(/^\\/en(\\/|$)/,"/"))+location.search+location.hash)`}}catch(e){}</script>
 ${ld.map((o) => `<script type="application/ld+json">${JSON.stringify(o).replace(/</g, "\\u003c")}</script>`).join("\n")}
 ${adsense}
 </head>

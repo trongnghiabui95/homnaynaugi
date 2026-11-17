@@ -1,35 +1,38 @@
 /* Trang chủ: khung quay món. Chỉ trang chủ tải file này (templates.mjs). Token ở style.css. */
 /* Đầu trang: chữ lớn + cụm đĩa */
 .hero { position: relative; }
-.hero h1 { font-size: 2.35em; letter-spacing: -.035em; margin: .3em 0 .3em; max-width: calc(100% - 132px); }
-.hero h1 em { color: var(--primary); font-style: normal; }
+.hero h1 { font-size: 2.6em; line-height: 1.05; margin: .35em 0 .3em; max-width: calc(100% - 128px); }
+@media (prefers-reduced-motion: no-preference) { .hero > * { animation: len .6s var(--nay) both; } .hero > :nth-child(2) { animation-delay: .05s; } .hero > :nth-child(3) { animation-delay: .1s; } .hero > :nth-child(4) { animation-delay: .15s; } .hero > :nth-child(5) { animation-delay: .2s; } }
+@keyframes len { from { opacity: 0; transform: translateY(14px) scale(.98); } }
+.hero h1 em { color: var(--primary); font-style: normal; background: var(--bo-soft); padding: 0 .12em; border-radius: .25em; }
 .plates { position: absolute; right: -4px; top: 6px; display: flex; }
-.plates img { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 3px solid var(--bg); box-shadow: 0 4px 12px -2px rgb(0 0 0 / .15); background: var(--surface-2); }
+.plates img { width: 66px; height: 66px; border-radius: 50%; object-fit: cover; border: 4px solid var(--card); box-shadow: 0 10px 20px -8px rgb(124 45 18 / .45); background: var(--surface-2); }
 .plates img + img { margin-left: -26px; }
 .plates img:nth-child(2) { transform: translateY(34px); } .plates img:nth-child(3) { transform: translateY(4px); }
 @media (min-width: 700px) { .hero h1 { font-size: 3em; } .plates img { width: 104px; height: 104px; } }
 .spin h2 { margin-top: 0; font-size: 1.6em; padding-right: 40px; }
 .spin-am { position: absolute; top: 10px; right: 10px; }
-.fridge-cta { display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; background: var(--herb-soft); border-color: transparent; box-shadow: none; }
-.fridge-cta h2 { margin: 0 0 4px; color: var(--herb); }
-.fridge-cta p { margin: 0; }
-.fridge-cta .btn { background: var(--herb); color: var(--primary-ink); }
-/* Khung quay: nền nghệ, không viền, nổi nhất trang */
-/* Khung quay: thẻ Basecoat, viền trên màu nhấn mảnh làm điểm nhận diện */
-.spin { position: relative; padding: 18px 16px; }
-.spin h2 { font-size: 1.5em; line-height: 1.15; }
+.fridge-cta { display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; background: var(--khoi-xanh) !important; color: #fff; }
+.fridge-cta h2 { margin: 0 0 4px; color: #fff; }
+.fridge-cta p { margin: 0; color: #fff; }
+/* Khung quay: khối màu cam đậm (Vibrant & Block-based), chữ trắng; ngăn món là thẻ trắng nổi */
+.spin { position: relative; padding: 20px 16px; background: var(--khoi) !important; color: #fff; }
+.spin .muted, .spin .spin-more summary, .spin-filters label span, .spin .icon-btn { color: #fff; }
+.spin .seg { background: rgb(255 255 255 / .16) !important; } .spin .seg > [role="tab"] { color: #fff; } .spin .seg > [aria-selected="true"] { color: var(--foreground); }
+.spin .btn.big, .fridge-cta .btn { background: #fde68a !important; color: #2b1d16 !important; } /* nút bơ: cố định ở cả sáng và đêm */
+.spin h2 { font-size: 1.7em; line-height: 1.1; color: #fff; }
 .spin .seg { display: flex; }
 .spin-filters { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 8px 0 4px; }
-.kind{display:flex;gap:8px;margin-bottom:12px}.kind label{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;border:1px solid var(--border);border-radius:var(--radius);background:var(--background);box-shadow:var(--shadow);font-weight:600;cursor:pointer}.kind label:has(:checked){border-color:var(--primary);color:var(--primary);box-shadow:0 0 0 1px var(--primary)}.kind input{accent-color:var(--primary);width:18px;height:18px;margin:0}.spin-more{margin-bottom:14px}.spin-more summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:600;color:var(--primary)}.rgrid.rrow{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:44%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding-bottom:6px}.rrow>*{scroll-snap-align:start}@media (min-width:700px){.rgrid.rrow{grid-auto-columns:30%}}
+.kind{display:flex;gap:8px;margin-bottom:12px}.kind label{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;border:3px solid transparent;border-radius:999px;background:var(--card);color:var(--text);box-shadow:var(--shadow);font-weight:800;cursor:pointer}.kind label:has(:checked){border-color:var(--bo-soft)}.kind input{accent-color:var(--primary);width:18px;height:18px;margin:0}.spin-more{margin-bottom:14px}.spin-more summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:600;color:var(--primary)}.rgrid.rrow{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:44%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding-bottom:6px}.rrow>*{scroll-snap-align:start}@media (min-width:700px){.rgrid.rrow{grid-auto-columns:30%}}
 .spin-filters label span { display: block; font-size: .8em; color: var(--muted); margin-bottom: 4px; }
 @media (max-width: 600px) { .spin-filters { grid-template-columns: 1fr 1fr; } .spin-filters label:last-child { grid-column: 1 / -1; } }
 .spin-go { margin: 0 0 14px; }
 .spin-go .btn.big { flex: 1 1 100%; justify-content: center; }
 .spin-shop { margin: 12px 0 8px; }
 .spin-shop .btn { flex: 1 1 100%; justify-content: center; }
-.spin-slots { display: grid; gap: 8px; padding: 8px; border-radius: 16px; background: var(--surface-2); }
+.spin-slots { display: grid; gap: 8px; padding: 8px; border-radius: 20px; background: rgb(0 0 0 / .14); }
 .spin-slots.mam { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.slot { position: relative; display: grid; grid-template-columns: 112px 1fr; gap: 12px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 10px; min-height: 120px; }
+.slot { position: relative; display: grid; grid-template-columns: 112px 1fr; gap: 12px; align-items: center; background: var(--surface); color: var(--text); border-radius: 18px; padding: 10px; min-height: 120px; box-shadow: var(--shadow); }
 .spin-slots.mam .slot { grid-template-columns: minmax(0, 1fr); gap: 6px; padding: 8px 6px 6px; align-content: start; text-align: center; min-height: 0; }
 .slot-img { position: relative; aspect-ratio: 4/3; border-radius: 10px; overflow: hidden; background: var(--surface-2); }
 .spin-slots.mam .slot-img { aspect-ratio: 1; order: 1; }
@@ -90,9 +93,10 @@
 .vcard-link { margin-top: auto; display: inline-flex; align-items: center; min-height: 44px; font-weight: 600; text-decoration: none; }
 /* Ô danh mục (thẻ Basecoat) — trang chủ và trang danh mục */
 .cat-row .cat-card { flex: 0 0 132px; }
-.cat-card { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px; padding: 16px 10px 12px; background: var(--card); border: 1px solid var(--border); box-shadow: var(--shadow); border-radius: var(--r-card); text-decoration: none; color: var(--text); transition: transform .2s, border-color .2s; }
-.cat-card > span:nth-last-child(2) { font-weight: 600; }
+.cat-card { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px; padding: 16px 10px 12px; background: var(--primary-soft); box-shadow: var(--shadow); border-radius: var(--r-card); text-decoration: none; color: var(--text); transition: transform .25s var(--nay); }
+.cat-card:nth-child(3n+2) { background: var(--herb-soft); } .cat-card:nth-child(3n) { background: var(--bo-soft); }
+.cat-card > span:nth-last-child(2) { font: 800 1.05em var(--serif); }
 @media (hover: hover) and (pointer: fine) { .cat-card:hover { transform: translateY(-2px); border-color: var(--accent); } }
-.cat-card img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; }
+.cat-card img { width: 84px; height: 84px; border-radius: 50%; object-fit: cover; border: 4px solid var(--card); }
 .cat-card span:last-child { color: var(--muted); font-size: .82em; }
 .cat-emoji { width: 72px; height: 72px; border-radius: 50%; background: var(--primary-soft); display: grid; place-items: center; font-size: 36px; }

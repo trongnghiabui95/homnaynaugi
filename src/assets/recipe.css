@@ -3,11 +3,11 @@
 @media (min-width: 900px) { .recipe { max-width: none; } .r-cols { display: grid; grid-template-columns: 380px 1fr; gap: 28px; align-items: start; margin-top: 16px; } .r-side .media, .r-main h2 { margin-top: 0; } }
 .recipe h1 { font-size: 2.2em; letter-spacing: -.035em; margin: .15em 0 .3em; }
 /* Thông số: một dải chia cột, không phải 4 thẻ */
-.facts { list-style: none; padding: 6px 0; margin: 16px 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); }
-.facts li { display: flex; flex-direction: column; gap: 3px; align-items: center; text-align: center; padding: 8px 6px; font-size: .92em; }
-.facts li + li { border-left: 1px solid var(--line); }
+.facts { list-style: none; padding: 0; margin: 16px 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)); gap: 8px; }
+.facts li { display: flex; flex-direction: column; gap: 2px; align-items: center; text-align: center; padding: 12px 6px; font-size: .92em; border-radius: 20px; background: var(--primary-soft); box-shadow: var(--shadow); }
+.facts li:nth-child(4n+2) { background: var(--herb-soft); } .facts li:nth-child(4n+3) { background: var(--bo-soft); } .facts li:nth-child(4n) { background: var(--secondary); }
 .facts .ic { color: var(--accent); }
-.facts b { line-height: 1.2; }
+.facts b { line-height: 1.2; font: 900 1.1em var(--serif); }
 .facts small { color: var(--muted); font-size: 13px; }
 .actions { display: flex; gap: 10px; flex-wrap: wrap; }
 .actions .btn { flex: 1; min-width: 150px; }
@@ -37,7 +37,7 @@
 .steps li:last-child::before { display: none; }
 .step-ck { position: absolute; left: 0; top: 0; width: 44px; height: 44px; display: grid; place-items: center; cursor: pointer; }
 .step-ck input { position: absolute; opacity: 0; }
-.step-ck span { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--line); background: var(--surface); color: var(--muted); display: grid; place-items: center; font: 700 1.05em var(--serif); }
+.step-ck span { width: 36px; height: 36px; border-radius: 50%; background: var(--secondary); color: var(--secondary-foreground); display: grid; place-items: center; font: 900 1.05em var(--serif); box-shadow: inset 0 -3px 0 rgb(124 45 18 / .12); }
 .step-ck input:focus-visible + span { outline: 3px solid var(--primary); outline-offset: 2px; }
 .now .step-ck span { background: var(--primary); border-color: var(--primary); color: var(--primary-ink); }
 .done .step-ck span { position: relative; background: var(--herb); border-color: var(--herb); color: transparent; }
@@ -68,8 +68,8 @@
 .step-tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .mini { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); color: var(--primary); font-weight: 600; font-size: .88em; cursor: pointer; }
 .mini .ic { width: 18px; height: 18px; }
-.tip { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-card); padding: 4px 20px 10px; margin: 24px 0; }
-.tip h2 { color: var(--text); display: flex; align-items: center; gap: 8px; font-size: 1.15em; }
+.tip { background: var(--bo-soft); border-radius: var(--r-card); padding: 4px 20px 10px; margin: 24px 0; box-shadow: var(--shadow); }
+.tip h2 { color: var(--secondary-foreground); display: flex; align-items: center; gap: 8px; font-size: 1.15em; }
 .tip h2 svg { color: var(--primary); }
 .tags { margin: 18px 0; }
 /* Chế độ đang nấu */
