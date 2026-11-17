@@ -52,7 +52,7 @@ const vi = {
   // Trang công thức
   steps_sum: (n, w, m) => `${n} bước${w ? ` · ${w} bước cần chờ · chờ lâu nhất ${m} phút` : ""}`,
   step_prog: (d, n) => `${d}/${n} bước`, step_reset: "Làm lại từ đầu", step_mark: (n) => `Đã xong bước ${n}`, step_hint: "Chạm vào số để đánh dấu bước đã xong.",
-  need_buy: (x) => `Cần mua ${x}`, see_part: (t) => `Xem đoạn ${t}`, step_n: (n) => `Bước ${n}`, timer_min: (n) => `Hẹn giờ ${n} phút`,
+  need_buy: (x) => `Cần mua ${x}`, see_part: (t) => `Xem đoạn ${t}`, step_n: (n) => `Bước ${n}`, n_steps: (n) => `${n} bước`, step_sign: "Đạt khi", step_note: "Lưu ý", timer_min: (n) => `Hẹn giờ ${n} phút`,
   servings: (n) => `${n} người`, servings_unit: "người", recipe_yield: (n) => `${n} người`, cuisine: "Việt Nam",
   f_prep: "sơ chế", f_cook: "nấu", f_diff: "độ khó", f_cal: "mỗi phần", f_cost: "chi phí ước tính", f_serv: "khẩu phần gốc",
   play_guide: (t) => `Phát video hướng dẫn ${t}`, photo_or_video: "Ảnh hoặc video", tab_photo: "Ảnh món",
@@ -140,7 +140,7 @@ const en = {
   cat_empty: "More recipes coming", cat_empty_p: "New recipes will be here soon.",
   steps_sum: (n, w, m) => `${n} ${n === 1 ? "step" : "steps"}${w ? ` · ${w} with waiting · longest wait ${m} min` : ""}`,
   step_prog: (d, n) => `${d}/${n} steps`, step_reset: "Start over", step_mark: (n) => `Step ${n} done`, step_hint: "Tap a number to mark the step as done.",
-  need_buy: (x) => `Need to buy ${x}`, see_part: (t) => `Watch from ${t}`, step_n: (n) => `Step ${n}`, timer_min: (n) => `Timer ${n} min`,
+  need_buy: (x) => `Need to buy ${x}`, see_part: (t) => `Watch from ${t}`, step_n: (n) => `Step ${n}`, n_steps: (n) => `${n} ${n === 1 ? "step" : "steps"}`, step_sign: "Done when", step_note: "Watch out", timer_min: (n) => `Timer ${n} min`,
   servings: (n) => `${n} ${n === 1 ? "person" : "people"}`, servings_unit: "people", recipe_yield: (n) => `${n} servings`, cuisine: "Vietnamese",
   f_prep: "prep", f_cook: "cook", f_diff: "difficulty", f_cal: "per serving", f_cost: "estimated cost", f_serv: "base servings",
   play_guide: (t) => `Play the video guide for ${t}`, photo_or_video: "Photo or video", tab_photo: "Photo",

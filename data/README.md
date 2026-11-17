@@ -40,7 +40,7 @@ Mỗi cột nội dung có thể thêm một cột cùng tên kèm đuôi `_en` 
 | --- | --- |
 | `recipes` | `ten_en`, `tom_tat_en`, `meo_en` |
 | `ingredients` | `ten_en`, `ghi_chu_en`, `don_vi_en` (đơn vị, ví dụ `cloves`), `nhom_en` (tên nhóm) |
-| `steps` | `tieu_de_en`, `noi_dung_en` |
+| `steps` | `tieu_de_en`, `noi_dung_en`, `giai_doan_en`, `dau_hieu_en`, `luu_y_en` |
 
 - Trang `/en/mon/<slug>/` dùng bản `_en` khi có; ô nào chưa dịch thì hiện tiếng Việt (đánh dấu `lang="vi"`).
 - Món **đã dịch** khi có đủ `ten_en`, `tom_tat_en`, mọi nguyên liệu có `ten_en` (và `ghi_chu_en` nếu có ghi chú), mọi bước có `noi_dung_en` (và `tieu_de_en` nếu có tiêu đề). Khi đó trang không còn dòng "This recipe is not translated yet." và dữ liệu Google (`Recipe`) ghi `inLanguage: "en"`. Mẹo, nhóm, đơn vị không bắt buộc.
@@ -56,7 +56,15 @@ Mỗi cột nội dung có thể thêm một cột cùng tên kèm đuôi `_en` 
 | `categories` | Một danh mục | slug, ten, mo_ta, bieu_tuong (một emoji), anh (link ảnh tròn, có thể trống), thu_tu |
 | `recipes` | Một món | slug, ten, danh_muc (slug danh mục), tom_tat, khau_phan (số người), phut_chuan_bi, phut_nau, do_kho (Dễ / Vừa / Khó), bua (sáng, trưa, tối – cách nhau dấu phẩy), nguyen_lieu_chinh (Thịt heo, Gà, Cá, Trứng…), calo (kcal mỗi phần, để trống nếu chưa biết), chi_phi (đồng, để trống nếu chưa biết), anh, video, kenh, tags (cách nhau dấu phẩy), meo (bí quyết), an_kem (slug món ăn kèm, cách nhau dấu phẩy), trang_thai (nháp / duyệt), cap_nhat (2026-11-16), anh_nguon (ghi công ảnh không tự chụp: tên tác giả, giấy phép, link trang ảnh; ảnh tự chụp thì để trống) |
 | `ingredients` | Một nguyên liệu | recipe_slug, nhom (ví dụ "Ướp thịt", có thể trống), ten, so_luong (số; ½ ghi `0.5`), don_vi, ghi_chu |
-| `steps` | Một bước | recipe_slug, buoc, tieu_de, noi_dung, anh (ảnh bước, có thể trống), giay_video (có thể trống), hen_gio_phut (hiện nút hẹn giờ, có thể trống) |
+| `steps` | Một bước | recipe_slug, buoc, tieu_de, noi_dung, anh (ảnh bước, có thể trống), giay_video (có thể trống), hen_gio_phut (hiện nút hẹn giờ, có thể trống), giai_doan (ví dụ Sơ chế / Nấu / Hoàn thiện, có thể trống), dau_hieu (nấu tới đâu là được, có thể trống), luu_y (lỗi hay gặp hoặc mẹo riêng của bước, có thể trống) |
+
+### Giai đoạn, dấu hiệu đạt, lưu ý (tab `steps`, tuỳ chọn)
+- `giai_doan`: các bước **liền nhau** cùng giai đoạn được gom dưới một tiêu đề nhỏ, kèm số bước ("Sơ chế · 2 bước"). Ghi đúng cùng một chữ cho các bước trong một giai đoạn.
+- `dau_hieu`: hiện thành dòng "Đạt khi: …" có icon con mắt. Ví dụ "thịt săn lại, nước sánh màu cánh gián".
+- `luu_y`: hiện thành ghi chú nền xanh nhạt "Lưu ý: …". Ví dụ "đừng đậy vung kẻo nước đục".
+- Cả ba cột để trống thì trang món hiển thị như cũ. Sheet cũ chưa có các cột này vẫn build được. Chế độ nấu hiện "Đạt khi" và "Lưu ý" của bước đang xem.
+- Dữ liệu Google: có giai đoạn thì các bước được gom bằng `HowToSection`.
+- Bản dịch `_en` của ba cột không bắt buộc để món được tính là "đã dịch" (giống mẹo); ô chưa dịch hiện tiếng Việt.
 
 ## Quy tắc nội dung
 - Tự viết công thức bằng lời của mình, không chép phần mô tả video hay công thức từ web khác.

@@ -494,7 +494,7 @@ async function pageRecipe() {
   steps.forEach((li, i) => ($("[data-step-done]", li).onchange = (e) => datXong(i, e.target.checked)));
   $("[data-step-reset]").onclick = () => { steps.forEach((li) => li.classList.remove("done")); veBuoc(); store.set(kStep, []); };
   (await store.get(kStep, [])).forEach((k) => steps[k]?.classList.add("done"));
-  prog.hidden = false; $(".steps").classList.add("live"); veBuoc();
+  prog.hidden = false; $$(".steps").forEach((ol) => ol.classList.add("live")); veBuoc();
   // Ảnh bước: màn rộng là ảnh nhỏ bên phải, bấm để phóng to
   $$(".step-fig").forEach((f) => (f.onclick = () => f.classList.toggle("big")));
 
@@ -505,10 +505,12 @@ async function pageRecipe() {
     const li = steps[idx], img = li.querySelector(".step-img"), cimg = $("[data-cook-img]");
     $("[data-cook-pos]").textContent = S.stepPos(idx + 1, steps.length);
     $("[data-cook-bar]").style.width = `${((idx + 1) / steps.length) * 100}%`;
-    $("[data-cook-title]").textContent = li.querySelector("h3")?.textContent || "";
+    $("[data-cook-title]").textContent = li.querySelector("h3, h4")?.textContent || "";
     $("[data-cook-text]").innerHTML = li.querySelector("p").innerHTML; // chữ do build sinh, đã thoát HTML, giữ phần tô đậm
-    const uses = li.querySelector(".uses"), cu = $("[data-cook-uses]");
-    cu.hidden = !uses; cu.innerHTML = uses ? uses.innerHTML : "";
+    // "Dùng ở bước này", "Đạt khi" và "Lưu ý" của bước (do build sinh, đã thoát HTML)
+    for (const [sel, src] of [["[data-cook-uses]", ".uses"], ["[data-cook-sign]", ".sign"], ["[data-cook-note]", ".step-note"]]) {
+      const e = li.querySelector(src), c = $(sel); c.hidden = !e; c.innerHTML = e ? e.innerHTML : "";
+    }
     cimg.hidden = !img; if (img) cimg.src = img.src;
     $("[data-cook-done]").checked = li.classList.contains("done");
     $("[data-cook-tools]").innerHTML = $$("[data-timer]", li).map((b) => b.outerHTML).join("");

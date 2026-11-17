@@ -38,16 +38,21 @@
 .done .step-ck span { position: relative; background: var(--herb); border-color: var(--herb); color: transparent; }
 .done .step-ck span::after { content: "✓"; position: absolute; color: var(--primary-ink); }
 .step-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; min-height: 44px; }
-.steps h3 { margin: 0; font-family: var(--serif); font-size: 1.1em; }
+.steps :is(h3, h4) { margin: 0; font-family: var(--serif); font-size: 1.1em; }
 .step-time { display: inline-flex; align-items: center; gap: 4px; font-size: .85em; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .step-time .ic { width: 16px; height: 16px; }
 .steps p { margin: 0 0 4px; }
 .uses { margin: 4px 0; color: var(--muted); font-size: .85em; }
 .steps, .cook-body, .qty { font-variant-numeric: tabular-nums; }
 .cook .uses { font-size: 1.1em; margin-top: 12px; }
+.phase { margin: 24px 0 8px; display: flex; align-items: baseline; gap: 8px; }
+.phase small { color: var(--muted); font-weight: 500; }
+.sign { display: flex; gap: 8px; margin: 8px 0; }
+.sign svg { flex: none; width: 20px; height: 20px; margin-top: 3px; color: var(--herb); }
+.step-note { background: var(--herb-soft); border-radius: var(--radius); padding: 8px 12px; margin: 8px 0; }
 .live li:not(.now) > p { color: var(--muted); }
 .done > :not(.step-ck, .step-head) { display: none; }
-.done h3 { color: var(--muted); font-weight: 600; }
+.done :is(h3, h4) { color: var(--muted); font-weight: 600; }
 .step-sum { margin: 0 0 8px; }
 .step-prog { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 16px; font-variant-numeric: tabular-nums; }
 .step-prog .bar { flex: 1; min-width: 80px; height: 6px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
