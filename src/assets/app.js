@@ -63,6 +63,8 @@ function qtyText(q) {
 
 const svg = (p) => `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
 const IC = {
+  loa: svg('<path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>'),
+  tat: svg('<path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z"/><path d="m16 10 4 4m0-4-4 4"/>'),
   play: svg('<circle cx="12" cy="12" r="8.5"/><path d="M10.2 8.8v6.4l5-3.2z"/>'),
   clock: svg('<circle cx="12" cy="12" r="8"/><path d="M12 8v4.5l3 1.8"/>'),
   lock: svg('<rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8.5 11V8a3.5 3.5 0 0 1 7 0v3"/>'),
@@ -153,6 +155,48 @@ document.addEventListener("click", (e) => {
   if (tm) startTimer(Number(tm.dataset.timer), tm.dataset.label || "Hẹn giờ");
 });
 
+// ---------- Quay món: âm thanh tự tổng hợp (Web Audio, không tải file) và tung bông giấy khi chốt món ----------
+// EASE trùng cubic-bezier của .reel và .hreel-track trong style.css: tính lúc từng ảnh lướt qua vạch để tiếng "tách" khớp hình.
+const EASE = [0.15, 0.85, 0.15, 1];
+const bz = (a, b, s) => 3 * a * s * (1 - s) ** 2 + 3 * b * s * s * (1 - s) + s ** 3;
+const lucQua = (p) => { let lo = 0, hi = 1; for (let k = 0; k < 22; k++) { const m = (lo + hi) / 2; if (bz(EASE[1], EASE[3], m) < p) lo = m; else hi = m; } return bz(EASE[0], EASE[2], lo); };
+const amThanh = (() => {
+  let ctx = null;
+  const mo = () => {
+    if (prefs.sound === false) return null;
+    try { ctx ??= new (window.AudioContext || window.webkitAudioContext)(); if (ctx.state === "suspended") ctx.resume(); } catch { ctx = null; }
+    return ctx;
+  };
+  const not = (t, f, len, kieu, vol) => {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = kieu; o.frequency.value = f;
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + len);
+    o.connect(g).connect(ctx.destination); o.start(t); o.stop(t + len + 0.02);
+  };
+  return {
+    mo,
+    tach(n, ms) { if (!mo()) return; const t0 = ctx.currentTime + 0.03; for (let k = 1; k <= n; k++) not(t0 + (lucQua(k / n) * ms) / 1000, 1500 + Math.random() * 300, 0.03, "triangle", 0.07); },
+    ting(k) { if (mo()) not(ctx.currentTime, 660 * 2 ** (k / 3), 0.35, "sine", 0.18); },
+    keng() { if (!mo()) return; const t = ctx.currentTime; [523, 659, 784, 1047].forEach((f, i) => not(t + i * 0.09, f, 0.3, "triangle", 0.16)); [523, 659, 784].forEach((f) => not(t + 0.4, f, 0.9, "sine", 0.1)); },
+  };
+})();
+/** Bông giấy màu của web bung ra từ khung kết quả, rơi xuống rồi tự xoá (~1,5 giây). Bỏ qua khi bật giảm chuyển động. */
+function tungBong(el) {
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches || !el.animate) return;
+  const r = el.getBoundingClientRect(), cs = getComputedStyle(document.documentElement);
+  const mau = ["--accent", "--herb", "--k-vua", "--primary"].map((v) => cs.getPropertyValue(v).trim());
+  const x0 = r.left + r.width / 2, y0 = r.top + Math.min(r.height / 2, 120);
+  for (let i = 0; i < 90; i++) {
+    const s = document.createElement("i"), w = 8 + Math.random() * 7;
+    s.className = "bong";
+    s.style.cssText = `position:fixed;left:${x0}px;top:${y0}px;width:${w}px;height:${w * 0.45}px;background:${mau[i % mau.length]};border-radius:2px;pointer-events:none;z-index:60`;
+    document.body.append(s);
+    const a = Math.random() * Math.PI * 2, v = 110 + Math.random() * 220, dx = Math.cos(a) * v, dy = Math.sin(a) * v - 150, q = Math.random() * 720 - 360;
+    s.animate([{ transform: "none", opacity: 1 }, { transform: `translate(${dx}px,${dy}px) rotate(${q / 2}deg)`, opacity: 1, offset: 0.45 }, { transform: `translate(${dx * 1.3}px,${dy + 320}px) rotate(${q}deg)`, opacity: 0 }],
+      { duration: 1200 + Math.random() * 500, easing: "cubic-bezier(.2,.7,.4,1)" }).onfinish = () => s.remove();
+  }
+}
+
 // ---------- Trang chủ: Hôm nay nấu gì? ----------
 async function pageHome() {
   renderSaved();
@@ -229,9 +273,10 @@ async function pageHome() {
   };
 
   // Hiệu ứng máy quay: mỗi ngăn cuộn một dải ảnh món, chậm dần rồi dừng lần lượt
-  const roll = async ({ d, p, fin }, i) => {
-    const el = $(`[data-slot="${d.key}"]`, slotsEl);
-    const n = 9 + i * 4, dur = 950 + i * 380;
+  // Lâu và hồi hộp hơn: món lẻ ~3 giây; mâm cơm 3 ngăn dừng lần lượt ~2 / 2,8 / 3,6 giây.
+  const roll = async ({ d, p, fin }, i, all) => {
+    const el = $(`[data-slot="${d.key}"]`, slotsEl), cuoi = i === all.length - 1;
+    const n = single(d) ? 24 : 14 + i * 6, dur = single(d) ? 2600 : 2000 + i * 800;
     const strip = Array.from({ length: n }, () => rand(p)).concat(fin);
     if (single(d)) {
       const cards = [rand(p), rand(p), ...strip, rand(p), rand(p)], at = n + 2;
@@ -241,12 +286,14 @@ async function pageHome() {
       tr.getBoundingClientRect();
       tr.style.setProperty("--d", dur + 400 + "ms");
       tr.style.setProperty("--x", -(at * STEP + HALF) + "px");
+      if (cuoi) amThanh.tach(n, dur + 400);
       const tk = setInterval(() => (nm.textContent = rand(p).t), 90);
       await wait(dur + 400);
       clearInterval(tk);
       st.picks[d.key] = fin.s;
       el.outerHTML = singleHTML(d, fin, !!st.locks[d.key], cards.slice(at - 2, at + 3));
       $(`[data-slot="${d.key}"]`, slotsEl).classList.add("landed");
+      amThanh.ting(i);
       try { navigator.vibrate && navigator.vibrate(12); } catch {}
       return;
     }
@@ -255,12 +302,14 @@ async function pageHome() {
     const reel = $(".reel", el), name = $("strong", el);
     reel.getBoundingClientRect();
     reel.style.transform = `translateY(-${n * 100}%)`;
+    if (cuoi) amThanh.tach(n, dur);
     const tick = setInterval(() => (name.textContent = rand(p).t), 90);
     await wait(dur);
     clearInterval(tick);
     st.picks[d.key] = fin.s;
     el.outerHTML = slotHTML(d);
     $(`[data-slot="${d.key}"]`, slotsEl).classList.add("landed");
+    amThanh.ting(i);
     try { navigator.vibrate && navigator.vibrate(12); } catch {}
   };
 
@@ -274,14 +323,17 @@ async function pageHome() {
       if (!p.length) { delete st.picks[d.key]; empties.push(d); continue; }
       rolls.push({ d, p, fin: pickFin(p.length > 1 ? p.filter((r) => r.s !== st.picks[d.key]) : p) });
     }
+    amThanh.mo();
     if (matchMedia("(prefers-reduced-motion: reduce)").matches || !rolls.length) {
       rolls.forEach(({ d, fin }) => (st.picks[d.key] = fin.s));
       render();
+      if (rolls.length) amThanh.keng();
     } else {
       busy = true; goBtn.disabled = true; goBtn.classList.add("spinning"); goText.textContent = "Đang quay…";
       slotsEl.setAttribute("aria-busy", "true");
       empties.forEach((d) => ($(`[data-slot="${d.key}"]`, slotsEl).outerHTML = slotHTML(d)));
       await Promise.all(rolls.map(roll));
+      amThanh.keng(); tungBong(slotsEl);
       busy = false; goBtn.disabled = false; goBtn.classList.remove("spinning"); goText.textContent = "Quay lại lần nữa";
       slotsEl.removeAttribute("aria-busy");
       sync();
@@ -294,6 +346,10 @@ async function pageHome() {
   $$("[data-spin-kind]", box).forEach((i) => (i.onchange = () => { if (busy) return render(); st.kind = i.value; save(); render(); }));
   $$("[data-spin-f]", box).forEach((s) => s.addEventListener("change", sync));
   goBtn.onclick = spin;
+  const amBtn = $("[data-spin-am]", box);
+  const veAm = () => { const on = prefs.sound !== false; amBtn.setAttribute("aria-pressed", on); amBtn.innerHTML = on ? IC.loa : IC.tat; amBtn.title = on ? "Đang bật âm thanh" : "Đang tắt âm thanh"; };
+  amBtn.onclick = () => { prefs.sound = prefs.sound === false; savePrefs(); veAm(); amThanh.ting(0); };
+  veAm();
   shopBtn.onclick = async () => {
     const rs = slotDefs().map((d) => bySlug[st.picks[d.key]]).filter(Boolean);
     await addToShop(rs.map((r) => ({ slug: r.s, name: r.t, serv: r.sv, items: r.ig.map(([ten, q, u]) => ({ ten, q, u })) })));

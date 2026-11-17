@@ -30,6 +30,8 @@ async def main():
         async def anh_that(route): await route.fulfill(status=200, content_type="image/png", body=PNG)
         for host in ("lh3.googleusercontent.com", "i.ytimg.com", "upload.wikimedia.org"):
             await ctx.route(f"https://{host}/**", anh_that)
+        # AudioContext giả: đếm số nốt (oscillator) web phát khi quay món
+        await ctx.add_init_script("window.__am={n:0};window.AudioContext=class{constructor(){this.currentTime=0;this.state='running';this.destination={}}resume(){}createOscillator(){window.__am.n++;return{type:'',frequency:{value:0},connect:g=>g,start(){},stop(){}}}createGain(){return{gain:{setValueAtTime(){},exponentialRampToValueAtTime(){}},connect:d=>d}}}")
         pg = await ctx.new_page()
         pg.on("pageerror", lambda e: errs.append(str(e)))
         # Bỏ qua lỗi tải tài nguyên và "Permissions policy violation" do trình phát YouTube nhúng tự sinh (không phải lỗi của web)
@@ -60,11 +62,20 @@ async def main():
         check("chọn mâm cơm rồi tải lại: vẫn là mâm cơm 3 món", await pg.get_attribute('[data-spin-mode="mam"]', "aria-selected") == "true" and len(await pg.query_selector_all("[data-spin-slots] .slot")) == 3)
 
         # Hôm nay nấu gì: mâm cơm 3 món đúng ngăn, khoá giữ món
+        t0 = time.time()
         await pg.click("[data-spin-go]"); await pg.wait_for_timeout(250)
         dang = await pg.evaluate("[document.querySelectorAll('.slot.rolling .reel').length, document.querySelector('[data-spin-go]').disabled]")
         check("đang quay: 3 ngăn cuộn, nút bị khoá", dang == [3, True], str(dang))
         await pg.screenshot(path=f"{OUT}/1a-dang-quay.png")
         await pg.wait_for_selector("[data-spin-go]:not([disabled])")
+        lau = time.time() - t0
+        bong = await pg.evaluate("document.querySelectorAll('i.bong').length")
+        check("quay mâm cơm đủ lâu để hồi hộp: 3–5,5 giây", 3.0 <= lau <= 5.5, f"{lau:.1f}s")
+        check("chốt món: tung bông giấy", bong >= 30, str(bong))
+        so_not = await pg.evaluate("window.__am.n")
+        check("âm thanh: tiếng tách theo ảnh, 3 tiếng ting, nhạc chốt món", so_not >= 30, str(so_not))
+        await pg.wait_for_timeout(2200)
+        check("bông giấy tự biến mất", await pg.evaluate("document.querySelectorAll('i.bong').length") == 0)
         check("quay xong: ngăn nảy, không còn dải cuộn", await pg.evaluate("document.querySelectorAll('.slot.landed').length === 3 && !document.querySelector('.reel')"))
         names = await pg.eval_on_selector_all("[data-spin-slots] .slot strong", "els=>els.map(e=>e.textContent)")
         labels = await pg.eval_on_selector_all("[data-spin-slots] .slot-label", "els=>els.map(e=>e.textContent)")
@@ -79,6 +90,12 @@ async def main():
             await quay()
             same &= (await pg.text_content('[data-slot="m0"] strong')) == locked
         check("khoá giữ nguyên món khi quay lại", same)
+        # Nút loa: tắt thì quay không phát tiếng nào; máy nhớ lựa chọn
+        await pg.click("[data-spin-am]"); await pg.evaluate("window.__am.n=0"); await quay()
+        check("tắt loa: quay không phát âm thanh", await pg.get_attribute("[data-spin-am]", "aria-pressed") == "false" and await pg.evaluate("window.__am.n") == 0)
+        await pg.reload(); await pg.wait_for_timeout(400)
+        check("nhớ lựa chọn tắt loa sau khi tải lại", await pg.get_attribute("[data-spin-am]", "aria-pressed") == "false")
+        await pg.click("[data-spin-am]")
         await pg.screenshot(path=f"{OUT}/1-trang-chu.png", full_page=True)
         check("bộ lọc thu gọn, mặc định đóng", not await pg.is_visible('[data-spin-f="b"]'))
         await pg.click(".spin-more summary")

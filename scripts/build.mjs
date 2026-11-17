@@ -182,6 +182,7 @@ async function main() {
 
 <section class="spin card" data-spin aria-labelledby="spin-title">
   <h2 id="spin-title">Quay món cho hôm nay</h2>
+  <button class="icon-btn spin-am" type="button" data-spin-am aria-pressed="true" aria-label="Âm thanh khi quay">${icon("loa")}</button>
   <div class="kind" role="radiogroup" aria-label="Quay món ăn hay đồ uống">
     <label><input type="radio" name="spin-kind" value="an" data-spin-kind checked><span>Món ăn</span></label>
     <label><input type="radio" name="spin-kind" value="uong" data-spin-kind><span>Đồ uống</span></label>

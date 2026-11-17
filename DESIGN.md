@@ -274,6 +274,12 @@ motion:
 ```
 
 - Trước khi thêm chuyển động, hỏi: thao tác này lặp bao nhiêu lần mỗi ngày? Lặp nhiều (tick nguyên liệu, lọc, chuyển tab) thì gần như không động. Thỉnh thoảng (mở chế độ nấu, toast) thì động nhẹ. Hiếm (kết quả quay món) mới được vui.
+- **Quay món** là khoảnh khắc vui duy nhất, được phép dài và có âm thanh:
+  - Món lẻ quay khoảng 3 giây. Mâm cơm 3 ngăn dừng lần lượt sau khoảng 2 / 2,8 / 3,6 giây.
+  - Đường cong `cubic-bezier(.15,.85,.15,1)`, trùng hằng `EASE` trong `app.js`.
+  - Âm thanh tự tạo bằng Web Audio, không tải file: tiếng "tách" khớp từng ảnh lướt qua vạch, "ting" khi mỗi ngăn dừng, "ta-da" khi chốt món. Có nút loa bật/tắt, máy nhớ lựa chọn.
+  - Tung 90 mảnh bông giấy màu token, chạy 1,2–1,7 giây, mỗi lượt quay một lần rồi tự xoá.
+  - Bật giảm chuyển động: không cuộn, không bông, chỉ hiện kết quả kèm "ta-da".
 - Chỉ animate `transform` và `opacity`. Không `transition: all`, không animate `width/height/top/left/filter` trên nhiều phần tử.
 - Dùng ease-out cho phần tử vào/ra; không dùng `ease-in` cho giao diện. Không nảy, không vượt đích, trừ khoảnh khắc ngăn quay "rơi" vào món.
 - Ưu tiên `transition` (ngắt được giữa chừng) hơn `@keyframes`; điều khiển bằng JS thì dùng `element.animate()`.
