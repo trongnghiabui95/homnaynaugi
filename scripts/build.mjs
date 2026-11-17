@@ -477,7 +477,7 @@ async function rebase(base) {
   for (const f of await walk(DIST)) {
     if (!f.endsWith(".html")) continue;
     const s = await fs.readFile(f, "utf8");
-    await fs.writeFile(f, s.replace(/(\s(?:href|src|action)=")\/(?!\/)/g, `$1${base}/`).replace('<html lang="vi">', `<html lang="vi" data-base="${base}">`));
+    await fs.writeFile(f, s.replace(/(\s(?:href|src|action)=")\/(?!\/)/g, `$1${base}/`).replace('<html lang="vi"', `<html lang="vi" data-base="${base}"`));
   }
   const mf = path.join(DIST, "manifest.webmanifest");
   const m = JSON.parse(await fs.readFile(mf, "utf8"));

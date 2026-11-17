@@ -187,7 +187,7 @@ Bộ ba "nền kem + serif + cam đất" bị nhiều bộ kiểm tra coi là gi
 - Ba màu độ khó (`level-*`) luôn đi kèm chữ "Dễ / Vừa / Khó". Không truyền thông tin chỉ bằng màu.
 - Chữ phụ dùng `{colors.muted}`. Không đặt chữ xám lên nền có màu: trên nền `herb-soft` hay `primary-soft` dùng chữ `on-surface` hoặc chữ đậm cùng sắc.
 - Mọi màu phải là biến CSS trên `:root`. Không viết hex hay rgba trực tiếp trong quy tắc thành phần (ngoại lệ: lớp phủ đen mờ trên ảnh, có ghi chú).
-- Chế độ đêm (`dark-*`): nền tối ấm, các tầng nổi sáng dần lên, **tắt bóng đổ**, màu nhấn nhạt và bớt bão hoà để đạt tương phản. Mỗi màu sáng phải có bản đêm tương ứng.
+- Chế độ đêm (`dark-*`) là **mặc định** khi mở web lần đầu (`<html data-theme="dark">` dựng sẵn, không theo cài đặt máy); người dùng bấm nút để chuyển sáng, lựa chọn lưu ở `hnng-prefs`. Nền tối ấm, các tầng nổi sáng dần lên, **tắt bóng đổ**, màu nhấn nhạt và bớt bão hoà để đạt tương phản. Mỗi màu sáng phải có bản đêm tương ứng.
 
 ## Typography
 
@@ -291,7 +291,7 @@ Ma trận: độ rộng 320, 390, 768, 1280 · chế độ sáng, đêm (`data-t
 **Floor**
 1. Không cuộn ngang: `document.documentElement.scrollWidth <= innerWidth`.
 2. Vùng bấm ≥ 44×44px cho mọi `a, button, select, input` (trừ link trong đoạn văn). Đã có trong `tests/e2e.py`.
-3. Tương phản chữ ≥ 4.5:1 (chữ ≥ 24px hoặc đậm ≥ 18.66px: ≥ 3:1), ở cả sáng và đêm (bật đêm bằng `localStorage` `hnng-prefs` = `{"theme":"dark"}`). Vòng focus và viền ô nhập ≥ 3:1. Chữ đặt trên lớp nền trong suốt đè lên ảnh (nhãn Video) phải tính màu nền sau khi trộn, đừng tin kết quả quét tự động.
+3. Tương phản chữ ≥ 4.5:1 (chữ ≥ 24px hoặc đậm ≥ 18.66px: ≥ 3:1), ở cả sáng và đêm (đêm là mặc định; bật sáng bằng `localStorage` `hnng-prefs` = `{"theme":"light"}`). Vòng focus và viền ô nhập ≥ 3:1. Chữ đặt trên lớp nền trong suốt đè lên ảnh (nhãn Video) phải tính màu nền sau khi trộn, đừng tin kết quả quét tự động.
 4. Nhấn Tab: mọi phần tử nhận focus đều thấy rõ vòng focus.
 5. Cỡ chữ tính toán ≥ 13px (riêng nhãn "Quảng cáo" ≥ 11px); chữ thân ≥ 17px, ≥ 20px khi bật chữ lớn.
 6. Ảnh có `alt`, có kích thước giữ chỗ; ảnh hỏng thì tự ẩn.

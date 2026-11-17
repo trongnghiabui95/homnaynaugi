@@ -2,7 +2,7 @@
 # Chạy: DATA_DIR=tests/fixtures node scripts/build.mjs && python3 tests/e2e.py
 # Ảnh chụp lưu ở $SHOTS (mặc định /tmp/shots). Dùng Chrome hệ thống: CHROME=/usr/bin/google-chrome
 # Đạt: mọi dòng bắt đầu bằng "OK" và dòng cuối "errors: []".
-import asyncio, os, subprocess, time
+import asyncio, os, re, subprocess, time
 from playwright.async_api import async_playwright
 
 DIST = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "dist")
@@ -275,8 +275,24 @@ async def main():
         check("sitemap bỏ danh mục trống, giữ trang video khi có video", "/danh-muc/an-vat/" not in sm and "/video/" in sm)
         check("chân trang có link video khi đã có video", await pg.query_selector('.footer-links a[href$="/video/"]') is not None)
 
-        await pg.goto(B + "/mon/thit-kho-trung/"); await pg.click('[data-toggle="theme"]'); await pg.wait_for_timeout(300)
-        await pg.screenshot(path=f"{OUT}/7-dem.png")
+        # Mặc định giao diện tối: trình duyệt mới, máy để chế độ sáng vẫn mở ra nền tối; bấm nút thành sáng, tải lại vẫn sáng
+        c5 = await b.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, locale="vi-VN", color_scheme="light")
+        p5 = await c5.new_page()
+        p5.on("pageerror", lambda e: errs.append(str(e)))
+        r = await p5.goto(B + "/mon/thit-kho-trung/")
+        html = await r.text()
+        check("HTML dựng sẵn data-theme=dark (không nháy trắng)", re.search(r'<html[^>]*data-theme="dark"', html) is not None)
+        nen = await p5.evaluate("getComputedStyle(document.body).backgroundColor")
+        check("lần đầu mở: nền tối dù máy để sáng", await p5.evaluate("document.documentElement.dataset.theme") == "dark" and nen == "rgb(29, 26, 23)")
+        check("nút giao diện ghi 'Chế độ sáng', theme-color tối", await p5.get_attribute('[data-toggle="theme"]', "aria-label") == "Chế độ sáng" and await p5.get_attribute('meta[name="theme-color"]', "content") == "#1d1a17")
+        await p5.screenshot(path=f"{OUT}/7-dem.png")
+        await p5.click('[data-toggle="theme"]'); await p5.wait_for_timeout(200)
+        check("bấm nút: thành sáng, nhãn 'Chế độ đêm'", await p5.evaluate("document.documentElement.dataset.theme") == "light" and await p5.get_attribute('[data-toggle="theme"]', "aria-label") == "Chế độ đêm")
+        await p5.reload(); await p5.wait_for_timeout(200)
+        check("tải lại vẫn sáng", await p5.evaluate("[document.documentElement.dataset.theme, getComputedStyle(document.body).backgroundColor, document.querySelector('meta[name=theme-color]').content]") == ["light", "rgb(250, 248, 245)", "#faf8f5"])
+        await p5.goto(B + "/"); await p5.wait_for_timeout(200)
+        check("chế độ sáng đã chọn giữ ở trang khác", await p5.evaluate("document.documentElement.dataset.theme") == "light")
+        await c5.close()
         # Thành quả của bạn đọc: không có API (GitHub Pages) thì ẩn; có API thì gửi ảnh + bình luận, xem, báo cáo, quản trị
         await pg.goto(B + "/mon/trung-chien-hanh/"); await pg.wait_for_timeout(400)
         check("không có API: mục Thành quả ẩn", await pg.query_selector("[data-tq]") is not None and not await pg.is_visible("[data-tq]"))

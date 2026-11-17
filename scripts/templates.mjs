@@ -78,7 +78,7 @@ export function layout(site, p) {
     ? `<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${esc(site.adsense_client)}" crossorigin="anonymous"></script>`
     : "";
   return `<!doctype html>
-<html lang="vi">
+<html lang="vi" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -93,8 +93,7 @@ ${p.noindex ? '<meta name="robots" content="noindex">' : ""}
 <meta property="og:site_name" content="${esc(site.site_name)}">
 <meta property="og:locale" content="vi_VN">
 ${ogTags(site, p)}
-<meta name="theme-color" content="#faf8f5" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#1d1a17" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#1d1a17">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/assets/icons/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/icons/icon-192.png">
@@ -102,7 +101,7 @@ ${ogTags(site, p)}
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Lora:wght@600;700&display=swap">
 <link rel="stylesheet" href="/assets/style.css?v=${site.build_id}">
-<script>document.documentElement.classList.add("js");try{var s=JSON.parse(localStorage.getItem("hnng-prefs")||"{}");if(s.theme)document.documentElement.dataset.theme=s.theme;if(s.big)document.documentElement.dataset.big="1"}catch(e){}</script>
+<script>document.documentElement.classList.add("js");try{var s=JSON.parse(localStorage.getItem("hnng-prefs")||"{}");if(s.theme==="light"){document.documentElement.dataset.theme="light";document.querySelector('meta[name="theme-color"]').content="#faf8f5"}if(s.big)document.documentElement.dataset.big="1"}catch(e){}</script>
 ${ld.map((o) => `<script type="application/ld+json">${JSON.stringify(o).replace(/</g, "\\u003c")}</script>`).join("\n")}
 ${adsense}
 </head>
@@ -112,7 +111,7 @@ ${adsense}
   <a class="brand" href="/"><img src="/assets/icons/icon.svg" alt="" width="30" height="30"><span>${esc(site.site_name)}</span></a>
   <div class="topbar-actions">
     <button class="icon-btn" type="button" data-toggle="big" aria-label="Chữ lớn" title="Chữ lớn">${icon("text")}</button>
-    <button class="icon-btn" type="button" data-toggle="theme" aria-label="Chế độ đêm" title="Chế độ đêm">${icon("moon")}</button>
+    <button class="icon-btn" type="button" data-toggle="theme" aria-label="Chế độ sáng" title="Chế độ sáng">${icon("moon")}</button>
   </div>
 </header>
 <main id="main" class="wrap">

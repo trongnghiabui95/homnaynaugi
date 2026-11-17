@@ -597,10 +597,18 @@ function pageVideo() {
 // ---------- Chế độ đêm, chữ lớn ----------
 const prefs = (() => { try { return JSON.parse(localStorage.getItem("hnng-prefs") || "{}"); } catch { return {}; } })();
 const savePrefs = () => { try { localStorage.setItem("hnng-prefs", JSON.stringify(prefs)); } catch {} };
-$('[data-toggle="theme"]')?.addEventListener("click", () => {
-  const dark = document.documentElement.dataset.theme ? document.documentElement.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
-  prefs.theme = dark ? "light" : "dark";
-  document.documentElement.dataset.theme = prefs.theme; savePrefs();
+// Mặc định tối (data-theme="dark" có sẵn trong HTML); chỉ nhớ lựa chọn khi người dùng bấm nút.
+const themeBtn = $('[data-toggle="theme"]');
+const showTheme = () => {
+  const dark = document.documentElement.dataset.theme !== "light";
+  const label = dark ? "Chế độ sáng" : "Chế độ đêm";
+  themeBtn?.setAttribute("aria-label", label); themeBtn?.setAttribute("title", label);
+  $('meta[name="theme-color"]')?.setAttribute("content", dark ? "#1d1a17" : "#faf8f5");
+};
+showTheme();
+themeBtn?.addEventListener("click", () => {
+  prefs.theme = document.documentElement.dataset.theme === "light" ? "dark" : "light";
+  document.documentElement.dataset.theme = prefs.theme; savePrefs(); showTheme();
 });
 $('[data-toggle="big"]')?.addEventListener("click", () => {
   prefs.big = !prefs.big;
