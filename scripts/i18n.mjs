@@ -16,7 +16,7 @@ const vi = {
   crumbs: "Đường dẫn", skip: "Bỏ qua đến nội dung", big_text: "Chữ lớn", light_mode: "Chế độ sáng", main_nav: "Điều hướng chính",
   foot_video_note: "Video thuộc bản quyền của các kênh YouTube được ghi tên, nhúng theo chức năng chia sẻ của YouTube.",
   made_by: "Một sản phẩm của", ad: "Quảng cáo",
-  lang_switch_label: "Switch to English", lang_switch_text: "EN", lang_switch_title: "English",
+  lang_switch_label: "EN, Switch to English", lang_switch_text: "EN", lang_switch_title: "English",
   // Thẻ món, thông số
   min: (n) => `${n} phút`, people: (n) => `${n} người`, video: "Video", n_dishes: (n) => `${n} món`,
   diff_de: "Dễ", diff_vua: "Vừa", diff_kho: "Khó",
@@ -110,7 +110,7 @@ const en = {
   crumbs: "Breadcrumb", skip: "Skip to content", big_text: "Large text", light_mode: "Light mode", main_nav: "Main navigation",
   foot_video_note: "Videos belong to the YouTube channels named with them and are embedded with YouTube's sharing feature.",
   made_by: "A product of", ad: "Advertisement",
-  lang_switch_label: "Chuyển sang tiếng Việt", lang_switch_text: "VI", lang_switch_title: "Tiếng Việt",
+  lang_switch_label: "VI, Chuyển sang tiếng Việt", lang_switch_text: "VI", lang_switch_title: "Tiếng Việt",
   min: (n) => `${n} min`, people: (n) => `${n} ${n === 1 ? "person" : "people"}`, video: "Video", n_dishes: (n) => `${n} ${n === 1 ? "dish" : "dishes"}`,
   diff_de: "Easy", diff_vua: "Medium", diff_kho: "Hard",
   source: "Source", photo: "Photo",

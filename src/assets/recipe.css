@@ -16,8 +16,11 @@
 .stepper button { width: 44px; height: 44px; border: 0; border-radius: 10px; background: var(--surface); font-size: 22px; cursor: pointer; }
 .stepper output { min-width: 28px; text-align: center; font-weight: 700; font-size: 1.1em; }
 .stepper span { color: var(--muted); padding-right: 6px; }
-.serv-quick { display: flex; gap: 6px; margin: 12px 0 4px; }
-.serv-quick .chip { min-height: 44px; padding: 0; flex: 1; justify-content: center; }
+.serv-quick { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 12px 0 4px; }
+.serv-quick .chip { min-height: 44px; padding: 0; justify-content: center; }
+/* Chữ lớn hoặc màn rất hẹp: 2×2 thay vì tràn ngang */
+[data-big] .serv-quick { grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 340px) { .serv-quick { grid-template-columns: repeat(2, 1fr); } }
 .ing-box h3 { margin: 16px 0 0; font-size: .85em; color: var(--muted); }
 .ings { list-style: none; padding: 0; margin: 6px 0 12px; }
 .ings li + li { border-top: 1px dashed var(--line); }
