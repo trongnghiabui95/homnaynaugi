@@ -54,7 +54,8 @@ async def main():
         async def quay():
             await pg.click("[data-spin-go]")
             await pg.wait_for_selector("[data-spin-go]:not([disabled])"); await pg.wait_for_timeout(60)
-        await quay()
+        t1 = time.time(); await quay(); lau1 = time.time() - t1
+        check("quay 1 món đủ lâu để hồi hộp: 4–6 giây", 4.0 <= lau1 <= 6.0, f"{lau1:.1f}s")
         check("lần đầu bấm quay: ra 1 món", len(await pg.query_selector_all("[data-spin-slots] .slot")) == 1 and bool(await pg.text_content('[data-slot="one"] strong')))
         check("1 món: nút ghi 'Thêm vào Đi chợ'", await pg.text_content("[data-spin-shop] span") == "Thêm vào Đi chợ")
         await pg.screenshot(path=f"{OUT}/1c-mot-mon-sau-quay.png")
@@ -72,7 +73,7 @@ async def main():
         await pg.wait_for_selector("[data-spin-go]:not([disabled])")
         lau = time.time() - t0
         bong = await pg.evaluate("document.querySelectorAll('i.bong').length")
-        check("quay mâm cơm đủ lâu để hồi hộp: 3–5,5 giây", 3.0 <= lau <= 5.5, f"{lau:.1f}s")
+        check("quay mâm cơm đủ lâu để hồi hộp: 4,5–6,5 giây", 4.5 <= lau <= 6.5, f"{lau:.1f}s")
         check("chốt món: tung bông giấy", bong >= 30, str(bong))
         so_not = await pg.evaluate("window.__am.n")
         check("âm thanh: tiếng tách theo ảnh, 3 tiếng ting, nhạc chốt món", so_not >= 30, str(so_not))
