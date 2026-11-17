@@ -42,6 +42,9 @@
 .step-time { display: inline-flex; align-items: center; gap: 4px; font-size: .85em; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .step-time .ic { width: 16px; height: 16px; }
 .steps p { margin: 0 0 4px; }
+.uses { margin: 4px 0; color: var(--muted); font-size: .85em; }
+.steps, .cook-body, .qty { font-variant-numeric: tabular-nums; }
+.cook .uses { font-size: 1.1em; margin-top: 12px; }
 .live li:not(.now) > p { color: var(--muted); }
 .done > :not(.step-ck, .step-head) { display: none; }
 .done h3 { color: var(--muted); font-weight: 600; }

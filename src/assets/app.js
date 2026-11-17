@@ -506,7 +506,9 @@ async function pageRecipe() {
     $("[data-cook-pos]").textContent = S.stepPos(idx + 1, steps.length);
     $("[data-cook-bar]").style.width = `${((idx + 1) / steps.length) * 100}%`;
     $("[data-cook-title]").textContent = li.querySelector("h3")?.textContent || "";
-    $("[data-cook-text]").textContent = li.querySelector("p").textContent;
+    $("[data-cook-text]").innerHTML = li.querySelector("p").innerHTML; // chữ do build sinh, đã thoát HTML, giữ phần tô đậm
+    const uses = li.querySelector(".uses"), cu = $("[data-cook-uses]");
+    cu.hidden = !uses; cu.innerHTML = uses ? uses.innerHTML : "";
     cimg.hidden = !img; if (img) cimg.src = img.src;
     $("[data-cook-done]").checked = li.classList.contains("done");
     $("[data-cook-tools]").innerHTML = $$("[data-timer]", li).map((b) => b.outerHTML).join("");

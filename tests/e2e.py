@@ -133,11 +133,16 @@ async def main():
 
         # Trang công thức: khẩu phần, chép danh sách, sổ tay, chế độ nấu
         await pg.goto(B + "/mon/trung-chien-hanh/"); await pg.wait_for_timeout(500)
+        u2 = await pg.text_content("#buoc-2 .uses")
+        check("bước có dòng 'Dùng ở bước này' dò từ chữ của bước", u2 == "Dùng ở bước này: Hành lá\u00a02\u00a0nhánh", repr(u2))
+        check("bước không dò được nguyên liệu thì không có dòng đó", await pg.locator("#buoc-3 .uses").count() == 0)
+        check("tô đậm mức lửa trong bước", await pg.text_content("#buoc-3 p strong") == "lửa\u00a0vừa")
         await pg.click("[data-serv-inc]")
         q = await pg.text_content(".ings li:first-child .qty")
         check("đổi khẩu phần 2 → 3 người: 3 quả → 4½", q == "4½", q)
         await pg.click('[data-serv="4"]')
         check("nút nhanh 4 người: 3 quả → 6", await pg.text_content(".ings li:first-child .qty") == "6")
+        check("đổi khẩu phần 2 → 4: lượng trong bước đổi theo (2 → 4 nhánh hành)", await pg.text_content("#buoc-2 .uses .qty") == "4")
         await pg.click(".ings li:nth-child(2) label"); await pg.click("[data-copy-shop]"); await pg.wait_for_timeout(300)
         clip = await pg.evaluate("navigator.clipboard.readText()")
         check("chép danh sách chỉ món đã tích", "Hành lá: 4 nhánh" in clip and "Trứng gà" not in clip, clip)
@@ -149,6 +154,8 @@ async def main():
         check("chế độ nấu có tiêu đề bước", await pg.text_content("[data-cook-title]") == "Đánh trứng")
         await pg.click("[data-cook-next]")
         check("chuyển bước và đánh dấu bước trước đã xong", (await pg.text_content("[data-cook-pos]")) == "Bước 2/5" and await pg.eval_on_selector(".steps li", "e=>e.classList.contains('done')"))
+        cu = await pg.evaluate("(()=>{const e=document.querySelector('[data-cook-uses]');return e.hidden?'':e.textContent})()")
+        check("chế độ nấu hiện 'Dùng ở bước này' theo khẩu phần đang chọn", cu == "Dùng ở bước này: Hành lá\u00a04\u00a0nhánh", repr(cu))
         await pg.screenshot(path=f"{OUT}/3-che-do-nau.png")
         await pg.click("[data-cook-close]")
         # Cách làm dạng dòng thời gian (#53): tóm tắt, nhãn thời gian, tích bước, tiến độ, nhớ trên máy, làm lại
