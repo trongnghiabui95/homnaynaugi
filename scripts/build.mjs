@@ -129,7 +129,8 @@ async function main() {
       ...r, anh_nguon: r.anh_nguon || p.credit, ings, steps: stepPics, cat: catBySlug[r.danh_muc], yt, anh,
       serv: num(r.khau_phan, 2) || 2, prep: num(r.phut_chuan_bi), cook: num(r.phut_nau), total: num(r.phut_chuan_bi) + num(r.phut_nau),
       cal: num(r.calo), cost: num(r.chi_phi), bua: list(r.bua).map(fold), tagList: list(r.tags), anKem: list(r.an_kem),
-      img: anh || (yt ? ytThumb(yt.id) : ""),
+      // Chưa có ảnh mà có video → ảnh bìa của chính video (thẻ món, vòng quay, og:image, schema.org). imgDoc: ảnh bìa Shorts (khung dọc nằm giữa nền đen) cần phóng to để lấp khung 4:3.
+      img: anh || (yt ? ytThumb(yt.id) : ""), imgDoc: !anh && !!yt?.shorts,
     });
   }
   const seen = new Set();
@@ -155,7 +156,7 @@ async function main() {
   // Chỉ mục cho vòng quay, tìm kiếm, tủ lạnh, đi chợ, đã lưu (phía trình duyệt)
   const tEn = tr("en");
   const index = recipes.map((r) => ({
-    s: r.slug, t: r.ten, c: r.danh_muc, cn: r.cat.ten, ...(r.ten_en ? { te: r.ten_en } : {}), ...(tEn("cat_name", r.danh_muc) ? { ce: tEn("cat_name", r.danh_muc) } : {}), m: r.total, k: r.do_kho, img: r.img, v: r.yt ? 1 : 0,
+    s: r.slug, t: r.ten, c: r.danh_muc, cn: r.cat.ten, ...(r.ten_en ? { te: r.ten_en } : {}), ...(tEn("cat_name", r.danh_muc) ? { ce: tEn("cat_name", r.danh_muc) } : {}), m: r.total, k: r.do_kho, img: r.img, v: r.imgDoc ? 2 : r.yt ? 1 : 0,
     cal: r.cal || 0, b: r.bua, n: r.nguyen_lieu_chinh || "", d: r.cap_nhat || "", tg: r.tagList.map(fold),
     f: fold([r.ten, r.tom_tat, r.cat.ten, r.tags, r.nguyen_lieu_chinh, r.ten_en, r.tom_tat_en, tEn("cat_name", r.danh_muc)].join(" ")),
     g: r.ings.filter((i) => !PANTRY.includes(fold(i.ten))).map((i) => fold(i.ten)),
@@ -177,7 +178,7 @@ async function main() {
   // ----- Video: thẻ phát tại chỗ (trang chủ) và trình xem liên tiếp (/video/). Chỉ nhúng youtube-nocookie, luôn ghi kênh + link YouTube.
   const withVideo = recipes.filter((r) => r.yt);
   const watchUrl = (yt) => `https://www.youtube.com/${yt.shorts ? `shorts/${yt.id}` : `watch?v=${yt.id}`}`;
-  const videoCredit = (r) => `${t("video_by", r.kenh ? esc(r.kenh) : "")} · <a href="${watchUrl(r.yt)}" rel="noopener" target="_blank">${t("watch_yt")}</a>`;
+  const videoCredit = (r) => `${t(r.anh ? "video_by" : "thumb_by", r.kenh ? esc(r.kenh) : "")} · <a href="${watchUrl(r.yt)}" rel="noopener" target="_blank">${t("watch_yt")}</a>`;
   const liteYT = (r, attr) => `<button class="lite-yt" type="button" ${attr} aria-label="${esc(t("play_video", r.ten))}"><img src="${ytThumb(r.yt.id)}" alt="" loading="lazy" width="480" height="360"><span class="play" aria-hidden="true"></span></button>`;
   const vcard = (r) => `<article class="vcard${r.yt.shorts ? " doc" : ""}" data-vcard data-id="${esc(r.yt.id)}">
   <div class="vcard-media">${liteYT(r, "data-vplay")}</div>
@@ -340,7 +341,7 @@ ${rs.length ? filterBar(rs) + grid(rs, true) : emptyState(t("cat_empty"), t("cat
     ].filter(Boolean);
     const thumbMax = r.yt ? `https://i.ytimg.com/vi/${r.yt.id}/maxresdefault.jpg` : "";
     const videoBox = r.yt ? `<div class="player-box${r.yt.shorts ? " vertical" : ""}" data-player data-id="${esc(r.yt.id)}">
-      <button class="lite-yt" type="button" data-play aria-label="${esc(t("play_guide", r.ten))}"><img src="${thumbMax}" onerror="this.onerror=null;this.src='${ytThumb(r.yt.id)}'" alt="" width="1280" height="720"><span class="play" aria-hidden="true"></span></button>
+      <button class="lite-yt" type="button" data-play aria-label="${esc(t("play_guide", r.ten))}"><img src="${thumbMax}" onload="if(this.naturalWidth<=120&&this.src!=='${ytThumb(r.yt.id)}')this.src='${ytThumb(r.yt.id)}'" onerror="this.onerror=null;this.src='${ytThumb(r.yt.id)}'" alt="" width="1280" height="720"><span class="play" aria-hidden="true"></span></button>
     </div>` : "";
     const media = r.yt || r.anh ? `<figure class="media">
   ${r.yt && r.anh ? `<div class="seg small" role="tablist" aria-label="${t("photo_or_video")}"><button type="button" role="tab" data-media="photo" aria-selected="true">${t("tab_photo")}</button><button type="button" role="tab" data-media="video" aria-selected="false">${icon("play")} ${t("video")}</button></div>` : ""}
