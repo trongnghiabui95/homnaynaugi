@@ -11,7 +11,7 @@ Muốn dùng Sheet khác: tạo 5 tab đúng tên `settings`, `categories`, `rec
 1. Tab `recipes`: thêm một dòng, đặt `slug` (tên không dấu nối gạch ngang, ví dụ `ca-kho-to`), để `trang_thai` = `nháp`.
 2. Tab `ingredients`: mỗi nguyên liệu một dòng, cột `recipe_slug` ghi đúng slug của món.
 3. Tab `steps`: mỗi bước một dòng, đánh số `buoc` 1, 2, 3…
-4. Kiểm tra lại rồi đổi `trang_thai` thành `duyệt`. Món sẽ lên web ở lần build kế tiếp.
+4. Để nguyên `nháp`. Checker kiểm tra theo bảng tiêu chí (16:40 mỗi ngày), đạt thì đổi `trang_thai` thành `duyệt`, chưa đạt thì trả về BA. Món đã `duyệt` lên web ở lần build kế tiếp (6:10–6:20 sáng hôm sau). Chủ dự án muốn gỡ món thì đổi lại thành `nháp`. Xem `ops/BO-MAY.md`.
 
 Để vòng quay **Mâm cơm 3 món** chạy, cần có món trong cả 3 danh mục `mon-man`, `mon-canh`, `mon-rau-xao`.
 
