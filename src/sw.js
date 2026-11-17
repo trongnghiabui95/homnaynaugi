@@ -21,6 +21,16 @@ self.addEventListener("fetch", (e) => {
     }).catch(() => caches.match(req).then((r) => r || caches.match(BASE + "/"))));
     return;
   }
+  // CSS, JS và danh sách món phải khớp với trang HTML vừa tải: lấy mạng trước, mất mạng mới dùng bản đã lưu.
+  // (Trước đây lấy bản lưu trước nên sau mỗi lần cập nhật web, người dùng cũ thấy trang mới với giao diện cũ.)
+  // cache: "no-cache" = luôn hỏi lại máy chủ (file không đổi thì chỉ nhận 304), tránh bộ đệm HTTP 10 phút của GitHub Pages.
+  if (/\.(css|js|json)$/.test(url.pathname)) {
+    e.respondWith(fetch(req.url, { cache: "no-cache" }).then((res) => {
+      if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); }
+      return res;
+    }).catch(() => caches.match(req, { ignoreSearch: true })));
+    return;
+  }
   e.respondWith(caches.match(req, { ignoreSearch: true }).then((cached) => {
     const net = fetch(req).then((res) => {
       if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); }

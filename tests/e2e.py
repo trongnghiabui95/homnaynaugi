@@ -273,6 +273,24 @@ async def main():
 
         await pg.goto(B + "/mon/thit-kho-trung/"); await pg.click('[data-toggle="theme"]'); await pg.wait_for_timeout(300)
         await pg.screenshot(path=f"{OUT}/7-dem.png")
+        # Service worker: sau khi web cập nhật, người dùng cũ nhận ngay CSS mới (không kẹt bản lưu); mất mạng vẫn mở được
+        c3 = await b.new_context(viewport={"width": 390, "height": 844}, locale="vi-VN")
+        p3 = await c3.new_page()
+        B3 = B.replace("localhost", "127.0.0.1")  # app.js không đăng ký service worker trên "localhost"
+        await p3.goto(B3 + "/"); await p3.wait_for_function("navigator.serviceWorker.controller !== null", timeout=10000)
+        await p3.reload(); await p3.wait_for_timeout(300)
+        css = os.path.join(DIST, "assets", "style.css"); goc = open(css, encoding="utf-8").read()
+        try:
+            open(css, "w", encoding="utf-8").write(goc + "\n/*ban-moi-thu*/")
+            await p3.reload(); await p3.wait_for_timeout(300)
+            moi = await p3.evaluate("fetch((document.documentElement.dataset.base || '') + '/assets/style.css').then(r=>r.text()).then(t=>t.includes('ban-moi-thu'))")
+            check("cập nhật web: người dùng cũ nhận CSS mới ngay", moi)
+        finally:
+            open(css, "w", encoding="utf-8").write(goc)
+        await c3.set_offline(True)
+        await p3.reload(); await p3.wait_for_timeout(300)
+        check("mất mạng: trang chủ vẫn mở, có giao diện", await p3.evaluate("getComputedStyle(document.body).fontFamily.includes('Be Vietnam Pro') && !!document.querySelector('[data-spin]')"))
+        await c3.close()
         await b.close()
     print("errors:", errs)
     if fails or errs: raise SystemExit(1)
