@@ -277,7 +277,7 @@ async function pageHome() {
   const slotsEl = $("[data-spin-slots]", box), shopBtn = $("[data-spin-shop]", box);
   const MAM = JSON.parse(slotsEl.dataset.mam);
   const saved = await store.get("spin", null);
-  const st = { kind: saved?.kind || "an", mode: saved?.mode || "one", picks: saved?.picks || {}, locks: saved?.locks || {} };
+  const st = { kind: saved?.kind || "an", mode: saved?.mode || "mam", /* mặc định mâm cơm 3 món */ picks: saved?.picks || {}, locks: saved?.locks || {} };
 
   const filters = () => Object.fromEntries($$("[data-spin-f]", box).map((s) => [s.dataset.spinF, s.value]));
   // Đồ uống: một ngăn riêng chỉ quay danh mục do-uong. Món ăn: mâm cơm 3 món hoặc 1 món, không lẫn đồ uống.
