@@ -1,24 +1,47 @@
 /* Chế độ đang nấu: chỉ tải khi bấm "Bắt đầu nấu" (napCss trong app.js). Token ở style.css. */
-.cook { position: fixed; inset: 0; z-index: 70; background: var(--bg); display: flex; flex-direction: column; gap: 12px; padding: 18px; padding-top: calc(18px + env(safe-area-inset-top)); padding-bottom: calc(18px + env(safe-area-inset-bottom)); }
-.cook-top { display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-weight: 600; }
-.cook-bar { height: 6px; background: var(--surface-2); border-radius: 999px; overflow: hidden; }
-.cook-bar span { display: block; height: 100%; background: var(--accent); transform: scaleX(0); transform-origin: left; transition: transform .3s cubic-bezier(.23,1,.32,1); }
-.cook-body { flex: 1; overflow-y: auto; display: flex; flex-direction: column; justify-content: center; max-width: 720px; width: 100%; margin: 0 auto; }
-.cook-title { margin: 0 0 8px; font-size: 1.3em; color: var(--primary); }
-.cook-text { font-size: 1.65em; line-height: 1.45; font-weight: 500; margin: 0; }
-.cook-img { align-self: flex-start; height: min(22vh, 190px); width: auto; max-width: 100%; aspect-ratio: 4/3; border-radius: 12px; margin-top: 14px; object-fit: cover; }
-.cook-done { display: flex; align-items: center; gap: 10px; font-weight: 600; min-height: 44px; max-width: 720px; width: 100%; margin: 0 auto; }
-.cook-done input { width: 24px; height: 24px; accent-color: var(--herb); }
-.cook-tools { display: flex; gap: 10px; flex-wrap: wrap; max-width: 720px; width: 100%; margin: 0 auto; }
-.cook-nav { display: grid; grid-template-columns: 1fr 1.4fr; gap: 12px; max-width: 720px; width: 100%; margin: 0 auto; }
-.cook-top > span:last-child { display: flex; gap: 4px; }
+.cook { position: fixed; inset: 0; z-index: 70; background: var(--bg); display: flex; flex-direction: column; gap: 10px; padding: 0 16px calc(16px + env(safe-area-inset-bottom)); }
+.cook > :not(.cook-hero) { max-width: 720px; width: 100%; margin: 0 auto; }
+/* Dải đầu: ảnh món + lớp che phẳng (không gradient) cho chữ trắng đủ tương phản; màn Chuẩn bị, Hoàn thành ảnh cao hơn */
+.cook-hero { position: relative; flex: none; margin: 0 -16px; padding: calc(6px + env(safe-area-inset-top)) 6px 10px 16px; min-height: 88px; display: flex; flex-direction: column; justify-content: flex-end; background: var(--surface); border-bottom: 1px solid var(--line); overflow: hidden; }
+.cook-hero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.cook-hero.has-photo { min-height: 132px; border: 0; color: #fff; }
+.cook-hero.has-photo::after { content: ""; position: absolute; inset: 0; background: rgb(20 16 12 / .6); }
+[data-man=prep] .has-photo, [data-man=done] .has-photo { min-height: 34vh; }
+.cook-top { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; font-weight: 600; }
+.cook-where { min-width: 0; padding-bottom: 4px; }
+.cook-dish { display: block; font-family: var(--serif); font-size: 1.2em; line-height: 1.25; overflow-wrap: anywhere; }
+[data-man=prep] .cook-dish, [data-man=done] .cook-dish { font-size: 1.7em; }
+[data-cook-pos] { font-size: .9em; }
+.cook-top > span:last-child { display: flex; flex: none; }
+.has-photo .icon-btn { color: #fff; }
+.has-photo .icon-btn:hover { background: rgb(255 255 255 / .16); color: #fff; }
 .cook-top [aria-pressed="true"] { color: var(--primary); }
+.has-photo [aria-pressed="true"] { color: #fff; background: rgb(255 255 255 / .2); }
+/* Thanh bước: mỗi đoạn là nút ≥ 44×44px, vạch 6px ở giữa; nhiều bước thì cuộn ngang */
+.cook-dots { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+.cook-dots button { flex: 1 0 44px; height: 44px; padding: 0; border: 0; background: none; cursor: pointer; display: grid; align-items: center; }
+.cook-dots i { height: 6px; border-radius: 999px; background: var(--line); transition: transform .2s cubic-bezier(.23,1,.32,1); }
+.cook-dots .xong i { background: var(--herb); }
+.cook-dots [aria-current] i { background: var(--primary); transform: scaleY(1.5); }
+/* Thẻ nội dung */
+.cook-body { flex: 1; overflow-y: auto; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 18px 22px; box-shadow: var(--shadow); }
+.cook-kick { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
+.cook-kick:has(> :empty + [hidden]) { display: none; }
+.cook-num { font-family: var(--serif); font-size: 3em; font-weight: 700; line-height: 1; color: var(--primary); font-variant-numeric: lining-nums; }
+.cook-phase { font-size: .85em; font-weight: 600; padding: 6px 12px; border-radius: 999px; background: var(--herb-soft); color: var(--herb); }
+.cook-title { margin: 0 0 8px; font-size: 1.3em; color: var(--primary); }
+.cook-text { font-size: 1.6em; line-height: 1.45; font-weight: 500; margin: 0; }
+.cook-img { align-self: flex-start; height: min(22vh, 190px); width: auto; max-width: 100%; aspect-ratio: 4/3; border-radius: 12px; margin-top: 14px; object-fit: cover; }
+.cook-done { display: flex; align-items: center; gap: 10px; font-weight: 600; min-height: 44px; }
+.cook-done input { width: 24px; height: 24px; accent-color: var(--herb); }
+.cook-tools { display: flex; gap: 10px; flex-wrap: wrap; }
+.cook-tools:empty { display: none; }
+.cook-nav { display: grid; grid-template-columns: 1fr 1.4fr; gap: 12px; }
 [data-man=prep] .cook-text, [data-man=done] .cook-text { font-size: 1.1em; color: var(--muted); }
 .cook-text strong { color: var(--primary); }
 .cook-lbl { margin: 18px 0 6px; font-size: .9em; font-weight: 600; color: var(--muted); }
 .cook-dung { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 8px; }
-.cook-dung li { padding: 8px 12px; border-radius: 12px; background: var(--surface-2); font-variant-numeric: tabular-nums; }
-.cook-dung li { font-weight: 600; }
+.cook-dung li { padding: 8px 12px; border-radius: 12px; background: var(--surface-2); font-variant-numeric: tabular-nums; font-weight: 600; }
 .cook-dung .qty, .cook-dung .qty + span { color: var(--primary); }
 .cook-prep { list-style: none; padding: 0; margin: 16px 0 8px; }
 .cook-prep li + li { border-top: 1px solid var(--line); }
@@ -29,7 +52,8 @@
 .cook-player { aspect-ratio: 16/9; border-radius: 12px; overflow: hidden; background: #000; }
 .cook-player.vertical { aspect-ratio: 9/16; max-height: 46vh; margin: 0 auto; }
 .cook-player iframe { width: 100%; height: 100%; border: 0; }
-.cook-next { margin: 0 auto; max-width: 720px; width: 100%; color: var(--muted); font-size: .95em; }
+.cook-next { margin: 0; color: var(--muted); font-size: .95em; }
+.cook-next:empty { display: none; }
 .cook-end { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
 .cook-end .btn { justify-content: center; }
 @media (prefers-reduced-motion: no-preference) { .cook-body > * { animation: cook-in .22s cubic-bezier(.23,1,.32,1); } }
