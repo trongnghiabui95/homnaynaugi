@@ -168,7 +168,7 @@ async function main() {
   const L = { ...site, lang, tagline: lang === "vi" ? site.tagline : site[`tagline_${lang}`] || t("tagline_default") };
   const vi = (s) => (lang === "vi" ? s : `<span lang="vi">${s}</span>`); // nội dung tiếng Việt chưa dịch trong trang tiếng Anh
   const LV = lang === "vi" ? "" : ' lang="vi"';
-  const grid = (rs, attrs = false) => `<div class="rgrid">${rs.map((r) => recipeCard(r, attrs, lang)).join("")}</div>`;
+  const grid = (rs, attrs = false, row = false) => `<div class="${row ? "cat-row" : "rgrid"}">${rs.map((r) => recipeCard(r, attrs, lang)).join("")}</div>`;
   const mains = [...new Set(recipes.map((r) => r.nguyen_lieu_chinh).filter(Boolean))].sort((a, b) => a.localeCompare(b, "vi"));
   const themes = list(site.chu_de).filter((t) => recipes.some((r) => r.tagList.map(fold).includes(fold(t))));
   const fridge = topIngredients(recipes, 24);
@@ -344,6 +344,7 @@ ${lang === "vi" || r.dich ? "" : `<p class="muted small" data-not-translated>${t
   <button class="btn ghost" type="button" data-fav aria-pressed="false">${icon("heart")}<span>${t("save")}</span></button>
   <button class="btn" type="button" data-cook>${icon("chef")}<span>${t("start_cook")}</span></button>
 </div>
+<div class="r-cols"><div class="r-side">
 ${media}
 <section class="ing-box card" aria-labelledby="ing-title">
   <div class="ing-head"><h2 id="ing-title">${t("ingredients")}</h2>
@@ -354,10 +355,12 @@ ${media}
   ${ingHTML}
   <div class="row"><button class="btn ghost" type="button" data-copy-shop>${icon("copy")}<span>${t("copy_shop")}</span></button><button class="btn ghost" type="button" data-add-shop>${icon("cart")}<span>${t("add_shop")}</span></button></div>
 </section>
+</div><div class="r-main">
 ${adSlot(L, "mid")}
 <section aria-labelledby="steps-title"><h2 id="steps-title">${t("steps")}</h2><ol class="steps">${stepHTML}</ol></section>
 ${r.meo ? `<aside class="tip"><h2>${icon("leaf")} ${t("tip")}</h2>${r.lv.meo ? vi(md(r.meo)) : md(r.meo)}</aside>` : ""}
-${pair.length ? `<section><h2>${t("pair")}</h2>${grid(pair)}</section>` : ""}
+</div></div>
+${pair.length ? `<section><h2>${t("pair")}</h2>${grid(pair, false, true)}</section>` : ""}
 ${r.tagList.length ? `<p class="tags"${LV}>${r.tagList.map((x) => `<a class="tag" href="/tim-kiem/?tag=${encodeURIComponent(x)}">#${esc(x)}</a>`).join(" ")}</p>` : ""}
 ${r.cap_nhat ? `<p class="muted small">${t("updated", esc(r.cap_nhat))}</p>` : ""}
 </article>
@@ -368,7 +371,7 @@ ${site.turnstile_site_key ? `<section class="tq" data-tq data-mon="${r.slug}" da
   <div class="tq-ds" data-tq-ds aria-live="polite"></div>
 </section>` : ""}
 ${adSlot(L, "bottom")}
-${related.length ? `<section><h2 class="section-title">${t("more_in", r.cat.lv.ten ? vi(esc(r.cat.ten)) : esc(r.cat.ten))}</h2>${grid(related)}</section>` : ""}
+${related.length ? `<section><h2 class="section-title">${t("more_in", r.cat.lv.ten ? vi(esc(r.cat.ten)) : esc(r.cat.ten))}</h2>${grid(related, false, true)}</section>` : ""}
 <div class="cook" data-cook-view hidden role="dialog" aria-modal="true" aria-label="${t("cook_dlg")}">
   <div class="cook-top"><span data-cook-pos></span><button class="icon-btn" type="button" data-cook-close aria-label="${t("cook_exit")}">✕</button></div>
   <div class="cook-bar"><span data-cook-bar></span></div>
