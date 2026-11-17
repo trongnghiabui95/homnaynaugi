@@ -151,6 +151,16 @@ async def main():
         check("chuyển bước và đánh dấu bước trước đã xong", (await pg.text_content("[data-cook-pos]")) == "Bước 2/5" and await pg.eval_on_selector(".steps li", "e=>e.classList.contains('done')"))
         await pg.screenshot(path=f"{OUT}/3-che-do-nau.png")
         await pg.click("[data-cook-close]")
+        # Ảnh bước trong chế độ nấu: nhỏ gọn, không lấn chữ (cao ≤ 190px và ≤ 25% màn hình, khung 4:3)
+        await pg.goto(B + "/mon/mon-thu-video/"); await pg.wait_for_timeout(400)
+        await pg.click("[data-cook]"); await pg.wait_for_timeout(500)
+        kt = await pg.evaluate("(()=>{const i=document.querySelector('[data-cook-img]');const r=i.getBoundingClientRect();return [!i.hidden, Math.round(r.height), Math.round(r.width), innerHeight]})()")
+        check("chế độ nấu: ảnh bước nhỏ gọn (≤ 190px, ≤ 25% màn hình)", kt[0] and 0 < kt[1] <= 190 and kt[1] <= kt[3] * 0.25 and abs(kt[2] / kt[1] - 4 / 3) < 0.05, str(kt))
+        await pg.screenshot(path=f"{OUT}/3b-che-do-nau-anh.png")
+        await pg.click("[data-cook-close]")
+        # Logo thương hiệu yendan ở chân trang
+        lg = await pg.evaluate("(()=>{const y=document.querySelector('.footer .yendan');return y?[y.textContent.trim(), !!y.querySelector('svg'), Math.round(y.querySelector('svg').getBoundingClientRect().width)]:null})()")
+        check("chân trang có logo yendan (chim yến + chữ)", lg == ["yendan", True, 24], str(lg))
 
         # Ảnh Drive, video Shorts, xem đoạn, hẹn giờ, calo
         await pg.goto(B + "/mon/mon-thu-video/"); await pg.wait_for_timeout(400)
