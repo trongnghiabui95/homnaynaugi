@@ -158,6 +158,12 @@ async function main() {
 
   await fs.rm(DIST, { recursive: true, force: true });
   await fs.cp(SRC, DIST, { recursive: true });
+  // Nén CSS: bỏ chú thích và khoảng trắng thừa (file nguồn vẫn giữ chú thích). Không đụng chuỗi trong url()/content vì không có khoảng trắng đôi.
+  for (const f of await fs.readdir(path.join(DIST, "assets"))) {
+    if (!f.endsWith(".css")) continue;
+    const p = path.join(DIST, "assets", f), css = await fs.readFile(p, "utf8");
+    await fs.writeFile(p, nenCss(css));
+  }
 
   // Chỉ mục cho vòng quay, tìm kiếm, tủ lạnh, đi chợ, đã lưu (phía trình duyệt)
   const tEn = tr("en");
@@ -195,6 +201,8 @@ async function main() {
   // ----- Trang chủ -----
   // Trang chủ: món có ảnh (ảnh thật hoặc ảnh bìa video) xếp trước món chưa có ảnh; trong mỗi nhóm giữ thứ tự mới nhất.
   const anhTruoc = (rs) => [...rs.filter((r) => r.img), ...rs.filter((r) => !r.img)];
+  // Cụm 3 "đĩa" ở đầu trang chủ: món có ảnh chụp thật (không lấy ảnh bìa video), mới nhất trước
+  const plates = recipes.filter((r) => r.anh).sort((a, b) => String(b.cap_nhat).localeCompare(String(a.cap_nhat))).slice(0, 3);
   const quick = anhTruoc(recipes.filter((r) => r.total && r.total <= 20)).slice(0, 8);
   // Công thức mới không lặp lại món đã có ở hàng "Nhanh gọn"
   const moi = anhTruoc(recipes.filter((r) => !quick.includes(r))).slice(0, 8);
@@ -205,7 +213,8 @@ async function main() {
       potentialAction: { "@type": "SearchAction", target: `${abs(site, lang, "/tim-kiem/")}?q={q}`, "query-input": "required name=q" } }],
     body: `
 <section class="hero">
-  <h1>${t("hero_h1")}</h1>
+  ${plates.length ? `<div class="plates" aria-hidden="true">${plates.map((r) => `<img src="${esc(nho(r.anh))}" alt="" width="104" height="104" decoding="async">`).join("")}</div>` : ""}
+  <h1>${esc(t("hero_h1")).replace(/(\S+)$/, "<em>$1</em>")}</h1>
   ${L.tagline ? `<p class="lead">${esc(L.tagline)}</p>` : ""}
   <form class="search big" action="/tim-kiem/" role="search">${icon("search")}<label class="sr-only" for="hq">${t("search_label")}</label><input id="hq" name="q" type="search" placeholder="${t("search_ph")}"></form>
   ${themes.length ? `<nav class="chips" aria-label="${t("themes")}">${themes.map((x) => `<a class="chip" href="/tim-kiem/?tag=${encodeURIComponent(x)}"${LV}>${esc(x)}</a>`).join("")}</nav>` : ""}
@@ -513,6 +522,12 @@ function catCard(c, recipes, lang = "vi") {
   return `<a class="cat-card" href="/danh-muc/${c.slug}/">${c.img ? `<img src="${esc(c.img)}" alt="" loading="lazy" width="120" height="120">` : `<span class="cat-emoji" aria-hidden="true">${esc(c.bieu_tuong || "🍽️")}</span>`}<strong${A(c.lv.ten)}>${esc(c.ten)}</strong><span>${tr(lang)("n_dishes", n)}</span></a>`;
 }
 /** Thuộc tính lang cho một ô nội dung: "vi" khi trang tiếng Anh đang hiện chữ tiếng Việt (chưa dịch). */
+/** Nén CSS an toàn: bỏ chú thích, gộp khoảng trắng, bỏ khoảng trắng quanh { } ; và sau dấu phẩy. */
+function nenCss(css) {
+  return css.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\s+/g, " ").replace(/\s*([{};])\s*/g, "$1").replace(/;}/g, "}").replace(/,\s+/g, ",").trim() + "\n";
+}
+/** Bản ảnh nhỏ cho khung tròn: Commons đổi sang cỡ chuẩn 330px (cỡ lạ dễ bị giới hạn 429), Drive thêm =w240; nguồn khác giữ nguyên. */
+function nho(src) { return /\/thumb\/.+\/\d+px-[^/]+$/.test(src) ? src.replace(/\/\d+px-([^/]+)$/, "/330px-$1") : /lh3\.googleusercontent\.com\/d\/[\w-]+$/.test(src) ? src + "=w240" : src; }
 function A(l) { return l ? ` lang="${l}"` : ""; }
 /** Món "đã dịch" khi có đủ tên, tóm tắt, mọi nguyên liệu (kể cả ghi chú) và mọi bước (kể cả tiêu đề bước). Mẹo, nhóm, đơn vị không bắt buộc. */
 function daDich(r, lang) {
