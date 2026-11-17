@@ -275,7 +275,7 @@ ${moi.length || !recipes.length ? `<section><div class="sec-head"><h2>${t("new_h
     body: `<h1>${t("all_recipes")}</h1>${recipes.length ? filterBar(recipes) + grid(recipes, true) : emptyState(t("no_recipes"))}`,
   });
   await page(L, {
-    path: "/danh-muc/", title: t("cats_title"), crumbs: [[t("cats_h1"), "/danh-muc/"]],
+    path: "/danh-muc/", page: "list", title: t("cats_title"), crumbs: [[t("cats_h1"), "/danh-muc/"]],
     description: t("cats_desc", catsShown.map((c) => c.ten.toLowerCase()).join(", ")),
     body: `<h1>${t("cats_h1")}</h1><div class="cat-grid">${catsShown.map((c) => catCard(c, recipes, lang)).join("")}</div>`,
   });
