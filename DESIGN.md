@@ -268,7 +268,7 @@ Bộ ba "nền kem + serif + cam đất" bị nhiều bộ kiểm tra coi là gi
   - **Thẻ nội dung**: nền `surface`, viền `line`, bo `lg`. Số bước 3em đậm màu `primary`; giai đoạn (cột `giai_doan`) là chip `herb-soft`/`herb` cạnh số.
   - Nút sáng/tối có cả trong chế độ nấu (bếp sáng thì đọc nền sáng dễ hơn).
 - **Chế độ nấu, ảnh bước**: chữ hướng dẫn là chính; ảnh bước là khung 4:3 nhỏ (cao ≤ 190px và ≤ 22% màn hình), canh trái.
-- **Ghi nguồn**: dưới ảnh không tự chụp luôn có một dòng nhỏ 13px màu `muted` "Nguồn: tác giả, giấy phép", cả dòng là link tới trang ảnh, quá dài thì cắt "…" (không bỏ tên tác giả: CC BY/BY-SA bắt buộc); dưới video luôn có tên kênh và link YouTube.
+- **Ghi nguồn**: dưới ảnh không tự chụp luôn có một dòng nhỏ 13px màu `muted` "Nguồn: tác giả, giấy phép", cả dòng là link tới trang ảnh, quá dài thì cắt "…" (không bỏ tên tác giả: CC BY/BY-SA bắt buộc); dưới video luôn có tên kênh ("Video: kênh X"), không có link ra YouTube (#86).
 
 ## Do's and Don'ts
 
