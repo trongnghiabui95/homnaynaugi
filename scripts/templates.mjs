@@ -122,6 +122,7 @@ ${p.body}
 <footer class="footer wrap">
   <nav class="footer-links">${foot.filter(([u]) => u !== "/video/" || site.has_video).map(([u, n]) => `<a href="${u}">${n}</a>`).join("")}</nav>
   <p class="muted">Video thuộc bản quyền của các kênh YouTube được ghi tên, nhúng theo chức năng chia sẻ của YouTube.</p>
+  <p class="by"><span>Một sản phẩm của</span> <span class="yendan"><svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M2.5 9.5c4.2.2 7.6 1.9 10.2 5.1l2.6-4.4c1.3-2.2 3.6-3.6 6.2-3.6 1.9 0 3.6.7 4.9 2l-3 1.1 1.6 1.4c-.6 4.8-4.7 8.4-9.6 8.4h-2.6L7 27.5l2.3-7.6C5.4 17.8 3.2 14 2.5 9.5z"/><circle cx="21.8" cy="9.4" r="1" fill="var(--bg)"/></svg>yendan</span></p>
   <p class="muted">© ${new Date().getFullYear()} ${esc(site.site_name)}</p>
 </footer>
 <nav class="tabbar" aria-label="Điều hướng chính">
