@@ -289,10 +289,14 @@ ${rs.length ? filterBar(rs) + grid(rs, true) : emptyState(t("cat_empty"), t("cat
         tmin ? `<button class="mini" type="button" data-timer="${tmin}" data-label="${esc(s.tieu_de || t("step_n", i + 1))}">${icon("timer")} ${t("timer_min", qtyText(tmin))}</button>` : "",
       ].join("");
       const sign = s.dau_hieu ? `<p class="sign">${icon("eye")} <span><b>${t("step_sign")}:</b> <span${A(s.lv.dau_hieu)}>${esc(s.dau_hieu)}</span></span></p>` : "";
-      const note = s.luu_y ? `<p class="step-note"><b>${t("step_note")}:</b> <span${A(s.lv.luu_y)}>${esc(s.luu_y)}</span></p>` : "";
-      return `<li data-step id="buoc-${i + 1}">${s.tieu_de ? `<${hs}${A(s.lv.tieu_de)}>${esc(s.tieu_de)}</${hs}>` : ""}<p${A(s.lv.noi_dung)}>${esc(s.noi_dung)}</p>${sign}${note}${s.img ? `<figure class="step-fig"><img class="step-img" src="${esc(s.img)}" alt="${esc(s.tieu_de || t("step_n", i + 1))}"${s.tieu_de ? A(s.lv.tieu_de) : ""} loading="lazy" width="800" height="600">${photoCredit(s.credit)}</figure>` : ""}${tools ? `<div class="step-tools">${tools}</div>` : ""}</li>`;
+      const note = s.luu_y ? `<div class="step-note"><b>${t("step_note")}:</b> <span${A(s.lv.luu_y)}>${esc(s.luu_y)}</span></div>` : "";
+      // Dòng thời gian: số bước là ô tích (vùng bấm 44px), nhãn thời gian chờ cạnh tiêu đề. Chế độ nấu đọc h3/h4, p, .sign, .step-note, .step-img, [data-timer].
+      return `<li data-step id="buoc-${i + 1}"><label class="step-ck"><input type="checkbox" data-step-done aria-label="${esc(t("step_mark", i + 1))}"><span>${i + 1}</span></label><div class="step-head"><${hs}${s.tieu_de ? A(s.lv.tieu_de) : ""}>${esc(s.tieu_de || t("step_n", i + 1))}</${hs}>${tmin ? `<span class="step-time">${icon("clock")} ${t("min", qtyText(tmin))}</span>` : ""}</div><p${A(s.lv.noi_dung)}>${esc(s.noi_dung)}</p>${sign}${note}${s.img ? `<figure class="step-fig"><img class="step-img" src="${esc(s.img)}" alt="${esc(s.tieu_de || t("step_n", i + 1))}"${s.tieu_de ? A(s.lv.tieu_de) : ""} loading="lazy" width="800" height="600">${photoCredit(s.credit)}</figure>` : ""}${tools ? `<div class="step-tools">${tools}</div>` : ""}</li>`;
     };
     const stepHTML = phases.map((g) => `${g.ten ? `<h3 class="phase"><span${A(g.lv)}>${esc(g.ten)}</span> <small>${t("n_steps", g.steps.length)}</small></h3>` : ""}<ol class="steps"${g.from ? ` start="${g.from + 1}"` : ""}>${g.steps.map((s, k) => stepLi(s, g.from + k)).join("")}</ol>`).join("");
+    const cho = r.steps.map((s) => num(s.hen_gio_phut, 0)).filter(Boolean);
+    const stepTop = `<p class="muted step-sum">${t("steps_sum", r.steps.length, cho.length, qtyText(Math.max(0, ...cho)))}</p>
+<div class="step-prog" data-step-prog hidden><b data-step-count>${t("step_prog", 0, r.steps.length)}</b><span class="bar"><i data-step-bar></i></span><button class="mini" type="button" data-step-reset hidden>${t("step_reset")}</button><small class="muted">${t("step_hint")}</small></div>`;
 
     // Món ăn kèm: lấy từ cột an_kem, thiếu thì gợi ý theo mâm cơm (mặn ↔ canh, rau)
     let pair = r.anKem.map((s) => bySlug[s]).filter(Boolean);
@@ -366,7 +370,7 @@ ${media}
 </section>
 </div><div class="r-main">
 ${adSlot(L, "mid")}
-<section class="steps-sec" aria-labelledby="steps-title"><h2 id="steps-title">${t("steps")}</h2>${stepHTML}</section>
+<section class="steps-sec" aria-labelledby="steps-title"><h2 id="steps-title">${t("steps")}</h2>${stepTop}${stepHTML}</section>
 ${r.meo ? `<aside class="tip"><h2>${icon("leaf")} ${t("tip")}</h2>${r.lv.meo ? vi(md(r.meo)) : md(r.meo)}</aside>` : ""}
 </div></div>
 ${pair.length ? `<section><h2>${t("pair")}</h2>${grid(pair, false, true)}</section>` : ""}
@@ -384,7 +388,7 @@ ${related.length ? `<section><h2 class="section-title">${t("more_in", r.cat.lv.t
 <div class="cook" data-cook-view hidden role="dialog" aria-modal="true" aria-label="${t("cook_dlg")}">
   <div class="cook-top"><span data-cook-pos></span><button class="icon-btn" type="button" data-cook-close aria-label="${t("cook_exit")}">✕</button></div>
   <div class="cook-bar"><span data-cook-bar></span></div>
-  <div class="cook-body"><h2 class="cook-title" data-cook-title${r.dich ? "" : LV}></h2><p class="cook-text" data-cook-text${r.dich ? "" : LV}></p><p class="sign" data-cook-sign hidden></p><p class="step-note" data-cook-note hidden></p><img class="cook-img" data-cook-img alt="" hidden></div>
+  <div class="cook-body"><h2 class="cook-title" data-cook-title${r.dich ? "" : LV}></h2><p class="cook-text" data-cook-text${r.dich ? "" : LV}></p><p class="sign" data-cook-sign hidden></p><div class="step-note" data-cook-note hidden></div><img class="cook-img" data-cook-img alt="" hidden></div>
   <label class="cook-done"><input type="checkbox" data-cook-done> ${t("cook_done")}</label>
   <div class="cook-tools" data-cook-tools></div>
   <div class="cook-nav"><button class="btn ghost" type="button" data-cook-prev>${t("prev")}</button><button class="btn" type="button" data-cook-next>${t("next")}</button></div>

@@ -1,0 +1,59 @@
+/* Trang chủ: khung quay món. Chỉ trang chủ tải file này (templates.mjs). Token ở style.css. */
+.spin { position: relative; border-top: 3px solid var(--accent); }
+.spin::before { content: ""; position: absolute; inset: 7px; border: 1px solid var(--line); border-radius: 12px; pointer-events: none; }
+.spin-filters { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 8px 0 4px; }
+.kind{display:flex;gap:8px;margin-bottom:12px}.kind label{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;border:2px solid var(--line);border-radius:14px;font-weight:600;cursor:pointer}.kind label:has(:checked){border-color:var(--primary);color:var(--primary);background:var(--surface-2)}.kind input{accent-color:var(--primary);width:18px;height:18px;margin:0}.spin-more{margin-bottom:14px}.spin-more summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:600;color:var(--primary)}.rgrid.rrow{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:44%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding-bottom:6px}.rrow>*{scroll-snap-align:start}@media (min-width:700px){.rgrid.rrow{grid-auto-columns:30%}}
+.spin-filters label span { display: block; font-size: .8em; color: var(--muted); margin-bottom: 4px; }
+@media (max-width: 600px) { .spin-filters { grid-template-columns: 1fr 1fr; } .spin-filters label:last-child { grid-column: 1 / -1; } }
+.spin-go { margin: 0 0 14px; }
+.spin-go .btn.big { flex: 1 1 100%; justify-content: center; }
+.spin-shop { margin: 12px 0 8px; }
+.spin-shop .btn { flex: 1 1 100%; justify-content: center; }
+.spin-slots { display: grid; gap: 8px; padding: 8px; border-radius: 16px; background: var(--surface-2); }
+.spin-slots.mam { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.slot { position: relative; display: grid; grid-template-columns: 112px 1fr; gap: 12px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-top: 3px solid var(--k, var(--line)); border-radius: 12px; padding: 10px; min-height: 120px; }
+.spin-slots.mam .slot { grid-template-columns: minmax(0, 1fr); gap: 6px; padding: 8px 6px 6px; align-content: start; text-align: center; min-height: 0; }
+.slot-img { position: relative; aspect-ratio: 4/3; border-radius: 10px; overflow: hidden; background: var(--surface-2); }
+.spin-slots.mam .slot-img { aspect-ratio: 1; order: 1; }
+.spin-slots.mam .slot > div:nth-child(2) { display: contents; }
+.spin-slots.mam .slot-label { order: 0; min-height: 2.7em; display: grid; place-items: center; line-height: 1.3; }
+.spin-slots.mam .slot strong { order: 2; font-size: .95em; min-height: 3.9em; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
+.spin-slots.mam .slot .meta { order: 3; justify-content: center; font-size: 13px; margin: 0; white-space: nowrap; }
+.spin-slots.mam .slot .meta .ic { display: none; }
+.spin-slots.mam .slot br { display: none; }
+.spin-slots.mam .slot a.more { order: 4; justify-content: center; font-size: .85em; white-space: nowrap; }
+.spin-slots.mam .slot .lock { order: 5; position: static; width: 100%; display: flex; align-items: center; justify-content: center; gap: 5px; font-size: 13px; font-weight: 600; }
+.spin-slots.mam .slot.empty-slot { min-height: 150px; align-content: center; }
+.spin-slots.mam .slot.empty-slot > div { display: block; }
+.slot-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.slot-img .ph { padding: 8px; font-size: .78em; }
+.slot-label { font-size: .85em; font-weight: 600; color: var(--primary); }
+.slot:not(.single) > div:nth-child(2) { padding-right: 50px; min-width: 0; }
+.lock span { display: none; }
+.mam .lock span, .single .lock span { display: inline; }
+.slot strong { display: block; font-family: var(--serif); font-size: 1.12em; line-height: 1.3; margin: 2px 0; }
+.slot .meta { margin-bottom: 6px; }
+.slot a.more { font-weight: 600; font-size: .9em; display: inline-flex; align-items: center; min-height: 44px; }
+.slot.empty-slot { color: var(--muted); text-align: center; grid-template-columns: 1fr; place-items: center; }
+.slot.rolling { border-color: var(--accent); }
+.slot.single { grid-template-columns: minmax(0, 1fr); gap: 4px; padding: 0 0 4px; overflow: hidden; }
+.hreel { position: relative; height: 108px; overflow: hidden; background: var(--surface-2); mask-image: linear-gradient(90deg, transparent, black 16%, black 84%, transparent); }
+.rolling .hreel::after { content: ""; position: absolute; left: calc(50% - 1px); top: 0; bottom: 0; width: 2px; background: var(--primary); }
+.hreel::before { content: ""; position: absolute; left: calc(50% - 7px); top: 0; width: 14px; height: 8px; background: var(--primary); clip-path: polygon(0 0, 100% 0, 50% 100%); z-index: 1; }
+.hreel-track { position: absolute; left: 50%; top: 12px; display: flex; gap: 8px; transform: translateX(var(--x)); transition: transform var(--d) cubic-bezier(.15,.85,.15,1); will-change: transform; }
+.hreel .slot-img { flex: 0 0 112px; height: 84px; aspect-ratio: auto; opacity: .55; }
+.hreel .slot-img.on { opacity: 1; outline: 2px solid var(--primary); outline-offset: 2px; }
+.single-info { padding: 4px 12px 0; min-width: 0; }
+.single-act { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 0 8px 0 12px; }
+.single-act .lock { position: static; width: auto; padding: 0 12px; display: flex; gap: 4px; font-size: 13px; font-weight: 600; }
+.slot.single strong { font-size: 1.05em; }
+.slot.rolling strong { opacity: .6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.reel { position: absolute; inset: 0; transition: transform var(--d) cubic-bezier(.15,.85,.15,1); will-change: transform; }
+.reel > div { position: relative; height: 100%; }
+.slot.landed { animation: land .6s cubic-bezier(.2,1.3,.4,1); }
+@keyframes land { 0% { transform: scale(.96); box-shadow: 0 0 0 0 var(--accent); } 45% { transform: scale(1.025); box-shadow: 0 0 0 6px var(--primary-soft); } 100% { transform: none; box-shadow: 0 0 0 0 transparent; } }
+.btn.spinning { cursor: progress; }
+.btn.spinning svg { animation: dice .45s linear infinite; }
+@keyframes dice { to { transform: rotate(360deg); } }
+.lock { position: absolute; top: 8px; right: 8px; width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--muted); display: grid; place-items: center; cursor: pointer; }
+.lock[aria-pressed="true"] { background: var(--herb); color: #fff; border-color: var(--herb); }

@@ -23,7 +23,7 @@ const S = {
     saved: "Đã lưu", save: "Lưu sổ tay", unsaved: "Đã bỏ khỏi sổ tay", savedT: "Đã lưu vào sổ tay",
     shopText: (n, s) => `🛒 Đi chợ: ${n} (${s} người)`, shopTitle: "Danh sách đi chợ", copiedNote: "Đã chép danh sách, dán vào Zalo hoặc Ghi chú.",
     addedIng: (n) => `Đã thêm ${n} nguyên liệu vào Đi chợ`, videoGuide: "Video hướng dẫn",
-    stepPos: (i, n) => `Bước ${i}/${n}`, finish: "Hoàn thành", next: "Tiếp →", done: "Xong rồi! Chúc cả nhà ngon miệng.",
+    stepProg: (d, n) => `${d}/${n} bước`, stepPos: (i, n) => `Bước ${i}/${n}`, finish: "Hoàn thành", next: "Tiếp →", done: "Xong rồi! Chúc cả nhà ngon miệng.",
     nDishes: (n) => `${n} món`, noFilter: "Không có món nào hợp bộ lọc.", pickOne: "Chọn ít nhất một nguyên liệu.",
     have: (full, g, n) => `${full ? "✅ Đủ" : "Có"} ${g}/${n} nguyên liệu`, canCook: (n) => `${n} món nấu được với nguyên liệu bạn chọn`,
     noneIng: "Chưa có món nào dùng các nguyên liệu này.", notFound: "Không tìm thấy món phù hợp. Thử từ khác ngắn hơn.",
@@ -45,7 +45,7 @@ const S = {
     saved: "Saved", save: "Save", unsaved: "Removed from saved", savedT: "Saved",
     shopText: (n, s) => `🛒 Shopping: ${n} (${s} ${s === 1 ? "person" : "people"})`, shopTitle: "Shopping list", copiedNote: "List copied. Paste it into a chat or your notes.",
     addedIng: (n) => `Added ${n} ${n === 1 ? "ingredient" : "ingredients"} to shopping`, videoGuide: "Video guide",
-    stepPos: (i, n) => `Step ${i}/${n}`, finish: "Finish", next: "Next →", done: "All done! Enjoy your meal.",
+    stepProg: (d, n) => `${d}/${n} steps`, stepPos: (i, n) => `Step ${i}/${n}`, finish: "Finish", next: "Next →", done: "All done! Enjoy your meal.",
     nDishes: (n) => `${n} ${n === 1 ? "dish" : "dishes"}`, noFilter: "No dishes match the filters.", pickOne: "Pick at least one ingredient.",
     have: (full, g, n) => `${full ? "✅ All" : "Have"} ${g}/${n} ingredients`, canCook: (n) => `${n} ${n === 1 ? "dish" : "dishes"} you can cook with your ingredients`,
     noneIng: "No dishes use these ingredients yet.", notFound: "No matching dishes. Try a shorter word.",
@@ -481,9 +481,22 @@ async function pageRecipe() {
   $("[data-play]")?.addEventListener("click", () => play(0));
   $$("[data-seek]").forEach((b) => b.addEventListener("click", () => { play(Number(b.dataset.seek)); box.scrollIntoView({ behavior: "smooth", block: "start" }); }));
 
-  // Bấm vào nội dung bước để đánh dấu đã làm
-  const steps = $$(".steps li");
-  steps.forEach((li) => li.querySelector("p").addEventListener("click", () => li.classList.toggle("done")));
+  // Các bước: tích số bước để đánh dấu xong (bước xong thu gọn còn tiêu đề), thanh tiến độ, nhớ theo món trên máy.
+  const steps = $$(".steps li"), prog = $("[data-step-prog]"), kStep = "steps-" + slug;
+  const veBuoc = () => {
+    const d = steps.filter((li) => li.classList.contains("done")).length, now = steps.find((li) => !li.classList.contains("done"));
+    steps.forEach((li) => { li.classList.toggle("now", li === now); $("[data-step-done]", li).checked = li.classList.contains("done"); });
+    $("[data-step-count]").textContent = S.stepProg(d, steps.length);
+    $("[data-step-bar]").style.transform = `scaleX(${steps.length ? d / steps.length : 0})`;
+    $("[data-step-reset]").hidden = !d;
+  };
+  const datXong = (i, on) => { steps[i].classList.toggle("done", on); veBuoc(); store.set(kStep, steps.map((li, k) => (li.classList.contains("done") ? k : -1)).filter((k) => k >= 0)); };
+  steps.forEach((li, i) => ($("[data-step-done]", li).onchange = (e) => datXong(i, e.target.checked)));
+  $("[data-step-reset]").onclick = () => { steps.forEach((li) => li.classList.remove("done")); veBuoc(); store.set(kStep, []); };
+  (await store.get(kStep, [])).forEach((k) => steps[k]?.classList.add("done"));
+  prog.hidden = false; $$(".steps").forEach((ol) => ol.classList.add("live")); veBuoc();
+  // Ảnh bước: màn rộng là ảnh nhỏ bên phải, bấm để phóng to
+  $$(".step-fig").forEach((f) => (f.onclick = () => f.classList.toggle("big")));
 
   // Chế độ đang nấu: từng bước chữ to, đánh dấu xong, giữ màn hình sáng
   const view = $("[data-cook-view]");
@@ -510,11 +523,11 @@ async function pageRecipe() {
     view.hidden = false; document.body.style.overflow = "hidden";
     try { lock = await navigator.wakeLock?.request("screen"); } catch {}
   };
-  $("[data-cook-done]").onchange = (e) => steps[idx].classList.toggle("done", e.target.checked);
+  $("[data-cook-done]").onchange = (e) => datXong(idx, e.target.checked);
   $("[data-cook-close]").onclick = close;
   $("[data-cook-prev]").onclick = () => { if (idx > 0) { idx--; show(); } };
   $("[data-cook-next]").onclick = () => {
-    steps[idx].classList.add("done");
+    datXong(idx, true);
     if (idx < steps.length - 1) { idx++; show(); } else { close(); toast(S.done); }
   };
   document.addEventListener("visibilitychange", async () => { if (!view.hidden && document.visibilityState === "visible") { try { lock = await navigator.wakeLock?.request("screen"); } catch {} } });
