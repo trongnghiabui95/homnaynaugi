@@ -9,12 +9,13 @@ Web tiếng Việt "Hôm Nay Nấu Gì" (homnaynaugi): gợi ý món và mâm c�
 - Link nội bộ trong HTML viết bắt đầu bằng `/`; build tự thêm `BASE_PATH`. Trong `app.js` luôn ghép `BASE` vào trước đường dẫn.
 - PWA: `src/sw.js`, `src/manifest.webmanifest`. Sau này đóng gói Android bằng Capacitor từ `dist/`.
 - Sổ tay món ngon, danh sách đi chợ, kết quả quay món chỉ lưu trên máy người dùng (IndexedDB). Không gửi dữ liệu người dùng ra ngoài.
+- Ngoại lệ duy nhất (chủ dự án đồng ý ngày 2026-11-17): **"Thành quả của bạn đọc"**. Ảnh món đã nấu và bình luận người dùng chủ động đăng được lưu trên Cloudflare D1 qua Pages Function `functions/api/[[path]].js`, gói miễn phí. Không lưu IP thật (chỉ mã băm), ảnh nén và xoá EXIF trên máy trước khi gửi. Hướng dẫn bật: `ops/BAT-THANH-QUA.md`. Không thêm máy chủ hay dịch vụ ngoài nào khác khi chưa hỏi.
 - Đã cân nhắc Next.js theo prompt gốc và giữ web tĩnh: chạy trên GitHub Pages/Cloudflare Pages miễn phí, không cần máy chủ, tải nhanh như nhau.
 
 ## Lệnh
 - `node scripts/build.mjs --sample` – build bằng dữ liệu mẫu
 - `DATA_DIR=tests/fixtures node scripts/build.mjs && python3 tests/e2e.py` – kiểm thử trên trình duyệt; mọi dòng phải là `OK` và `errors: []`
-- `node --test tests/commons.test.mjs` – kiểm thử phần ảnh Wikimedia Commons (không cần mạng; trả lời API mẫu ở `tests/fixtures/commons.json`)
+- `node --test tests/commons.test.mjs tests/thanh-qua.test.mjs` – kiểm thử ảnh Wikimedia Commons và API Thành quả (không cần mạng; D1 giả lập bằng `node:sqlite`). Không chạy `node --test tests/` vì `tests/may-chu-thu.mjs` là máy chủ chạy mãi
 
 ## Quy tắc nội dung
 - Món chỉ lên web khi `trang_thai` = `duyệt`, có danh mục hợp lệ, ít nhất 1 nguyên liệu và 1 bước. Không nới lỏng cổng này.

@@ -9,6 +9,8 @@ DIST = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "dist")
 OUT = os.environ.get("SHOTS", "/tmp/shots")
 os.makedirs(OUT, exist_ok=True)
 srv = subprocess.Popen(["python3", "-m", "http.server", "8099", "-d", DIST], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+# Máy chủ thử có API "Thành quả của bạn đọc" (giống Cloudflare Pages + D1), xem tests/may-chu-thu.mjs
+api_srv = subprocess.Popen(["node", "--no-warnings", os.path.join(os.path.dirname(os.path.abspath(__file__)), "may-chu-thu.mjs"), "8098"])
 time.sleep(1)
 B = "http://localhost:8099"
 fails = []
@@ -273,6 +275,52 @@ async def main():
 
         await pg.goto(B + "/mon/thit-kho-trung/"); await pg.click('[data-toggle="theme"]'); await pg.wait_for_timeout(300)
         await pg.screenshot(path=f"{OUT}/7-dem.png")
+        # Thành quả của bạn đọc: không có API (GitHub Pages) thì ẩn; có API thì gửi ảnh + bình luận, xem, báo cáo, quản trị
+        await pg.goto(B + "/mon/trung-chien-hanh/"); await pg.wait_for_timeout(400)
+        check("không có API: mục Thành quả ẩn", await pg.query_selector("[data-tq]") is not None and not await pg.is_visible("[data-tq]"))
+        BA = "http://localhost:8098"
+        c4 = await b.new_context(viewport={"width": 390, "height": 844}, locale="vi-VN")
+        TS = "window.turnstile={render:(el,o)=>{setTimeout(()=>o.callback('token-thu'),20);return 1},reset(){}};"
+        async def ts_gia(route): await route.fulfill(status=200, content_type="text/javascript", body=TS)
+        await c4.route("https://challenges.cloudflare.com/**", ts_gia)
+        p4 = await c4.new_page()
+        p4.on("pageerror", lambda e: errs.append(str(e)))
+        p4.on("dialog", lambda d: asyncio.ensure_future(d.accept()))
+        await p4.goto(BA + "/mon/trung-chien-hanh/"); await p4.wait_for_selector("[data-tq]:not([hidden])", timeout=5000)
+        check("có API: hiện mục Thành quả, lời mời khi chưa có bài", "người đầu tiên" in await p4.text_content("[data-tq-ds]"))
+        await p4.click("[data-tq-mo]"); await p4.wait_for_selector(".tq-dlg[open]")
+        check("bấm Khoe món: mở hộp gửi, có ô ảnh, cảm nhận, tên", await p4.is_visible(".tq-dlg") and await p4.is_visible("[data-tq-ten]"))
+        await p4.click("[data-tq-gui]")
+        check("gửi trống: báo cần ảnh hoặc cảm nhận", "ảnh hoặc vài dòng" in (await p4.text_content("[data-tq-loi]") or ""))
+        await p4.set_input_files("[data-tq-file]", os.path.join(DIST, "assets", "og-mac-dinh.png"))
+        await p4.wait_for_selector(".tq-xem img", timeout=5000)
+        await p4.fill("[data-tq-noi]", "Nhà mình làm thử, ngon lắm")
+        await p4.fill("[data-tq-ten]", "Bạn đọc thử")
+        await p4.screenshot(path=f"{OUT}/9-khoe-mon.png")
+        await p4.click("[data-tq-gui]"); await p4.wait_for_selector(".tq-the img", timeout=8000)
+        the = await p4.evaluate("(()=>{const t=document.querySelector('.tq-the');return [t.querySelector('strong').textContent,t.querySelector('.tq-chu').textContent,!document.querySelector('.tq-dlg').open]})()")
+        check("gửi xong: bài hiện ngay đầu danh sách, hộp đóng", the == ["Bạn đọc thử", "Nhà mình làm thử, ngon lắm", True], str(the))
+        anh = await p4.evaluate("fetch(document.querySelector('.tq-the img').src).then(async r=>{const b=new Uint8Array(await r.arrayBuffer());const s=new TextDecoder('latin1').decode(b.slice(0,65536));return [r.headers.get('content-type'),b[0]===0xff&&b[1]===0xd8,s.includes('Exif'),b.length<460*1024]})")
+        check("ảnh lưu dạng JPEG đã nén, không còn EXIF", anh == ["image/jpeg", True, False, True], str(anh))
+        await p4.reload(); await p4.wait_for_selector(".tq-the", timeout=5000)
+        check("tải lại: người khác vẫn thấy bài", await p4.text_content(".tq-the strong") == "Bạn đọc thử")
+        await p4.click("[data-tq-mo]"); await p4.wait_for_selector(".tq-dlg[open]")
+        check("lần sau: máy nhớ tên hiển thị", await p4.input_value("[data-tq-ten]") == "Bạn đọc thử")
+        await p4.click("[data-tq-huy]"); await p4.wait_for_selector(".tq-dlg:not([open])", state="attached")
+        await p4.screenshot(path=f"{OUT}/10-thanh-qua.png", full_page=False)
+        nho, chu = await p4.evaluate(DO)
+        check("Thành quả: vùng bấm ≥ 44px, chữ ≥ 13px", not nho and not chu, f"{nho[:4]} {chu[:4]}")
+        await p4.click("[data-bao]"); await p4.wait_for_timeout(400)
+        check("báo cáo: ghi nhận, không cho báo lại", not await p4.query_selector("[data-bao]") and "đã báo cáo" in await p4.text_content(".tq-the"))
+        await p4.goto(BA + "/quan-tri/"); await p4.fill("[data-qt-ma]", "sai"); await p4.click("[data-qt-dang-nhap] button"); await p4.wait_for_timeout(300)
+        check("quản trị: sai mã thì báo lỗi", "Sai mã" in await p4.text_content("[data-qt-ds]"))
+        await p4.fill("[data-qt-ma]", "ma-quan-tri-thu"); await p4.click("[data-qt-dang-nhap] button"); await p4.wait_for_selector("[data-loc]")
+        await p4.click('[data-loc="tat-ca"]'); await p4.wait_for_selector('[data-hd="an"]')
+        await p4.click('[data-hd="an"]'); await p4.wait_for_timeout(400)
+        await p4.goto(BA + "/mon/trung-chien-hanh/"); await p4.wait_for_selector("[data-tq]:not([hidden])")
+        check("quản trị ẩn bài: trang món không còn bài đó", "người đầu tiên" in await p4.text_content("[data-tq-ds]"))
+        await c4.close()
+
         # Service worker: sau khi web cập nhật, người dùng cũ nhận ngay CSS mới (không kẹt bản lưu); mất mạng vẫn mở được
         c3 = await b.new_context(viewport={"width": 390, "height": 844}, locale="vi-VN")
         p3 = await c3.new_page()
@@ -298,4 +346,4 @@ async def main():
 try:
     asyncio.run(main())
 finally:
-    srv.terminate()
+    srv.terminate(); api_srv.terminate()

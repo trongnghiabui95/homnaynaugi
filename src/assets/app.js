@@ -581,7 +581,11 @@ $('[data-toggle="big"]')?.addEventListener("click", () => {
 });
 
 // ---------- Khởi động ----------
-const PAGES = { home: pageHome, recipe: pageRecipe, list: pageList, search: pageSearch, shop: pageShop, saved: renderSaved, video: pageVideo };
+// Thành quả của bạn đọc (ảnh món đã nấu + bình luận): tải lười, chỉ khi trang có mục này.
+const napThanhQua = () => import(BASE + "/assets/thanh-qua.js");
+const PAGES = { home: pageHome, recipe: pageRecipe, list: pageList, search: pageSearch, shop: pageShop, saved: renderSaved, video: pageVideo,
+  admin: () => napThanhQua().then((m) => m.quanTri({ $, esc, toast, BASE })) };
+if ($("[data-tq]")) napThanhQua().then((m) => m.thanhQua({ $, esc, store, toast, BASE })).catch(() => {});
 PAGES[document.body.dataset.page]?.();
 updateBadges();
 if ("serviceWorker" in navigator && location.hostname !== "localhost") navigator.serviceWorker.register(BASE + "/sw.js", { scope: BASE + "/" }).catch(() => {});

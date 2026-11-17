@@ -1,0 +1,31 @@
+/* Thành quả của bạn đọc: chỉ tải trên trang món có mục này và trang quản trị (xem thanh-qua.js). Dùng token trong style.css. */
+.tq { margin-top: 32px; }
+.tq > .btn { margin: 4px 0 16px; }
+.tq-ds { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.tq-ds.trong { display: block; }
+@media (min-width: 700px) { .tq-ds { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.tq-the { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.tq-the img { display: block; width: 100%; aspect-ratio: 4/3; object-fit: cover; background: var(--surface-2); }
+.tq-the figcaption { padding: 10px 12px 4px; }
+.tq-the p { margin: 0 0 6px; }
+.tq-ai { font-size: .88em; line-height: 1.35; }
+.tq-chu { white-space: pre-line; overflow-wrap: anywhere; }
+.tq-bao { min-height: 44px; padding: 0; border: 0; background: none; color: var(--muted); font: inherit; font-size: .85em; text-decoration: underline; cursor: pointer; }
+.tq-dlg { width: min(480px, calc(100% - 32px)); max-height: calc(100% - 32px); border: 0; border-radius: var(--radius); padding: 20px; background: var(--surface); color: var(--text); }
+.tq-dlg::backdrop { background: rgba(29, 26, 23, .55); } /* lớp phủ mờ sau hộp thoại: ngoại lệ màu ngoài :root (DESIGN.md) */
+.tq-form h2 { margin: 0 0 12px; }
+.tq-anh { position: relative; display: block; margin-bottom: 12px; border: 2px dashed var(--line); border-radius: 14px; overflow: hidden; cursor: pointer; }
+.tq-anh:focus-within { outline: 3px solid var(--primary); outline-offset: 2px; }
+.tq-anh input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.tq-xem { display: grid; place-items: center; gap: 6px; aspect-ratio: 4/3; color: var(--primary); font-weight: 600; text-align: center; }
+.tq-xem .ic { width: 40px; height: 40px; }
+.tq-xem img { grid-area: 1/1; width: 100%; height: 100%; object-fit: cover; }
+.tq-doi { grid-area: 1/1; align-self: end; margin-bottom: 10px; padding: 6px 14px; border-radius: 999px; background: var(--surface); color: var(--primary); }
+.tq-o { display: block; margin-bottom: 12px; }
+.tq-o span { display: block; margin-bottom: 4px; font-size: .88em; font-weight: 600; }
+.tq-o textarea, .tq-o input, [data-qt] input { width: 100%; min-height: 48px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg); color: var(--text); font: inherit; }
+.tq-loi { margin: 0 0 12px; color: var(--primary); font-weight: 600; }
+.tq-nut { justify-content: flex-end; gap: 8px; }
+[data-qt] .grow { flex: 1; }
+[data-qt] form { align-items: flex-end; gap: 8px; margin-bottom: 16px; }
+[data-qt] .tq-the .row { gap: 8px; margin-bottom: 8px; }
