@@ -51,4 +51,4 @@ Muốn một bước có nút "Xem đoạn này": ghi số giây của đoạn �
 
 Ảnh không phải tự chụp phải có giấy phép rõ và ghi vào cột `anh_nguon`, ví dụ:
 `Nguyễn Văn A, CC BY-SA 4.0 https://commons.wikimedia.org/wiki/File:Ten_anh.jpg`
-Web hiện dòng "Ảnh: … · Nguồn ảnh" ngay dưới ảnh món. Ảnh Wikimedia Commons dán link trang ảnh thì web tự ghi nguồn (xem mục trên). Xem thêm `ops/NGUON-NOI-DUNG.md`.
+Web hiện một dòng nhỏ "Nguồn: tác giả, giấy phép" ngay dưới ảnh, bấm vào là tới trang ảnh. Ảnh Wikimedia Commons dán link trang ảnh thì web tự ghi nguồn (xem mục trên). Xem thêm `ops/NGUON-NOI-DUNG.md`.

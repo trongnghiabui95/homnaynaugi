@@ -117,7 +117,6 @@ select { min-height: 46px; padding: 0 12px; border: 1px solid var(--line); borde
 .sec-head h2 { margin: 0 0 .6em; padding-left: 12px; border-left: 4px solid var(--accent); line-height: 1.15; }
 .sec-head a { font-weight: 600; text-decoration: none; white-space: nowrap; display: inline-flex; align-items: center; min-height: 44px; }
 
-/* Trang chủ */
 .hero h1 { font-size: 2.05em; margin: .2em 0 .5em; }
 .spin h2 { margin-top: 0; font-size: 1.6em; }
 /* Khung quay món: viền kép mảnh như khung tranh, mâm 3 ngăn nằm ngang để thấy cả mâm trong một màn hình */
@@ -234,7 +233,9 @@ select { min-height: 46px; padding: 0 12px; border: 1px solid var(--line); borde
 .actions { display: flex; gap: 10px; flex-wrap: wrap; }
 .actions .btn { flex: 1; min-width: 150px; }
 .media { margin: 20px 0; }
-.media figcaption, .credit { font-size: .85em; color: var(--muted); margin-top: 6px; }
+.media figcaption { font-size: .85em; color: var(--muted); margin-top: 6px; }
+.credit, .media .credit { font-size: 13px; line-height: 1.4; color: var(--muted); margin: 4px 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.credit a { color: inherit; }
 .step-fig { margin: 0; }
 .hero-img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: var(--radius); display: block; }
 .player-box { aspect-ratio: 16/9; border-radius: var(--radius); overflow: hidden; background: #000; }
