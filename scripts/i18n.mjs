@@ -59,6 +59,8 @@ const vi = {
   quick_people: "Chọn nhanh số người", ing_hint: "Tích những món cần mua, rồi chép hoặc thêm vào danh sách đi chợ.",
   copy_shop: "Chép danh sách đi chợ", steps: "Cách làm", tip: "Bí quyết nấu ngon", pair: "Ăn kèm hợp vị", updated: (d) => `Cập nhật: ${d}`,
   more_in: (c) => `Thêm món trong ${c}`, not_translated: "",
+  // Tên danh mục, đơn vị đo theo ngôn ngữ. Tiếng Việt lấy từ Sheet nên ở đây trả về "" (giữ nguyên).
+  cat_name: () => "", unit: () => "",
   tq_h2: "Thành quả của bạn đọc", tq_p: "Nấu xong rồi? Chụp một tấm cho mọi người cùng xem nhé.", tq_btn: "Khoe món bạn nấu",
   cook_dlg: "Chế độ đang nấu", cook_exit: "Thoát chế độ nấu", cook_done: "Đã xong bước này", prev: "← Trước", next: "Tiếp →",
   // Video, tìm kiếm, đi chợ, sổ tay
@@ -142,7 +144,13 @@ const en = {
   save: "Save", start_cook: "Cook now", ingredients: "Ingredients", n_people: "Servings", less_one: "One person fewer", more_one: "One person more",
   quick_people: "Quick servings", ing_hint: "Tick what you need to buy, then copy it or add it to your shopping list.",
   copy_shop: "Copy shopping list", steps: "Method", tip: "Cooking tips", pair: "Goes well with", updated: (d) => `Updated: ${d}`,
-  more_in: (c) => `More in <span lang="vi">${c}</span>`, not_translated: "This recipe is not translated yet.",
+  more_in: (c) => `More in ${c}`, not_translated: "This recipe is not translated yet.",
+  // Danh mục chưa có trong từ điển thì giữ tên tiếng Việt (đặt trong lang="vi").
+  cat_name: (slug) => ({ "mon-man": "Savory mains", "mon-canh": "Soups", "mon-rau-xao": "Greens & stir-fries", "bua-sang": "Breakfast",
+    "mon-mot-dia": "Rice, noodles & pasta", "an-vat": "Snacks", "do-uong": "Drinks" })[slug] || "",
+  // Đơn vị thường gặp (khoá: đơn vị bỏ dấu, chữ thường). Đơn vị đếm (quả, cái) bỏ trống: "3 eggs". Không có trong từ điển thì giữ tiếng Việt.
+  unit: (k) => ({ "thia canh": "tbsp", "muong canh": "tbsp", "thia ca phe": "tsp", "muong ca phe": "tsp", "chen": "bowl", "bat": "bowl",
+    "ly": "cup", "coc": "cup", "lat": "slices", "gram": "g", "g": "g", "kg": "kg", "ml": "ml", "l": "l", "lit": "l", "qua": "", "trai": "", "cai": "" })[k],
   tq_h2: "Readers' dishes", tq_p: "Cooked it? Share a photo for everyone to see.", tq_btn: "Show your dish",
   cook_dlg: "Cooking mode", cook_exit: "Exit cooking mode", cook_done: "Done with this step", prev: "← Back", next: "Next →",
   video_title: "Cooking video guides", video_desc: "Cooking videos, each one with a detailed recipe.", video_h1: "Video guides",

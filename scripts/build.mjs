@@ -136,6 +136,14 @@ async function main() {
   if (report.errors.length) { console.error("LỖI:\n- " + report.errors.join("\n- ")); process.exit(1); }
   recipes.sort((a, b) => (b.cap_nhat || "").localeCompare(a.cap_nhat || "") || a.ten.localeCompare(b.ten, "vi"));
   const bySlug = Object.fromEntries(recipes.map((r) => [r.slug, r]));
+  // Bản dịch tiếng Anh (cột *_en, có thể trống). Giữ chữ gốc tiếng Việt ở .vi; localize() đổi chữ hiển thị theo ngôn ngữ đang dựng.
+  for (const c of cats) c.vi = { ten: c.ten, mo_ta: c.mo_ta };
+  for (const r of recipes) {
+    r.vi = { ten: r.ten, tom_tat: r.tom_tat, meo: r.meo };
+    for (const i of r.ings) i.vi = { ten: i.ten, ghi_chu: i.ghi_chu, nhom: i.nhom, don_vi: i.don_vi };
+    for (const s of r.steps) s.vi = { tieu_de: s.tieu_de, noi_dung: s.noi_dung };
+    r.dich = daDich(r, "en");
+  }
   const catCount = (c) => recipes.filter((r) => r.danh_muc === c.slug).length;
   const catsShown = cats.filter((c) => catCount(c) >= MIN_MON_DANH_MUC);
   site.has_video = recipes.some((r) => r.yt); // ẩn link "Tất cả video" ở chân trang khi chưa có video
@@ -144,10 +152,11 @@ async function main() {
   await fs.cp(SRC, DIST, { recursive: true });
 
   // Chỉ mục cho vòng quay, tìm kiếm, tủ lạnh, đi chợ, đã lưu (phía trình duyệt)
+  const tEn = tr("en");
   const index = recipes.map((r) => ({
-    s: r.slug, t: r.ten, c: r.danh_muc, cn: r.cat.ten, m: r.total, k: r.do_kho, img: r.img, v: r.yt ? 1 : 0,
+    s: r.slug, t: r.ten, c: r.danh_muc, cn: r.cat.ten, ...(r.ten_en ? { te: r.ten_en } : {}), ...(tEn("cat_name", r.danh_muc) ? { ce: tEn("cat_name", r.danh_muc) } : {}), m: r.total, k: r.do_kho, img: r.img, v: r.yt ? 1 : 0,
     cal: r.cal || 0, b: r.bua, n: r.nguyen_lieu_chinh || "", d: r.cap_nhat || "", tg: r.tagList.map(fold),
-    f: fold([r.ten, r.tom_tat, r.cat.ten, r.tags, r.nguyen_lieu_chinh].join(" ")),
+    f: fold([r.ten, r.tom_tat, r.cat.ten, r.tags, r.nguyen_lieu_chinh, r.ten_en, r.tom_tat_en, tEn("cat_name", r.danh_muc)].join(" ")),
     g: r.ings.filter((i) => !PANTRY.includes(fold(i.ten))).map((i) => fold(i.ten)),
     sv: r.serv, ig: r.ings.map((i) => [i.ten, num(i.so_luong, 0), i.don_vi]),
   }));
@@ -155,6 +164,7 @@ async function main() {
 
   for (lang of LANGS) {
   t = tr(lang);
+  localize(lang, cats, recipes);
   const L = { ...site, lang, tagline: lang === "vi" ? site.tagline : site[`tagline_${lang}`] || t("tagline_default") };
   const vi = (s) => (lang === "vi" ? s : `<span lang="vi">${s}</span>`); // nội dung tiếng Việt chưa dịch trong trang tiếng Anh
   const LV = lang === "vi" ? "" : ' lang="vi"';
@@ -170,7 +180,7 @@ async function main() {
   const liteYT = (r, attr) => `<button class="lite-yt" type="button" ${attr} aria-label="${esc(t("play_video", r.ten))}"><img src="${ytThumb(r.yt.id)}" alt="" loading="lazy" width="480" height="360"><span class="play" aria-hidden="true"></span></button>`;
   const vcard = (r) => `<article class="vcard${r.yt.shorts ? " doc" : ""}" data-vcard data-id="${esc(r.yt.id)}">
   <div class="vcard-media">${liteYT(r, "data-vplay")}</div>
-  <div class="vcard-body"><strong${LV}>${esc(r.ten)}</strong>${r.yt.shorts || !r.tom_tat ? "" : `<p${LV}>${esc(r.tom_tat)}</p>`}<small>${videoCredit(r)}</small><a class="vcard-link" href="/mon/${r.slug}/">${t("see_recipe_arrow")}</a></div>
+  <div class="vcard-body"><strong${A(r.lv.ten)}>${esc(r.ten)}</strong>${r.yt.shorts || !r.tom_tat ? "" : `<p${A(r.lv.tom_tat)}>${esc(r.tom_tat)}</p>`}<small>${videoCredit(r)}</small><a class="vcard-link" href="/mon/${r.slug}/">${t("see_recipe_arrow")}</a></div>
 </article>`;
 
   // ----- Trang chủ -----
@@ -254,9 +264,9 @@ ${moi.length || !recipes.length ? `<section><div class="sec-head"><h2>${t("new_h
   for (const c of cats) {
     const rs = recipes.filter((r) => r.danh_muc === c.slug);
     await page(L, {
-      path: `/danh-muc/${c.slug}/`, page: "list", noindex: rs.length < MIN_MON_DANH_MUC, title: t("cat_title", c.ten), crumbs: [[t("cats_h1"), "/danh-muc/"], [c.ten, `/danh-muc/${c.slug}/`, 1]],
-      description: c.mo_ta || t("cat_desc", c.ten),
-      body: `<header class="cat-head">${c.img ? `<img src="${esc(c.img)}" alt="" width="96" height="96">` : `<span class="cat-emoji big" aria-hidden="true">${esc(c.bieu_tuong || "🍽️")}</span>`}<div><h1${LV}>${esc(c.ten)}</h1><p class="lead"${LV}>${esc(c.mo_ta)}</p>${c.img ? photoCredit(c.credit, "p") : ""}</div></header>
+      path: `/danh-muc/${c.slug}/`, page: "list", noindex: rs.length < MIN_MON_DANH_MUC, title: t("cat_title", c.ten), crumbs: [[t("cats_h1"), "/danh-muc/"], [c.ten, `/danh-muc/${c.slug}/`, !!c.lv.ten]],
+      description: (!c.lv.mo_ta && c.mo_ta) || t("cat_desc", c.ten),
+      body: `<header class="cat-head">${c.img ? `<img src="${esc(c.img)}" alt="" width="96" height="96">` : `<span class="cat-emoji big" aria-hidden="true">${esc(c.bieu_tuong || "🍽️")}</span>`}<div><h1${A(c.lv.ten)}>${esc(c.ten)}</h1><p class="lead"${A(c.lv.mo_ta)}>${esc(c.mo_ta)}</p>${c.img ? photoCredit(c.credit, "p") : ""}</div></header>
 ${rs.length ? filterBar(rs) + grid(rs, true) : emptyState(t("cat_empty"), t("cat_empty_p"))}`,
     });
   }
@@ -264,9 +274,11 @@ ${rs.length ? filterBar(rs) + grid(rs, true) : emptyState(t("cat_empty"), t("cat
   // ----- Trang công thức -----
   for (const r of recipes) {
     const groups = groupMap(r.ings, "nhom");
-    const ingHTML = [...groups].map(([g, gl]) => `${g ? `<h3${LV}>${esc(g)}</h3>` : ""}<ul class="ings"${LV}>${gl.map((i) => {
+    const ingHTML = [...groups].map(([g, gl]) => `${g ? `<h3${A(gl[0].lv.nhom)}>${esc(g)}</h3>` : ""}<ul class="ings">${gl.map((i) => {
       const q = num(i.so_luong, 0);
-      return `<li><label><input type="checkbox" aria-label="${esc(t("need_buy", i.ten))}"><span><b class="qty" data-q="${q || ""}">${qtyText(q)}</b> <span class="unit">${esc(i.don_vi)}</span> <strong>${esc(i.ten)}</strong>${i.ghi_chu ? ` <small>(${esc(i.ghi_chu)})</small>` : ""}</span></label></li>`;
+      // Cả dòng theo ngôn ngữ của tên nguyên liệu (để nhãn "Need to buy …" đọc đúng); đơn vị, ghi chú khác ngôn ngữ thì ghi lang riêng.
+      const con = (l) => (l === i.lv.ten ? "" : ` lang="${l || lang}"`);
+      return `<li${A(i.lv.ten)}><label><input type="checkbox" aria-label="${esc(t("need_buy", i.ten))}"><span><b class="qty" data-q="${q || ""}">${qtyText(q)}</b> <span class="unit"${con(i.lv.don_vi)}>${esc(i.don_vi)}</span> <strong>${esc(i.ten)}</strong>${i.ghi_chu ? ` <small${con(i.lv.ghi_chu)}>(${esc(i.ghi_chu)})</small>` : ""}</span></label></li>`;
     }).join("")}</ul>`).join("");
     const stepHTML = r.steps.map((s, i) => {
       const sec = num(s.giay_video, -1), tmin = num(s.hen_gio_phut, 0);
@@ -274,7 +286,7 @@ ${rs.length ? filterBar(rs) + grid(rs, true) : emptyState(t("cat_empty"), t("cat
         r.yt && sec >= 0 ? `<button class="mini" type="button" data-seek="${sec}">${icon("play")} ${t("see_part", mmss(sec))}</button>` : "",
         tmin ? `<button class="mini" type="button" data-timer="${tmin}" data-label="${esc(s.tieu_de || t("step_n", i + 1))}">${icon("timer")} ${t("timer_min", qtyText(tmin))}</button>` : "",
       ].join("");
-      return `<li data-step id="buoc-${i + 1}">${s.tieu_de ? `<h3${LV}>${esc(s.tieu_de)}</h3>` : ""}<p${LV}>${esc(s.noi_dung)}</p>${s.img ? `<figure class="step-fig"><img class="step-img" src="${esc(s.img)}" alt="${esc(s.tieu_de || t("step_n", i + 1))}"${s.tieu_de ? LV : ""} loading="lazy" width="800" height="600">${photoCredit(s.credit)}</figure>` : ""}${tools ? `<div class="step-tools">${tools}</div>` : ""}</li>`;
+      return `<li data-step id="buoc-${i + 1}">${s.tieu_de ? `<h3${A(s.lv.tieu_de)}>${esc(s.tieu_de)}</h3>` : ""}<p${A(s.lv.noi_dung)}>${esc(s.noi_dung)}</p>${s.img ? `<figure class="step-fig"><img class="step-img" src="${esc(s.img)}" alt="${esc(s.tieu_de || t("step_n", i + 1))}"${s.tieu_de ? A(s.lv.tieu_de) : ""} loading="lazy" width="800" height="600">${photoCredit(s.credit)}</figure>` : ""}${tools ? `<div class="step-tools">${tools}</div>` : ""}</li>`;
     }).join("");
 
     // Món ăn kèm: lấy từ cột an_kem, thiếu thì gợi ý theo mâm cơm (mặn ↔ canh, rau)
@@ -289,7 +301,7 @@ ${rs.length ? filterBar(rs) + grid(rs, true) : emptyState(t("cat_empty"), t("cat
     const ld = {
       "@context": "https://schema.org", "@type": "Recipe", name: r.ten, description: r.tom_tat,
       ...(r.img ? { image: [r.img] } : {}),
-      inLanguage: "vi", // nội dung món hiện chỉ có tiếng Việt (bản dịch: Issue #40)
+      inLanguage: lang !== "vi" && r.dich ? lang : "vi", // món chưa dịch đủ thì nội dung vẫn là tiếng Việt
       author: { "@type": "Organization", name: site.site_name, url: site.site_url, logo: `${site.site_url}/assets/icons/icon-512.png` },
       ...(r.cap_nhat ? { datePublished: r.cap_nhat } : {}),
       ...(r.prep ? { prepTime: iso(r.prep) } : {}), ...(r.cook ? { cookTime: iso(r.cook) } : {}), ...(r.total ? { totalTime: iso(r.total) } : {}),
@@ -319,14 +331,14 @@ ${rs.length ? filterBar(rs) + grid(rs, true) : emptyState(t("cat_empty"), t("cat
 
     await page(L, {
       path: `/mon/${r.slug}/`, page: "recipe", title: r.ten, ogType: "article", ogImage: r.img, lastmod: r.cap_nhat,
-      crumbs: [[r.cat.ten, `/danh-muc/${r.danh_muc}/`, 1], [r.ten, `/mon/${r.slug}/`, 1]],
+      crumbs: [[r.cat.ten, `/danh-muc/${r.danh_muc}/`, !!r.cat.lv.ten], [r.ten, `/mon/${r.slug}/`, !!r.lv.ten]],
       description: t("recipe_desc", r.tom_tat, r.total, r.serv, !!r.yt),
       jsonld: [ld],
       body: `<article class="recipe" data-slug="${r.slug}" data-name="${esc(r.ten)}" data-base-serv="${r.serv}">
-<p class="kicker"><a href="/danh-muc/${r.danh_muc}/"${LV}>${esc(r.cat.ten)}</a></p>
-<h1${LV}>${esc(r.ten)}</h1>
-${lang === "vi" ? "" : `<p class="muted small" data-not-translated>${t("not_translated")}</p>`}
-<p class="lead"${LV}>${esc(r.tom_tat)}</p>
+<p class="kicker"><a href="/danh-muc/${r.danh_muc}/"${A(r.cat.lv.ten)}>${esc(r.cat.ten)}</a></p>
+<h1${A(r.lv.ten)}>${esc(r.ten)}</h1>
+${lang === "vi" || r.dich ? "" : `<p class="muted small" data-not-translated>${t("not_translated")}</p>`}
+<p class="lead"${A(r.lv.tom_tat)}>${esc(r.tom_tat)}</p>
 <ul class="facts">${facts.map(([ic, b, s]) => `<li>${icon(ic)}<b>${esc(b)}</b><small>${esc(s)}</small></li>`).join("")}</ul>
 <div class="actions">
   <button class="btn ghost" type="button" data-fav aria-pressed="false">${icon("heart")}<span>${t("save")}</span></button>
@@ -344,7 +356,7 @@ ${media}
 </section>
 ${adSlot(L, "mid")}
 <section aria-labelledby="steps-title"><h2 id="steps-title">${t("steps")}</h2><ol class="steps">${stepHTML}</ol></section>
-${r.meo ? `<aside class="tip"><h2>${icon("leaf")} ${t("tip")}</h2>${vi(md(r.meo))}</aside>` : ""}
+${r.meo ? `<aside class="tip"><h2>${icon("leaf")} ${t("tip")}</h2>${r.lv.meo ? vi(md(r.meo)) : md(r.meo)}</aside>` : ""}
 ${pair.length ? `<section><h2>${t("pair")}</h2>${grid(pair)}</section>` : ""}
 ${r.tagList.length ? `<p class="tags"${LV}>${r.tagList.map((x) => `<a class="tag" href="/tim-kiem/?tag=${encodeURIComponent(x)}">#${esc(x)}</a>`).join(" ")}</p>` : ""}
 ${r.cap_nhat ? `<p class="muted small">${t("updated", esc(r.cap_nhat))}</p>` : ""}
@@ -356,11 +368,11 @@ ${site.turnstile_site_key ? `<section class="tq" data-tq data-mon="${r.slug}" da
   <div class="tq-ds" data-tq-ds aria-live="polite"></div>
 </section>` : ""}
 ${adSlot(L, "bottom")}
-${related.length ? `<section><h2 class="section-title">${t("more_in", esc(r.cat.ten))}</h2>${grid(related)}</section>` : ""}
+${related.length ? `<section><h2 class="section-title">${t("more_in", r.cat.lv.ten ? vi(esc(r.cat.ten)) : esc(r.cat.ten))}</h2>${grid(related)}</section>` : ""}
 <div class="cook" data-cook-view hidden role="dialog" aria-modal="true" aria-label="${t("cook_dlg")}">
   <div class="cook-top"><span data-cook-pos></span><button class="icon-btn" type="button" data-cook-close aria-label="${t("cook_exit")}">✕</button></div>
   <div class="cook-bar"><span data-cook-bar></span></div>
-  <div class="cook-body"><h2 class="cook-title" data-cook-title${LV}></h2><p class="cook-text" data-cook-text${LV}></p><img class="cook-img" data-cook-img alt="" hidden></div>
+  <div class="cook-body"><h2 class="cook-title" data-cook-title${r.dich ? "" : LV}></h2><p class="cook-text" data-cook-text${r.dich ? "" : LV}></p><img class="cook-img" data-cook-img alt="" hidden></div>
   <label class="cook-done"><input type="checkbox" data-cook-done> ${t("cook_done")}</label>
   <div class="cook-tools" data-cook-tools></div>
   <div class="cook-nav"><button class="btn ghost" type="button" data-cook-prev>${t("prev")}</button><button class="btn" type="button" data-cook-next>${t("next")}</button></div>
@@ -370,7 +382,7 @@ ${related.length ? `<section><h2 class="section-title">${t("more_in", esc(r.cat.
 
   // ----- Video, tìm kiếm, đi chợ, đã lưu -----
   const v0 = withVideo[0];
-  const vdata = withVideo.map((r) => ({ id: r.yt.id, sh: r.yt.shorts ? 1 : 0, s: r.slug, t: r.ten, k: r.kenh || "", w: watchUrl(r.yt) }));
+  const vdata = withVideo.map((r) => ({ id: r.yt.id, sh: r.yt.shorts ? 1 : 0, s: r.slug, t: r.ten, ...(r.lv.ten ? { l: r.lv.ten } : {}), k: r.kenh || "", w: watchUrl(r.yt) }));
   await page(L, {
     path: "/video/", page: "video", title: t("video_title"), noindex: !withVideo.length, crumbs: [[t("nav_video"), "/video/"]],
     description: t("video_desc"),
@@ -378,7 +390,7 @@ ${related.length ? `<section><h2 class="section-title">${t("more_in", esc(r.cat.
 <section class="vstage" data-vstage data-videos='${esc(JSON.stringify(vdata))}' aria-label="${t("video_stage")}">
   <div class="player-box${v0.yt.shorts ? " vertical" : ""}" data-vbox>${liteYT(v0, "data-vstart")}</div>
   <p class="muted small" data-vpos aria-live="polite">${t("video_pos", 1, withVideo.length)}</p>
-  <h2 data-vtitle${LV}>${esc(v0.ten)}</h2>
+  <h2 data-vtitle${A(v0.lv.ten)}>${esc(v0.ten)}</h2>
   <p class="muted small" data-vcredit>${videoCredit(v0)}</p>
   <div class="vnav"><button class="btn ghost" type="button" data-vprev aria-label="${t("video_prev")}">${t("prev")}</button><a class="btn" data-vrecipe href="/mon/${v0.slug}/">${t("see_recipe")}</a><button class="btn ghost" type="button" data-vnext aria-label="${t("video_next")}">${t("next_short")}</button></div>
   <p class="muted small">${t("video_swipe")}</p>
@@ -459,7 +471,37 @@ ${related.length ? `<section><h2 class="section-title">${t("more_in", esc(r.cat.
 
 function catCard(c, recipes, lang = "vi") {
   const n = recipes.filter((r) => r.danh_muc === c.slug).length;
-  return `<a class="cat-card" href="/danh-muc/${c.slug}/">${c.img ? `<img src="${esc(c.img)}" alt="" loading="lazy" width="120" height="120">` : `<span class="cat-emoji" aria-hidden="true">${esc(c.bieu_tuong || "🍽️")}</span>`}<strong lang="vi">${esc(c.ten)}</strong><span>${tr(lang)("n_dishes", n)}</span></a>`;
+  return `<a class="cat-card" href="/danh-muc/${c.slug}/">${c.img ? `<img src="${esc(c.img)}" alt="" loading="lazy" width="120" height="120">` : `<span class="cat-emoji" aria-hidden="true">${esc(c.bieu_tuong || "🍽️")}</span>`}<strong${A(c.lv.ten)}>${esc(c.ten)}</strong><span>${tr(lang)("n_dishes", n)}</span></a>`;
+}
+/** Thuộc tính lang cho một ô nội dung: "vi" khi trang tiếng Anh đang hiện chữ tiếng Việt (chưa dịch). */
+function A(l) { return l ? ` lang="${l}"` : ""; }
+/** Món "đã dịch" khi có đủ tên, tóm tắt, mọi nguyên liệu (kể cả ghi chú) và mọi bước (kể cả tiêu đề bước). Mẹo, nhóm, đơn vị không bắt buộc. */
+function daDich(r, lang) {
+  const has = (o, k) => !String((o.vi || o)[k] || "").trim() || String(o[`${k}_${lang}`] || "").trim();
+  return !!(String(r[`ten_${lang}`] || "").trim() && String(r[`tom_tat_${lang}`] || "").trim()
+    && r.ings.every((i) => String(i[`ten_${lang}`] || "").trim() && has(i, "ghi_chu"))
+    && r.steps.every((s) => String(s[`noi_dung_${lang}`] || "").trim() && has(s, "tieu_de")));
+}
+/** Đổi chữ hiển thị của món, nguyên liệu, bước, danh mục sang ngôn ngữ đang dựng; thiếu bản dịch thì giữ tiếng Việt và ghi o.lv[k] = "vi". */
+function localize(lang, cats, recipes) {
+  const t = tr(lang);
+  const set = (o, k, en) => {
+    const goc = o.vi[k];
+    const v = lang === "vi" ? goc : String(en ?? o[`${k}_${lang}`] ?? "").trim();
+    o.lv = o.lv || {};
+    if (lang !== "vi" && !v && String(goc || "").trim()) { o[k] = goc; o.lv[k] = "vi"; } else { o[k] = lang === "vi" ? goc : v; o.lv[k] = ""; }
+  };
+  for (const c of cats) { set(c, "ten", t("cat_name", c.slug)); set(c, "mo_ta", ""); }
+  for (const r of recipes) {
+    for (const k of ["ten", "tom_tat", "meo"]) set(r, k);
+    for (const i of r.ings) {
+      for (const k of ["ten", "ghi_chu", "nhom"]) set(i, k);
+      // Đơn vị: cột don_vi_en, không có thì tra từ điển (đơn vị đếm như "quả" dịch thành chữ trống), không có nữa thì giữ tiếng Việt.
+      const u = lang === "vi" ? undefined : i[`don_vi_${lang}`] || t("unit", fold(i.vi.don_vi || ""));
+      if (u === undefined) set(i, "don_vi", ""); else { i.don_vi = u; i.lv.don_vi = ""; }
+    }
+    for (const s of r.steps) for (const k of ["tieu_de", "noi_dung"]) set(s, k);
+  }
 }
 function topIngredients(recipes, n) {
   const count = new Map();

@@ -96,7 +96,11 @@ const toast = (msg) => {
   setTimeout(() => t.remove(), 2600);
 };
 let recipesCache;
-const allRecipes = () => (recipesCache ??= fetch(BASE + "/data/recipes.json").then((r) => (r.ok ? r.json() : [])).catch(() => []));
+// Trang tiếng Anh: dùng tên món (te), tên danh mục (ce) tiếng Anh khi có; chưa dịch thì giữ tiếng Việt, đánh dấu tl/cl = "vi".
+const allRecipes = () => (recipesCache ??= fetch(BASE + "/data/recipes.json").then((r) => (r.ok ? r.json() : [])).catch(() => [])
+  .then((a) => (LANG === "vi" ? a : a.map((r) => ({ ...r, t: r.te || r.t, tl: r.te ? "" : "vi", cn: r.ce || r.cn, cl: r.ce ? "" : "vi" })))));
+/** lang="vi" cho chữ chưa dịch trong trang tiếng Anh. */
+const LA = (l) => (LANG !== "vi" && l !== "" ? ' lang="vi"' : "");
 const copyOrShare = async (title, text, okMsg) => {
   try {
     if (navigator.share && matchMedia("(pointer: coarse)").matches) await navigator.share({ title, text });
@@ -123,7 +127,7 @@ const IC = {
   unlock: svg('<rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8.5 11V8a3.5 3.5 0 0 1 6.8-1.2"/>'),
 };
 /** Khung trung tính khi món chưa có ảnh hoặc ảnh hỏng link (giống noPhoto() lúc build). */
-const noPhoto = (ten) => `<span class="ph" aria-hidden="true"><span lang="vi">${esc(ten)}</span></span>`;
+const noPhoto = (ten, l = "vi") => `<span class="ph" aria-hidden="true"><span${l ? ` lang="${l}"` : ""}>${esc(ten)}</span></span>`;
 // Ảnh món: hiện mờ dần khi tải xong; hỏng link thì gỡ ảnh để lộ khung trung tính bên dưới.
 // Ảnh bìa YouTube của video không tồn tại vẫn tải được nhưng chỉ rộng 120px: coi như hỏng.
 const PHOTO = ".rcard-img img, .slot-img img, .hero-img, .step-img";
@@ -144,9 +148,9 @@ scanPhotos();
 /** Thẻ món phía trình duyệt, giống recipeCard() lúc build. */
 function cardHTML(r, extra = "") {
   const k = fold(r.k);
-  return `<a class="rcard${["de", "vua", "kho"].includes(k) ? ` k-${k}` : ""}" href="${LP}/mon/${r.s}/"><div class="rcard-img">${noPhoto(r.t)}${r.img ? `<img src="${esc(r.img)}" alt="" loading="lazy" decoding="async" width="480" height="360">` : ""}
+  return `<a class="rcard${["de", "vua", "kho"].includes(k) ? ` k-${k}` : ""}" href="${LP}/mon/${r.s}/"><div class="rcard-img">${noPhoto(r.t, r.tl ?? "vi")}${r.img ? `<img src="${esc(r.img)}" alt="" loading="lazy" decoding="async" width="480" height="360">` : ""}
   ${r.v ? `<span class="badge-video">${IC.play} Video</span>` : ""}</div>
-  <div class="rcard-body"><small class="rcard-cat" lang="vi">${esc(r.cn)}</small><strong lang="vi">${esc(r.t)}</strong>${extra}
+  <div class="rcard-body"><small class="rcard-cat"${LA(r.cl)}>${esc(r.cn)}</small><strong${LA(r.tl)}>${esc(r.t)}</strong>${extra}
   <span class="rcard-meta"><span>${r.m ? `${IC.clock} ${S.min(r.m)}` : ""}</span>${r.k ? `<b>${esc(diffText(r.k))}</b>` : ""}</span></div></a>`;
 }
 
@@ -277,7 +281,7 @@ async function pageHome() {
   const goBtn = $("[data-spin-go]", box), goText = $("span", goBtn);
   const rand = (a) => a[(Math.random() * a.length) | 0];
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-  const pic = (r) => noPhoto(r.t) + (r.img ? `<img src="${esc(r.img)}" alt="" width="240" height="180">` : "");
+  const pic = (r) => noPhoto(r.t, r.tl ?? "vi") + (r.img ? `<img src="${esc(r.img)}" alt="" width="240" height="180">` : "");
   // Ưu tiên món có ảnh: món có ảnh có 3 phần cơ hội, món chưa có ảnh 1 phần (vẫn ra để mâm cơm đa dạng).
   const pickFin = (p) => rand([...p].sort((a, b) => !!b.img - !!a.img).flatMap((r) => (r.img ? [r, r, r] : [r])));
   const slotHTML = (d) => {
@@ -287,7 +291,7 @@ async function pageHome() {
     if (single(d)) return singleHTML(d, r, locked, around(r, d));
     return `<div class="slot${["de", "vua", "kho"].includes(fold(r.k)) ? ` k-${fold(r.k)}` : ""}" data-slot="${d.key}">
         <div class="slot-img">${pic(r)}</div>
-        <div><div class="slot-label">${esc(d.label)}</div><strong${LV}>${esc(r.t)}</strong><span class="meta">${IC.clock} ${S.min(r.m)} · ${esc(diffText(r.k))}</span><br><a class="more" href="${LP}/mon/${r.s}/">${S.howTo}</a></div>
+        <div><div class="slot-label">${esc(d.label)}</div><strong${LA(r.tl)}>${esc(r.t)}</strong><span class="meta">${IC.clock} ${S.min(r.m)} · ${esc(diffText(r.k))}</span><br><a class="more" href="${LP}/mon/${r.s}/">${S.howTo}</a></div>
         <button class="lock" type="button" data-lock="${d.key}" aria-pressed="${locked}" aria-label="${esc(S.lockA(locked, r.t))}">${locked ? IC.lock : IC.unlock}<span>${locked ? S.kept : S.keep}</span></button>
       </div>`;
   };
@@ -298,7 +302,7 @@ async function pageHome() {
   const track = (cards, at, dur = 0) => `<div class="hreel" aria-hidden="true"><div class="hreel-track" style="--x:${-(at * STEP + HALF)}px;--d:${dur}ms">${cards.map((c, i) => `<div class="slot-img${i === at && !dur ? " on" : ""}">${pic(c)}</div>`).join("")}</div></div>`;
   const singleHTML = (d, r, locked, cards) => `<div class="slot single${["de", "vua", "kho"].includes(fold(r.k)) ? ` k-${fold(r.k)}` : ""}" data-slot="${d.key}">
         ${track(cards, 2)}
-        <div class="single-info"><div class="slot-label">${esc(d.label)}</div><strong${LV}>${esc(r.t)}</strong><span class="meta">${IC.clock} ${S.min(r.m)} · ${esc(diffText(r.k))}</span></div>
+        <div class="single-info"><div class="slot-label">${esc(d.label)}</div><strong${LA(r.tl)}>${esc(r.t)}</strong><span class="meta">${IC.clock} ${S.min(r.m)} · ${esc(diffText(r.k))}</span></div>
         <div class="single-act"><a class="more" href="${LP}/mon/${r.s}/">${S.howTo}</a><button class="lock" type="button" data-lock="${d.key}" aria-pressed="${locked}" aria-label="${esc(S.lockA(locked, r.t))}">${locked ? IC.lock : IC.unlock}<span>${locked ? S.kept : S.keep}</span></button></div>
       </div>`;
   const sync = () => {
@@ -683,7 +687,9 @@ function pageVideo() {
     box.innerHTML = play ? ytFrame(v.id, v.t)
       : `<button class="lite-yt" type="button" data-vstart aria-label="${esc(S.play(v.t))}"><img src="https://i.ytimg.com/vi/${esc(v.id)}/hqdefault.jpg" alt="" width="480" height="360"><span class="play" aria-hidden="true"></span></button>`;
     $("[data-vpos]", st).textContent = S.vpos(i + 1, vs.length);
-    $("[data-vtitle]", st).textContent = v.t;
+    const vt = $("[data-vtitle]", st);
+    vt.textContent = v.t;
+    if (v.l) vt.setAttribute("lang", v.l); else vt.removeAttribute("lang");
     $("[data-vcredit]", st).innerHTML = `${S.videoBy(esc(v.k))} · <a href="${esc(v.w)}" rel="noopener" target="_blank">${S.watchYt}</a>`;
     $("[data-vrecipe]", st).href = `${LP}/mon/${v.s}/`;
   };
