@@ -1,6 +1,6 @@
 # Hôm Nay Nấu Gì — quy tắc cho Claude (nhân viên Dev)
 
-Web tiếng Việt "Hôm Nay Nấu Gì" (homnaynaugi): gợi ý món và mâm cơm 3 món, công thức kiểu tạp chí ẩm thực, mỗi món có thể kèm video YouTube/Shorts. Kiếm tiền bằng Google AdSense. Đặc tả: `ops/DAC-TA.md`.
+Web tiếng Việt (giao diện có thêm bản tiếng Anh ở `/en/`) "Hôm Nay Nấu Gì" (homnaynaugi): gợi ý món và mâm cơm 3 món, công thức kiểu tạp chí ẩm thực, mỗi món có thể kèm video YouTube/Shorts. Kiếm tiền bằng Google AdSense. Đặc tả: `ops/DAC-TA.md`.
 
 ## Ngăn xếp (không đổi khi chưa được chủ dự án đồng ý)
 - Web tĩnh HTML/CSS/JS thuần, **không framework, không bước bundle**. Node ≥ 20 chỉ dùng để build.
@@ -27,7 +27,8 @@ Web tiếng Việt "Hôm Nay Nấu Gì" (homnaynaugi): gợi ý món và mâm c�
 
 ## Quy tắc giao diện
 - Ưu tiên điện thoại; chữ thân 17px; nút ≥ 44px; tương phản WCAG AA; có chế độ đêm và chữ lớn.
-- Mọi chữ hiển thị bằng tiếng Việt có dấu, câu ngắn, xưng "bạn".
+- Giao diện có 2 ngôn ngữ: tiếng Việt ở `/`, tiếng Anh ở `/en/` (build dựng cả hai, slug giữ nguyên). Không viết chuỗi giao diện cứng: chữ lúc build nằm trong `scripts/i18n.mjs` (thêm khoá ở cả `vi` lẫn `en`, thiếu thì build dừng), chữ phía trình duyệt nằm trong object `S` ở đầu `src/assets/app.js` và `src/assets/thanh-qua.js`.
+- Tiếng Việt có dấu, câu ngắn, xưng "bạn"; tiếng Anh câu ngắn, xưng "you". Nội dung món (tên, nguyên liệu, các bước, danh mục) chưa dịch thì giữ tiếng Việt và đặt trong phần tử `lang="vi"`.
 - JS < 100KB, CSS < 30KB. Không thêm thư viện ngoài khi chưa hỏi.
 - Quảng cáo chỉ qua `adSlot()` (có nhãn "Quảng cáo", cách nội dung ≥ 16px) ở các vị trí: dưới khung quay món, giữa khối Nguyên liệu và Cách làm, cuối bài. Không đặt bên trong danh sách nguyên liệu, giữa các bước hay trong chế độ nấu.
 - Màu nhấn `#D95D39` chỉ để trang trí; chữ và nút dùng `--primary` `#B4421F` để đủ tương phản. Tiêu đề font Lora, nội dung Be Vietnam Pro.

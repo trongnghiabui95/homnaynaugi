@@ -5,6 +5,58 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "
 const fold = (s) => String(s ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").toLowerCase().trim();
 // Đường dẫn gốc khi web chạy trong thư mục con (GitHub Pages: /ten-repo).
 const BASE = document.documentElement.dataset.base || "";
+// Ngôn ngữ trang (vi: "/", en: "/en/"). Link trang dùng LP; dữ liệu, tài nguyên tĩnh dùng BASE (chung cho 2 ngôn ngữ).
+const LANG = document.documentElement.lang === "en" ? "en" : "vi";
+const LP = BASE + (LANG === "en" ? "/en" : "");
+const LV = LANG === "vi" ? "" : ' lang="vi"'; // tên món, nguyên liệu (tiếng Việt, chưa dịch) trong trang tiếng Anh
+// Chữ giao diện phía trình duyệt. Chữ lúc build nằm ở scripts/i18n.mjs.
+const S = {
+  vi: {
+    copyFail: "Không chép được, hãy thử lại", min: (n) => `${n} phút`, people: (n) => `${n} người`,
+    diff: { de: "Dễ", vua: "Vừa", kho: "Khó" },
+    stopTimer: "Tắt hẹn giờ", timerSet: (n) => `Đã hẹn ${n} phút`, timeUp: (l) => `Hết giờ: ${l}`, timer: "Hẹn giờ",
+    drinkFor: "Đồ uống cho bạn", forYou: "Gợi ý cho bạn", waiting: "Chờ quay", howTo: "Cách nấu",
+    lockA: (on, n) => `${on ? "Bỏ khoá" : "Khoá"} món ${n}`, kept: "Đã giữ", keep: "Giữ", picking: "Đang chọn…",
+    addMam: "Thêm cả mâm vào Đi chợ", addShop: "Thêm vào Đi chợ", allLocked: "Bạn đã khoá hết món. Bỏ khoá món muốn đổi.",
+    spinning: "Đang quay…", again: "Quay lại lần nữa", noMatch: "Chưa có món hợp bộ lọc cho một số ngăn. Thử nới bộ lọc.",
+    soundOn: "Đang bật âm thanh", soundOff: "Đang tắt âm thanh", addedN: (n) => `Đã thêm ${n} món vào danh sách đi chợ`,
+    saved: "Đã lưu", save: "Lưu sổ tay", unsaved: "Đã bỏ khỏi sổ tay", savedT: "Đã lưu vào sổ tay",
+    shopText: (n, s) => `🛒 Đi chợ: ${n} (${s} người)`, shopTitle: "Danh sách đi chợ", copiedNote: "Đã chép danh sách, dán vào Zalo hoặc Ghi chú.",
+    addedIng: (n) => `Đã thêm ${n} nguyên liệu vào Đi chợ`, videoGuide: "Video hướng dẫn",
+    stepPos: (i, n) => `Bước ${i}/${n}`, finish: "Hoàn thành", next: "Tiếp →", done: "Xong rồi! Chúc cả nhà ngon miệng.",
+    nDishes: (n) => `${n} món`, noFilter: "Không có món nào hợp bộ lọc.", pickOne: "Chọn ít nhất một nguyên liệu.",
+    have: (full, g, n) => `${full ? "✅ Đủ" : "Có"} ${g}/${n} nguyên liệu`, canCook: (n) => `${n} món nấu được với nguyên liệu bạn chọn`,
+    noneIng: "Chưa có món nào dùng các nguyên liệu này.", notFound: "Không tìm thấy món phù hợp. Thử từ khác ngắn hơn.",
+    shopEmpty: "Danh sách trống", shopEmptyP: "Ở trang công thức, bấm “Thêm vào Đi chợ”, hoặc quay mâm cơm ở trang chủ.", home: "Hôm nay nấu gì?",
+    rm: (n) => `Bỏ món ${n}`, nothing: "Không còn gì cần mua", toBuy: (n) => `🛒 Cần mua (${n} món):`, copiedZalo: "Đã chép danh sách, dán vào Zalo để gửi.",
+    unchecked: "Đã bỏ dấu các món đã mua", cleared: "Đã xoá danh sách",
+    play: (t) => `Phát video ${t}`, vpos: (i, n) => `Video ${i}/${n}`, videoBy: (k) => (k ? `Video: kênh <strong>${k}</strong>` : "Video: YouTube"), watchYt: "Xem trên YouTube",
+    light: "Chế độ sáng", dark: "Chế độ đêm",
+  },
+  en: {
+    copyFail: "Could not copy, please try again", min: (n) => `${n} min`, people: (n) => `${n} ${n === 1 ? "person" : "people"}`,
+    diff: { de: "Easy", vua: "Medium", kho: "Hard" },
+    stopTimer: "Stop timer", timerSet: (n) => `Timer set for ${n} min`, timeUp: (l) => `Time's up: ${l}`, timer: "Timer",
+    drinkFor: "A drink for you", forYou: "Picked for you", waiting: "Ready to spin", howTo: "How to cook",
+    lockA: (on, n) => `${on ? "Unlock" : "Lock"} ${n}`, kept: "Kept", keep: "Keep", picking: "Picking…",
+    addMam: "Add the whole meal to shopping", addShop: "Add to shopping list", allLocked: "All dishes are locked. Unlock the one you want to change.",
+    spinning: "Spinning…", again: "Spin again", noMatch: "No dishes match the filters for some slots. Try loosening them.",
+    soundOn: "Sound on", soundOff: "Sound off", addedN: (n) => `Added ${n} ${n === 1 ? "dish" : "dishes"} to the shopping list`,
+    saved: "Saved", save: "Save", unsaved: "Removed from saved", savedT: "Saved",
+    shopText: (n, s) => `🛒 Shopping: ${n} (${s} ${s === 1 ? "person" : "people"})`, shopTitle: "Shopping list", copiedNote: "List copied. Paste it into a chat or your notes.",
+    addedIng: (n) => `Added ${n} ${n === 1 ? "ingredient" : "ingredients"} to shopping`, videoGuide: "Video guide",
+    stepPos: (i, n) => `Step ${i}/${n}`, finish: "Finish", next: "Next →", done: "All done! Enjoy your meal.",
+    nDishes: (n) => `${n} ${n === 1 ? "dish" : "dishes"}`, noFilter: "No dishes match the filters.", pickOne: "Pick at least one ingredient.",
+    have: (full, g, n) => `${full ? "✅ All" : "Have"} ${g}/${n} ingredients`, canCook: (n) => `${n} ${n === 1 ? "dish" : "dishes"} you can cook with your ingredients`,
+    noneIng: "No dishes use these ingredients yet.", notFound: "No matching dishes. Try a shorter word.",
+    shopEmpty: "Your list is empty", shopEmptyP: "On a recipe page, tap “Add to shopping list”, or spin a meal on the home page.", home: "What should I cook today?",
+    rm: (n) => `Remove ${n}`, nothing: "Nothing left to buy", toBuy: (n) => `🛒 To buy (${n} ${n === 1 ? "item" : "items"}):`, copiedZalo: "List copied. Paste it into a chat to send.",
+    unchecked: "Cleared ticks on bought items", cleared: "List cleared",
+    play: (t) => `Play video ${t}`, vpos: (i, n) => `Video ${i}/${n}`, videoBy: (k) => (k ? `Video: <strong lang="vi">${k}</strong> channel` : "Video: YouTube"), watchYt: "Watch on YouTube",
+    light: "Light mode", dark: "Dark mode",
+  },
+}[LANG];
+const diffText = (k) => S.diff[fold(k)] || k || "";
 
 // ---------- Lưu trữ: IndexedDB, dự phòng localStorage, dự phòng bộ nhớ tạm ----------
 const store = (() => {
@@ -49,7 +101,7 @@ const copyOrShare = async (title, text, okMsg) => {
   try {
     if (navigator.share && matchMedia("(pointer: coarse)").matches) await navigator.share({ title, text });
     else { await navigator.clipboard.writeText(text); toast(okMsg); }
-  } catch (e) { if (e?.name !== "AbortError") toast("Không chép được, hãy thử lại"); }
+  } catch (e) { if (e?.name !== "AbortError") toast(S.copyFail); }
 };
 
 /** 0.5 → "½", 1.5 → "1½"; số khác làm tròn 1 chữ số, dấu phẩy thập phân. */
@@ -71,7 +123,7 @@ const IC = {
   unlock: svg('<rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8.5 11V8a3.5 3.5 0 0 1 6.8-1.2"/>'),
 };
 /** Khung trung tính khi món chưa có ảnh hoặc ảnh hỏng link (giống noPhoto() lúc build). */
-const noPhoto = (ten) => `<span class="ph" aria-hidden="true"><span>${esc(ten)}</span></span>`;
+const noPhoto = (ten) => `<span class="ph" aria-hidden="true"><span lang="vi">${esc(ten)}</span></span>`;
 // Ảnh món: hiện mờ dần khi tải xong; hỏng link thì gỡ ảnh để lộ khung trung tính bên dưới.
 // Ảnh bìa YouTube của video không tồn tại vẫn tải được nhưng chỉ rộng 120px: coi như hỏng.
 const PHOTO = ".rcard-img img, .slot-img img, .hero-img, .step-img";
@@ -92,10 +144,10 @@ scanPhotos();
 /** Thẻ món phía trình duyệt, giống recipeCard() lúc build. */
 function cardHTML(r, extra = "") {
   const k = fold(r.k);
-  return `<a class="rcard${["de", "vua", "kho"].includes(k) ? ` k-${k}` : ""}" href="${BASE}/mon/${r.s}/"><div class="rcard-img">${noPhoto(r.t)}${r.img ? `<img src="${esc(r.img)}" alt="" loading="lazy" decoding="async" width="480" height="360">` : ""}
+  return `<a class="rcard${["de", "vua", "kho"].includes(k) ? ` k-${k}` : ""}" href="${LP}/mon/${r.s}/"><div class="rcard-img">${noPhoto(r.t)}${r.img ? `<img src="${esc(r.img)}" alt="" loading="lazy" decoding="async" width="480" height="360">` : ""}
   ${r.v ? `<span class="badge-video">${IC.play} Video</span>` : ""}</div>
-  <div class="rcard-body"><small class="rcard-cat">${esc(r.cn)}</small><strong>${esc(r.t)}</strong>${extra}
-  <span class="rcard-meta"><span>${r.m ? `${IC.clock} ${r.m} phút` : ""}</span>${r.k ? `<b>${esc(r.k)}</b>` : ""}</span></div></a>`;
+  <div class="rcard-body"><small class="rcard-cat" lang="vi">${esc(r.cn)}</small><strong lang="vi">${esc(r.t)}</strong>${extra}
+  <span class="rcard-meta"><span>${r.m ? `${IC.clock} ${S.min(r.m)}` : ""}</span>${r.k ? `<b>${esc(diffText(r.k))}</b>` : ""}</span></div></a>`;
 }
 
 // ---------- Đi chợ: thêm món ----------
@@ -130,21 +182,21 @@ function renderTimers() {
   box.hidden = !timers.length;
   box.innerHTML = timers.map((t, i) => {
     const left = Math.max(0, Math.round((t.end - Date.now()) / 1000));
-    return `<div class="timer${left ? "" : " ring"}" role="timer"><span>${esc(t.label)}</span><b>${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}</b><button type="button" data-timer-stop="${i}" aria-label="Tắt hẹn giờ">✕</button></div>`;
+    return `<div class="timer${left ? "" : " ring"}" role="timer"><span>${esc(t.label)}</span><b>${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}</b><button type="button" data-timer-stop="${i}" aria-label="${S.stopTimer}">✕</button></div>`;
   }).join("");
 }
 function startTimer(min, label) {
   try { audioCtx ??= new (window.AudioContext || window.webkitAudioContext)(); } catch {}
   timers.push({ end: Date.now() + min * 60000, label, rung: false });
   renderTimers();
-  toast(`Đã hẹn ${qtyText(min)} phút`);
+  toast(S.timerSet(qtyText(min)));
 }
 setInterval(() => {
   if (!timers.length) return;
   for (const t of timers) if (!t.rung && Date.now() >= t.end) {
     t.rung = true; beep(); setTimeout(beep, 700); setTimeout(beep, 1400);
     navigator.vibrate?.([300, 150, 300, 150, 300]);
-    toast(`Hết giờ: ${t.label}`);
+    toast(S.timeUp(t.label));
   }
   renderTimers();
 }, 1000);
@@ -152,7 +204,7 @@ document.addEventListener("click", (e) => {
   const stop = e.target.closest("[data-timer-stop]");
   if (stop) { timers.splice(Number(stop.dataset.timerStop), 1); renderTimers(); }
   const tm = e.target.closest("[data-timer]");
-  if (tm) startTimer(Number(tm.dataset.timer), tm.dataset.label || "Hẹn giờ");
+  if (tm) startTimer(Number(tm.dataset.timer), tm.dataset.label || S.timer);
 });
 
 // ---------- Quay món: âm thanh tự tổng hợp (Web Audio, không tải file) và tung bông giấy khi chốt món ----------
@@ -210,8 +262,8 @@ async function pageHome() {
 
   const filters = () => Object.fromEntries($$("[data-spin-f]", box).map((s) => [s.dataset.spinF, s.value]));
   // Đồ uống: một ngăn riêng chỉ quay danh mục do-uong. Món ăn: mâm cơm 3 món hoặc 1 món, không lẫn đồ uống.
-  const slotDefs = () => (st.kind === "uong" ? [{ key: "uong", cat: "do-uong", label: "Đồ uống cho bạn" }]
-    : st.mode === "mam" ? MAM.map(([c, label], i) => ({ key: "m" + i, cat: c, label })) : [{ key: "one", cat: "", label: "Gợi ý cho bạn" }]);
+  const slotDefs = () => (st.kind === "uong" ? [{ key: "uong", cat: "do-uong", label: S.drinkFor }]
+    : st.mode === "mam" ? MAM.map(([c, label], i) => ({ key: "m" + i, cat: c, label })) : [{ key: "one", cat: "", label: S.forYou }]);
   const pool = (def) => {
     const f = filters();
     return all.filter((r) => (!def.cat || r.c === def.cat)
@@ -230,13 +282,13 @@ async function pageHome() {
   const pickFin = (p) => rand([...p].sort((a, b) => !!b.img - !!a.img).flatMap((r) => (r.img ? [r, r, r] : [r])));
   const slotHTML = (d) => {
     const r = bySlug[st.picks[d.key]];
-    if (!r) return `<div class="slot empty-slot" data-slot="${d.key}"><div><div class="slot-label">${esc(d.label)}</div><p>Chờ quay</p></div></div>`;
+    if (!r) return `<div class="slot empty-slot" data-slot="${d.key}"><div><div class="slot-label">${esc(d.label)}</div><p>${S.waiting}</p></div></div>`;
     const locked = !!st.locks[d.key];
     if (single(d)) return singleHTML(d, r, locked, around(r, d));
     return `<div class="slot${["de", "vua", "kho"].includes(fold(r.k)) ? ` k-${fold(r.k)}` : ""}" data-slot="${d.key}">
         <div class="slot-img">${pic(r)}</div>
-        <div><div class="slot-label">${esc(d.label)}</div><strong>${esc(r.t)}</strong><span class="meta">${IC.clock} ${r.m} phút · ${esc(r.k || "")}</span><br><a class="more" href="${BASE}/mon/${r.s}/">Cách nấu</a></div>
-        <button class="lock" type="button" data-lock="${d.key}" aria-pressed="${locked}" aria-label="${locked ? "Bỏ khoá" : "Khoá"} món ${esc(r.t)}">${locked ? IC.lock : IC.unlock}<span>${locked ? "Đã giữ" : "Giữ"}</span></button>
+        <div><div class="slot-label">${esc(d.label)}</div><strong${LV}>${esc(r.t)}</strong><span class="meta">${IC.clock} ${S.min(r.m)} · ${esc(diffText(r.k))}</span><br><a class="more" href="${LP}/mon/${r.s}/">${S.howTo}</a></div>
+        <button class="lock" type="button" data-lock="${d.key}" aria-pressed="${locked}" aria-label="${esc(S.lockA(locked, r.t))}">${locked ? IC.lock : IC.unlock}<span>${locked ? S.kept : S.keep}</span></button>
       </div>`;
   };
   // Ngăn 1 món / đồ uống: dải thẻ nằm ngang, vạch chỉ ở giữa, hai mép mờ; tên món và nút nằm dưới dải.
@@ -246,8 +298,8 @@ async function pageHome() {
   const track = (cards, at, dur = 0) => `<div class="hreel" aria-hidden="true"><div class="hreel-track" style="--x:${-(at * STEP + HALF)}px;--d:${dur}ms">${cards.map((c, i) => `<div class="slot-img${i === at && !dur ? " on" : ""}">${pic(c)}</div>`).join("")}</div></div>`;
   const singleHTML = (d, r, locked, cards) => `<div class="slot single${["de", "vua", "kho"].includes(fold(r.k)) ? ` k-${fold(r.k)}` : ""}" data-slot="${d.key}">
         ${track(cards, 2)}
-        <div class="single-info"><div class="slot-label">${esc(d.label)}</div><strong>${esc(r.t)}</strong><span class="meta">${IC.clock} ${r.m} phút · ${esc(r.k || "")}</span></div>
-        <div class="single-act"><a class="more" href="${BASE}/mon/${r.s}/">Cách nấu</a><button class="lock" type="button" data-lock="${d.key}" aria-pressed="${locked}" aria-label="${locked ? "Bỏ khoá" : "Khoá"} món ${esc(r.t)}">${locked ? IC.lock : IC.unlock}<span>${locked ? "Đã giữ" : "Giữ"}</span></button></div>
+        <div class="single-info"><div class="slot-label">${esc(d.label)}</div><strong${LV}>${esc(r.t)}</strong><span class="meta">${IC.clock} ${S.min(r.m)} · ${esc(diffText(r.k))}</span></div>
+        <div class="single-act"><a class="more" href="${LP}/mon/${r.s}/">${S.howTo}</a><button class="lock" type="button" data-lock="${d.key}" aria-pressed="${locked}" aria-label="${esc(S.lockA(locked, r.t))}">${locked ? IC.lock : IC.unlock}<span>${locked ? S.kept : S.keep}</span></button></div>
       </div>`;
   const sync = () => {
     const defs = slotDefs();
@@ -257,7 +309,7 @@ async function pageHome() {
     const nf = Object.values(filters()).filter(Boolean).length;
     $("[data-spin-fcount]", box).textContent = nf ? ` (${nf})` : "";
     shopBtn.hidden = !defs.some((d) => bySlug[st.picks[d.key]]);
-    shopBtn.querySelector("span").textContent = st.kind === "an" && st.mode === "mam" ? "Thêm cả mâm vào Đi chợ" : "Thêm vào Đi chợ";
+    shopBtn.querySelector("span").textContent = st.kind === "an" && st.mode === "mam" ? S.addMam : S.addShop;
   };
   const render = () => {
     slotsEl.classList.toggle("mam", st.kind === "an" && st.mode === "mam");
@@ -281,7 +333,7 @@ async function pageHome() {
     if (single(d)) {
       const cards = [rand(p), rand(p), ...strip, rand(p), rand(p)], at = n + 2;
       el.className = "slot single rolling";
-      el.innerHTML = track(cards, 2) + `<div class="single-info"><div class="slot-label">${esc(d.label)}</div><strong>${esc(rand(p).t)}</strong><span class="meta">Đang chọn…</span></div>`;
+      el.innerHTML = track(cards, 2) + `<div class="single-info"><div class="slot-label">${esc(d.label)}</div><strong${LV}>${esc(rand(p).t)}</strong><span class="meta">${S.picking}</span></div>`;
       const tr = $(".hreel-track", el), nm = $("strong", el);
       tr.getBoundingClientRect();
       tr.style.setProperty("--d", dur + 400 + "ms");
@@ -298,7 +350,7 @@ async function pageHome() {
       return;
     }
     el.className = "slot rolling";
-    el.innerHTML = `<div class="slot-img"><div class="reel" style="--d:${dur}ms" aria-hidden="true">${strip.map((r) => `<div>${pic(r)}</div>`).join("")}</div></div><div><div class="slot-label">${esc(d.label)}</div><strong>${esc(rand(p).t)}</strong><span class="meta">Đang chọn…</span></div>`;
+    el.innerHTML = `<div class="slot-img"><div class="reel" style="--d:${dur}ms" aria-hidden="true">${strip.map((r) => `<div>${pic(r)}</div>`).join("")}</div></div><div><div class="slot-label">${esc(d.label)}</div><strong${LV}>${esc(rand(p).t)}</strong><span class="meta">${S.picking}</span></div>`;
     const reel = $(".reel", el), name = $("strong", el);
     reel.getBoundingClientRect();
     reel.style.transform = `translateY(-${n * 100}%)`;
@@ -316,7 +368,7 @@ async function pageHome() {
   const spin = async () => {
     if (busy) return;
     const defs = slotDefs().filter((d) => !st.locks[d.key] || !bySlug[st.picks[d.key]]);
-    if (!defs.length) return toast("Bạn đã khoá hết món. Bỏ khoá món muốn đổi.");
+    if (!defs.length) return toast(S.allLocked);
     const rolls = [], empties = [];
     for (const d of defs) {
       const p = pool(d);
@@ -329,17 +381,17 @@ async function pageHome() {
       render();
       if (rolls.length) amThanh.keng();
     } else {
-      busy = true; goBtn.disabled = true; goBtn.classList.add("spinning"); goText.textContent = "Đang quay…";
+      busy = true; goBtn.disabled = true; goBtn.classList.add("spinning"); goText.textContent = S.spinning;
       slotsEl.setAttribute("aria-busy", "true");
       empties.forEach((d) => ($(`[data-slot="${d.key}"]`, slotsEl).outerHTML = slotHTML(d)));
       await Promise.all(rolls.map(roll));
       amThanh.keng(); tungBong(slotsEl);
-      busy = false; goBtn.disabled = false; goBtn.classList.remove("spinning"); goText.textContent = "Quay lại lần nữa";
+      busy = false; goBtn.disabled = false; goBtn.classList.remove("spinning"); goText.textContent = S.again;
       slotsEl.removeAttribute("aria-busy");
       sync();
     }
     save();
-    if (empties.length) toast("Chưa có món hợp bộ lọc cho một số ngăn. Thử nới bộ lọc.");
+    if (empties.length) toast(S.noMatch);
   };
 
   $$("[data-spin-mode]", box).forEach((b) => (b.onclick = () => { if (busy) return; st.mode = b.dataset.spinMode; save(); render(); }));
@@ -347,13 +399,13 @@ async function pageHome() {
   $$("[data-spin-f]", box).forEach((s) => s.addEventListener("change", sync));
   goBtn.onclick = spin;
   const amBtn = $("[data-spin-am]", box);
-  const veAm = () => { const on = prefs.sound !== false; amBtn.setAttribute("aria-pressed", on); amBtn.innerHTML = on ? IC.loa : IC.tat; amBtn.title = on ? "Đang bật âm thanh" : "Đang tắt âm thanh"; };
+  const veAm = () => { const on = prefs.sound !== false; amBtn.setAttribute("aria-pressed", on); amBtn.innerHTML = on ? IC.loa : IC.tat; amBtn.title = on ? S.soundOn : S.soundOff; };
   amBtn.onclick = () => { prefs.sound = prefs.sound === false; savePrefs(); veAm(); amThanh.ting(0); };
   veAm();
   shopBtn.onclick = async () => {
     const rs = slotDefs().map((d) => bySlug[st.picks[d.key]]).filter(Boolean);
     await addToShop(rs.map((r) => ({ slug: r.s, name: r.t, serv: r.sv, items: r.ig.map(([ten, q, u]) => ({ ten, q, u })) })));
-    toast(`Đã thêm ${rs.length} món vào danh sách đi chợ`);
+    toast(S.addedN(rs.length));
   };
   render();
 }
@@ -378,14 +430,14 @@ async function pageRecipe() {
   const fav = $("[data-fav]");
   const showFav = async () => {
     const on = (await store.get("saved", [])).includes(slug);
-    fav.setAttribute("aria-pressed", on); fav.querySelector("span").textContent = on ? "Đã lưu" : "Lưu sổ tay";
+    fav.setAttribute("aria-pressed", on); fav.querySelector("span").textContent = on ? S.saved : S.save;
   };
   fav.onclick = async () => {
     let saved = await store.get("saved", []);
     const on = saved.includes(slug);
     saved = on ? saved.filter((s) => s !== slug) : [slug, ...saved];
     await store.set("saved", saved); showFav(); updateBadges();
-    toast(on ? "Đã bỏ khỏi sổ tay" : "Đã lưu vào sổ tay");
+    toast(on ? S.unsaved : S.savedT);
   };
   showFav();
 
@@ -400,13 +452,13 @@ async function pageRecipe() {
   };
   $("[data-copy-shop]").onclick = () => {
     const items = pickItems();
-    const text = `🛒 Đi chợ: ${art.dataset.name} (${serv} người)\n${items.map((i) => `☐ ${i.ten}${i.q ? `: ${qtyText(i.q)} ${i.u}` : i.note ? ` (${i.note})` : ""}`).join("\n")}`;
-    copyOrShare("Danh sách đi chợ", text, "Đã chép danh sách, dán vào Zalo hoặc Ghi chú.");
+    const text = `${S.shopText(art.dataset.name, serv)}\n${items.map((i) => `☐ ${i.ten}${i.q ? `: ${qtyText(i.q)} ${i.u}` : i.note ? ` (${i.note})` : ""}`).join("\n")}`;
+    copyOrShare(S.shopTitle, text, S.copiedNote);
   };
   $("[data-add-shop]").onclick = async () => {
     const items = pickItems();
     await addToShop([{ slug, name: art.dataset.name, serv, items }]);
-    toast(`Đã thêm ${items.length} nguyên liệu vào Đi chợ`);
+    toast(S.addedIng(items.length));
   };
 
   // Ảnh / video
@@ -418,7 +470,7 @@ async function pageRecipe() {
   const play = (start = 0) => {
     if (!box) return;
     $('[data-media="video"]')?.click();
-    box.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${box.dataset.id}?autoplay=1&rel=0&playsinline=1${start ? `&start=${start}` : ""}" title="Video hướng dẫn" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
+    box.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${box.dataset.id}?autoplay=1&rel=0&playsinline=1${start ? `&start=${start}` : ""}" title="${S.videoGuide}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
     // Video ngang dính trên đầu khi cuộn; video dọc (Shorts) quá cao nên không dính
     if (!box.classList.contains("vertical")) box.closest(".media").classList.add("sticky");
   };
@@ -434,7 +486,7 @@ async function pageRecipe() {
   let idx = 0, lock = null;
   const show = () => {
     const li = steps[idx], img = li.querySelector(".step-img"), cimg = $("[data-cook-img]");
-    $("[data-cook-pos]").textContent = `Bước ${idx + 1}/${steps.length}`;
+    $("[data-cook-pos]").textContent = S.stepPos(idx + 1, steps.length);
     $("[data-cook-bar]").style.width = `${((idx + 1) / steps.length) * 100}%`;
     $("[data-cook-title]").textContent = li.querySelector("h3")?.textContent || "";
     $("[data-cook-text]").textContent = li.querySelector("p").textContent;
@@ -442,7 +494,7 @@ async function pageRecipe() {
     $("[data-cook-done]").checked = li.classList.contains("done");
     $("[data-cook-tools]").innerHTML = $$("[data-timer]", li).map((b) => b.outerHTML).join("");
     $("[data-cook-prev]").disabled = idx === 0;
-    $("[data-cook-next]").textContent = idx === steps.length - 1 ? "Hoàn thành" : "Tiếp →";
+    $("[data-cook-next]").textContent = idx === steps.length - 1 ? S.finish : S.next;
   };
   const close = () => { view.hidden = true; lock?.release?.(); lock = null; document.body.style.overflow = ""; };
   $("[data-cook]").onclick = async () => {
@@ -455,7 +507,7 @@ async function pageRecipe() {
   $("[data-cook-prev]").onclick = () => { if (idx > 0) { idx--; show(); } };
   $("[data-cook-next]").onclick = () => {
     steps[idx].classList.add("done");
-    if (idx < steps.length - 1) { idx++; show(); } else { close(); toast("Xong rồi! Chúc cả nhà ngon miệng."); }
+    if (idx < steps.length - 1) { idx++; show(); } else { close(); toast(S.done); }
   };
   document.addEventListener("visibilitychange", async () => { if (!view.hidden && document.visibilityState === "visible") { try { lock = await navigator.wakeLock?.request("screen"); } catch {} } });
   document.addEventListener("keydown", (e) => {
@@ -481,7 +533,7 @@ function pageList() {
     }
     const sort = $("[data-sort]", bar).value;
     cards.sort((a, b) => (sort === "fast" ? (Number(a.dataset.m) || 999) - (Number(b.dataset.m) || 999) : b.dataset.d.localeCompare(a.dataset.d))).forEach((c) => grid.append(c));
-    $("[data-fcount]").textContent = n ? `${n} món` : "Không có món nào hợp bộ lọc.";
+    $("[data-fcount]").textContent = n ? S.nDishes(n) : S.noFilter;
   };
   $$("[data-f]", bar).forEach((g) => g.addEventListener("click", (e) => {
     const b = e.target.closest(".chip"); if (!b) return;
@@ -503,21 +555,21 @@ async function pageSearch() {
     let html = "", n = 0;
     if (st.mode === "nl") {
       const have = [...st.have];
-      if (!have.length) { out.innerHTML = ""; count.textContent = "Chọn ít nhất một nguyên liệu."; return; }
+      if (!have.length) { out.innerHTML = ""; count.textContent = S.pickOne; return; }
       const hits = list.map((r) => {
         const got = r.g.filter((g) => have.some((h) => g.includes(h) || h.includes(g))).length;
         return { r, got, total: r.g.length || 1 };
       }).filter((x) => x.got).sort((a, b) => b.got / b.total - a.got / a.total || (a.total - a.got) - (b.total - b.got) || a.r.m - b.r.m);
       n = hits.length;
-      html = hits.map(({ r, got, total }) => cardHTML(r, `<span class="meta">${got >= total ? "✅ Đủ" : "Có"} ${got}/${total} nguyên liệu</span>`)).join("");
-      count.textContent = n ? `${n} món nấu được với nguyên liệu bạn chọn` : "Chưa có món nào dùng các nguyên liệu này.";
+      html = hits.map(({ r, got, total }) => cardHTML(r, `<span class="meta">${S.have(got >= total, got, total)}</span>`)).join("");
+      count.textContent = n ? S.canCook(n) : S.noneIng;
     } else {
       const q = fold(input.value), terms = q.split(/\s+/).filter(Boolean);
       const hits = list.filter((r) => (!st.tag || r.tg.includes(st.tag)) && terms.every((t) => r.f.includes(t) || r.g.some((g) => g.includes(t))))
         .sort((a, b) => Number(fold(b.t).includes(q)) - Number(fold(a.t).includes(q)));
       n = hits.length;
       html = hits.map((r) => cardHTML(r)).join("");
-      count.textContent = n ? `${n} món` : "Không tìm thấy món phù hợp. Thử từ khác ngắn hơn.";
+      count.textContent = n ? S.nDishes(n) : S.notFound;
     }
     out.innerHTML = html;
   };
@@ -544,7 +596,7 @@ async function pageSearch() {
     e.preventDefault();
     for (const v of e.target.value.split(",").map(fold).filter(Boolean)) {
       st.have.add(v);
-      if (!$(`.chip[data-v="${CSS.escape(v)}"]`, fridge)) fridge.insertAdjacentHTML("beforeend", `<button type="button" class="chip" data-v="${esc(v)}" aria-pressed="true">${esc(e.target.value.split(",").find((x) => fold(x) === v).trim())}</button>`);
+      if (!$(`.chip[data-v="${CSS.escape(v)}"]`, fridge)) fridge.insertAdjacentHTML("beforeend", `<button type="button" class="chip" data-v="${esc(v)}" aria-pressed="true"${LV}>${esc(e.target.value.split(",").find((x) => fold(x) === v).trim())}</button>`);
       else $(`.chip[data-v="${CSS.escape(v)}"]`, fridge).setAttribute("aria-pressed", "true");
     }
     e.target.value = ""; run();
@@ -560,7 +612,7 @@ async function pageShop() {
     const shop = await store.get("shop", { recipes: {}, checked: {} });
     shop.checked ??= {};
     const rs = Object.entries(shop.recipes);
-    if (!rs.length) { box.innerHTML = `<div class="empty"><p class="empty-title">Danh sách trống</p><p>Ở trang công thức, bấm “Thêm vào Đi chợ”, hoặc quay mâm cơm ở trang chủ.</p><p><a class="btn ghost" href="${BASE}/">Hôm nay nấu gì?</a></p></div>`; return; }
+    if (!rs.length) { box.innerHTML = `<div class="empty"><p class="empty-title">${S.shopEmpty}</p><p>${S.shopEmptyP}</p><p><a class="btn ghost" href="${LP}/">${S.home}</a></p></div>`; return; }
     // Gộp nguyên liệu trùng tên và đơn vị
     const merged = new Map();
     for (const [, r] of rs) for (const it of r.items) {
@@ -568,22 +620,22 @@ async function pageShop() {
       const m = merged.get(key) || { ten: it.ten, u: it.u, q: 0, from: [] };
       m.q += it.q || 0; m.from.push(r.name); merged.set(key, m);
     }
-    box.innerHTML = `<div class="shop-recipes">${rs.map(([s, r]) => `<span class="chip"><a href="${BASE}/mon/${s}/">${esc(r.name)}</a> · ${r.serv} người<button type="button" data-rm="${s}" aria-label="Bỏ món ${esc(r.name)}">✕</button></span>`).join("")}</div>
-      <ul class="shop-list">${[...merged].sort((a, b) => a[1].ten.localeCompare(b[1].ten, "vi")).map(([k, m]) => `<li><label><input type="checkbox" data-k="${esc(k)}" ${shop.checked[k] ? "checked" : ""}><span><strong>${esc(m.ten)}</strong> <em>${m.q ? `${qtyText(m.q)} ${esc(m.u)}` : ""}</em><small>${esc([...new Set(m.from)].join(", "))}</small></span></label></li>`).join("")}</ul>`;
+    box.innerHTML = `<div class="shop-recipes">${rs.map(([s, r]) => `<span class="chip"><a href="${LP}/mon/${s}/"${LV}>${esc(r.name)}</a> · ${S.people(r.serv)}<button type="button" data-rm="${s}" aria-label="${esc(S.rm(r.name))}">✕</button></span>`).join("")}</div>
+      <ul class="shop-list"${LV}>${[...merged].sort((a, b) => a[1].ten.localeCompare(b[1].ten, "vi")).map(([k, m]) => `<li><label><input type="checkbox" data-k="${esc(k)}" ${shop.checked[k] ? "checked" : ""}><span><strong>${esc(m.ten)}</strong> <em>${m.q ? `${qtyText(m.q)} ${esc(m.u)}` : ""}</em><small>${esc([...new Set(m.from)].join(", "))}</small></span></label></li>`).join("")}</ul>`;
     $$("[data-k]", box).forEach((c) => (c.onchange = async () => { const s = await store.get("shop"); s.checked ??= {}; s.checked[c.dataset.k] = c.checked; await store.set("shop", s); }));
     $$("[data-rm]", box).forEach((b) => (b.onclick = async () => { const s = await store.get("shop"); delete s.recipes[b.dataset.rm]; await store.set("shop", s); updateBadges(); render(); }));
   };
   $("[data-shop-share]").onclick = () => {
     const items = $$(".shop-list li").filter((li) => !li.querySelector("input").checked).map((li) => `☐ ${li.querySelector("strong").textContent} ${li.querySelector("em").textContent}`.trim());
-    if (!items.length) return toast("Không còn gì cần mua");
-    copyOrShare("Danh sách đi chợ", `🛒 Cần mua (${items.length} món):\n${items.join("\n")}`, "Đã chép danh sách, dán vào Zalo để gửi.");
+    if (!items.length) return toast(S.nothing);
+    copyOrShare(S.shopTitle, `${S.toBuy(items.length)}\n${items.join("\n")}`, S.copiedZalo);
   };
   $("[data-shop-clear]").onclick = async () => {
     const s = await store.get("shop", { recipes: {}, checked: {} });
     const left = $$(".shop-list input").filter((c) => !c.checked).length;
     if (!left) { s.recipes = {}; s.checked = {}; } else { for (const k of Object.keys(s.checked || {})) if (s.checked[k]) delete s.checked[k]; }
     await store.set("shop", s); updateBadges(); render();
-    toast(left ? "Đã bỏ dấu các món đã mua" : "Đã xoá danh sách");
+    toast(left ? S.unchecked : S.cleared);
   };
   render();
 }
@@ -601,7 +653,7 @@ async function renderSaved() {
 }
 
 // ---------- Video: phát tại chỗ, xem liên tiếp ----------
-const ytFrame = (id, title) => `<iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0&playsinline=1" title="${esc(title || "Video hướng dẫn")}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
+const ytFrame = (id, title) => `<iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0&playsinline=1" title="${esc(title || S.videoGuide)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
 // Dải video ở trang chủ: bấm là phát ngay trong thẻ, mỗi lúc chỉ một video chạy.
 {
   let cur = null, curHTML = "";
@@ -629,11 +681,11 @@ function pageVideo() {
     box.classList.toggle("vertical", !!v.sh);
     box.dataset.id = v.id;
     box.innerHTML = play ? ytFrame(v.id, v.t)
-      : `<button class="lite-yt" type="button" data-vstart aria-label="Phát video ${esc(v.t)}"><img src="https://i.ytimg.com/vi/${esc(v.id)}/hqdefault.jpg" alt="" width="480" height="360"><span class="play" aria-hidden="true"></span></button>`;
-    $("[data-vpos]", st).textContent = `Video ${i + 1}/${vs.length}`;
+      : `<button class="lite-yt" type="button" data-vstart aria-label="${esc(S.play(v.t))}"><img src="https://i.ytimg.com/vi/${esc(v.id)}/hqdefault.jpg" alt="" width="480" height="360"><span class="play" aria-hidden="true"></span></button>`;
+    $("[data-vpos]", st).textContent = S.vpos(i + 1, vs.length);
     $("[data-vtitle]", st).textContent = v.t;
-    $("[data-vcredit]", st).innerHTML = `Video: ${v.k ? `kênh <strong>${esc(v.k)}</strong>` : "YouTube"} · <a href="${esc(v.w)}" rel="noopener" target="_blank">Xem trên YouTube</a>`;
-    $("[data-vrecipe]", st).href = `${BASE}/mon/${v.s}/`;
+    $("[data-vcredit]", st).innerHTML = `${S.videoBy(esc(v.k))} · <a href="${esc(v.w)}" rel="noopener" target="_blank">${S.watchYt}</a>`;
+    $("[data-vrecipe]", st).href = `${LP}/mon/${v.s}/`;
   };
   box.addEventListener("click", (e) => { if (e.target.closest("[data-vstart]")) { started = true; show(i, true); } });
   $("[data-vprev]", st).onclick = () => show(i - 1);
@@ -657,7 +709,7 @@ const savePrefs = () => { try { localStorage.setItem("hnng-prefs", JSON.stringif
 const themeBtn = $('[data-toggle="theme"]');
 const showTheme = () => {
   const dark = document.documentElement.dataset.theme !== "light";
-  const label = dark ? "Chế độ sáng" : "Chế độ đêm";
+  const label = dark ? S.light : S.dark;
   themeBtn?.setAttribute("aria-label", label); themeBtn?.setAttribute("title", label);
   $('meta[name="theme-color"]')?.setAttribute("content", dark ? "#1d1a17" : "#faf8f5");
 };
@@ -671,12 +723,14 @@ $('[data-toggle="big"]')?.addEventListener("click", () => {
   if (prefs.big) document.documentElement.dataset.big = "1"; else delete document.documentElement.dataset.big;
   savePrefs();
 });
+// Đổi ngôn ngữ: nhớ lựa chọn để lần sau mở web (kể cả link cũ) tự về đúng ngôn ngữ. Đoạn chuyển trang nằm trong <head> (templates.mjs).
+$("[data-lang]")?.addEventListener("click", (e) => { prefs.lang = e.currentTarget.dataset.lang; savePrefs(); });
 
 // ---------- Khởi động ----------
 // Thành quả của bạn đọc (ảnh món đã nấu + bình luận): tải lười, chỉ khi trang có mục này.
 const napThanhQua = () => import(BASE + "/assets/thanh-qua.js");
 const PAGES = { home: pageHome, recipe: pageRecipe, list: pageList, search: pageSearch, shop: pageShop, saved: renderSaved, video: pageVideo,
-  admin: () => napThanhQua().then((m) => m.quanTri({ $, esc, toast, BASE })) };
+  admin: () => napThanhQua().then((m) => m.quanTri({ $, esc, toast, BASE, LP })) };
 if ($("[data-tq]")) napThanhQua().then((m) => m.thanhQua({ $, esc, store, toast, BASE })).catch(() => {});
 PAGES[document.body.dataset.page]?.();
 updateBadges();

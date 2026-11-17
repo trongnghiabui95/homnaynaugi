@@ -1,5 +1,6 @@
 // Khung HTML dùng chung cho mọi trang.
 import { esc } from "./lib.mjs";
+import { tr, diffText, PREFIX, LOCALE, LANGS } from "./i18n.mjs";
 
 const ICON = {
   home: '<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/><path d="M10 19.5v-5h4v5"/>',
@@ -29,21 +30,21 @@ export const icon = (name, cls = "ic") =>
   `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[name]}</svg>`;
 
 const NAV = [
-  ["/", "Trang chủ", "home"],
-  ["/danh-muc/", "Danh mục", "grid"],
-  ["/tim-kiem/", "Tìm món", "search"],
-  ["/di-cho/", "Đi chợ", "cart"],
-  ["/da-luu/", "Sổ tay", "heart"],
+  ["/", "nav_home", "home"],
+  ["/danh-muc/", "nav_cats", "grid"],
+  ["/tim-kiem/", "nav_search", "search"],
+  ["/di-cho/", "nav_shop", "cart"],
+  ["/da-luu/", "nav_saved", "heart"],
 ];
 // Khi đã có ít nhất 1 video: mục Video thay mục Danh mục ở thanh dưới (tối đa 5 mục); Danh mục chuyển xuống chân trang.
-const NAV_VIDEO = ["/video/", "Video", "play"];
+const NAV_VIDEO = ["/video/", "nav_video", "play"];
 const FOOT = [
-  ["/gioi-thieu/", "Giới thiệu"],
-  ["/video/", "Tất cả video"],
-  ["/ban-quyen-video/", "Bản quyền video"],
-  ["/chinh-sach-bao-mat/", "Chính sách bảo mật"],
-  ["/dieu-khoan/", "Điều khoản sử dụng"],
-  ["/lien-he/", "Liên hệ"],
+  ["/gioi-thieu/", "foot_about"],
+  ["/video/", "foot_videos"],
+  ["/ban-quyen-video/", "foot_video_rights"],
+  ["/chinh-sach-bao-mat/", "foot_privacy"],
+  ["/dieu-khoan/", "foot_terms"],
+  ["/lien-he/", "foot_contact"],
 ];
 
 // Ảnh xem trước khi chia sẻ link (Zalo, Facebook, TikTok…): ảnh món nếu có, không thì ảnh mặc định của web 1200×630.
@@ -56,43 +57,58 @@ function ogTags(site, p) {
 <meta name="twitter:card" content="summary_large_image">`;
 }
 
-/** @param p { path, title, description, body, page, jsonld[], crumbs[[name,path]], noindex, ogType, ogImage } */
+/** Đường dẫn tuyệt đối của một trang theo ngôn ngữ: abs(site, "en", "/mon/x/") → https://…/en/mon/x/ */
+export const abs = (site, lang, path) => site.site_url + PREFIX[lang] + path;
+
+/**
+ * site.lang = "vi" | "en". Link nội bộ trong HTML vẫn viết "/x"; page() trong build.mjs đổi thành "/en/x" cho bản tiếng Anh.
+ * Tên món, danh mục (nội dung chưa dịch) đặt trong phần tử lang="vi" để trình đọc màn hình đọc đúng giọng.
+ * @param p { path, title, description, body, page, jsonld[], crumbs[[name,path,isContent]], noindex, ogType, ogImage, titleVi }
+ */
 export function layout(site, p) {
-  const url = site.site_url + p.path;
+  const lang = site.lang || "vi", t = tr(lang), other = LANGS.find((l) => l !== lang);
+  const url = abs(site, lang, p.path);
   const fullTitle = p.path === "/" ? `${site.site_name} – ${site.tagline}` : `${p.title} | ${site.site_name}`;
+  // Nút đổi ngôn ngữ: sang đúng trang tương ứng. Trang 404 không có bản tương ứng nên về trang chủ.
+  // "/__vi__/…" là đánh dấu để build không thêm /en vào link trỏ về bản tiếng Việt.
+  const altPath = p.path === "/404" ? "/" : p.path;
+  const altHref = other === "en" ? "/en" + altPath : "/__vi__" + altPath;
+  const vi = (n, on) => (on && lang !== "vi" ? `<span lang="vi">${esc(n)}</span>` : esc(n));
   const crumbs = p.crumbs?.length
-    ? `<nav class="crumbs" aria-label="Đường dẫn"><a href="/">Trang chủ</a>${p.crumbs
-        .map(([n, u], i) => (i === p.crumbs.length - 1 ? ` <span>›</span> <span aria-current="page">${esc(n)}</span>` : ` <span>›</span> <a href="${u}">${esc(n)}</a>`))
+    ? `<nav class="crumbs" aria-label="${t("crumbs")}"><a href="/">${t("nav_home")}</a>${p.crumbs
+        .map(([n, u, c], i) => (i === p.crumbs.length - 1 ? ` <span>›</span> <span aria-current="page">${vi(n, c)}</span>` : ` <span>›</span> <a href="${u}">${vi(n, c)}</a>`))
         .join("")}</nav>`
     : "";
   const ld = [...(p.jsonld || [])];
   if (p.crumbs?.length) {
     ld.push({
       "@context": "https://schema.org", "@type": "BreadcrumbList",
-      itemListElement: [["Trang chủ", "/"], ...p.crumbs].map(([n, u], i) => ({ "@type": "ListItem", position: i + 1, name: n, item: site.site_url + u })),
+      itemListElement: [[t("nav_home"), "/"], ...p.crumbs].map(([n, u], i) => ({ "@type": "ListItem", position: i + 1, name: n, item: abs(site, lang, u) })),
     });
   }
   const active = (u) => (u === "/" ? p.path === "/" : p.path.startsWith(u));
   const nav = NAV.map((n) => (site.has_video && n[0] === "/danh-muc/" ? NAV_VIDEO : n));
-  const foot = site.has_video ? [FOOT[0], ["/danh-muc/", "Danh mục"], ...FOOT.slice(1)] : FOOT;
+  const foot = site.has_video ? [FOOT[0], ["/danh-muc/", "nav_cats"], ...FOOT.slice(1)] : FOOT;
   const adsense = site.adsense_client
     ? `<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${esc(site.adsense_client)}" crossorigin="anonymous"></script>`
     : "";
   return `<!doctype html>
-<html lang="vi" data-theme="dark">
+<html lang="${lang}" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>${esc(fullTitle)}</title>
 <meta name="description" content="${esc(p.description)}">
 <link rel="canonical" href="${esc(url)}">
+${p.path === "/404" ? "" : LANGS.map((l) => `<link rel="alternate" hreflang="${l}" href="${esc(abs(site, l, p.path))}">`).join("\n") + `\n<link rel="alternate" hreflang="x-default" href="${esc(abs(site, "vi", p.path))}">`}
 ${p.noindex ? '<meta name="robots" content="noindex">' : ""}
 <meta property="og:type" content="${p.ogType || "website"}">
 <meta property="og:title" content="${esc(p.title)}">
 <meta property="og:description" content="${esc(p.description)}">
 <meta property="og:url" content="${esc(url)}">
 <meta property="og:site_name" content="${esc(site.site_name)}">
-<meta property="og:locale" content="vi_VN">
+<meta property="og:locale" content="${LOCALE[lang]}">
+<meta property="og:locale:alternate" content="${LOCALE[other]}">
 ${ogTags(site, p)}
 <meta name="theme-color" content="#1d1a17">
 <link rel="manifest" href="/manifest.webmanifest">
@@ -102,17 +118,18 @@ ${ogTags(site, p)}
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Lora:wght@600;700&display=swap">
 <link rel="stylesheet" href="/assets/style.css?v=${site.build_id}">
-<script>document.documentElement.classList.add("js");try{var s=JSON.parse(localStorage.getItem("hnng-prefs")||"{}");if(s.theme==="light"){document.documentElement.dataset.theme="light";document.querySelector('meta[name="theme-color"]').content="#faf8f5"}if(s.big)document.documentElement.dataset.big="1"}catch(e){}</script>
+<script>document.documentElement.classList.add("js");try{var s=JSON.parse(localStorage.getItem("hnng-prefs")||"{}");if(s.theme==="light"){document.documentElement.dataset.theme="light";document.querySelector('meta[name="theme-color"]').content="#faf8f5"}if(s.big)document.documentElement.dataset.big="1"${p.path === "/404" ? "" : `;var h=document.documentElement,b=h.dataset.base||"",q=location.pathname.slice(b.length);if(s.lang&&s.lang!==h.lang)location.replace(b+(s.lang==="en"?"/en"+q:q.replace(/^\\/en(\\/|$)/,"/"))+location.search+location.hash)`}}catch(e){}</script>
 ${ld.map((o) => `<script type="application/ld+json">${JSON.stringify(o).replace(/</g, "\\u003c")}</script>`).join("\n")}
 ${adsense}
 </head>
 <body data-page="${p.page || "content"}">
-<a class="skip" href="#main">Bỏ qua đến nội dung</a>
+<a class="skip" href="#main">${t("skip")}</a>
 <header class="topbar">
-  <a class="brand" href="/"><img src="/assets/icons/icon.svg" alt="" width="30" height="30"><span>${esc(site.site_name)}</span></a>
+  <a class="brand" href="/"><img src="/assets/icons/icon.svg" alt="" width="30" height="30"><span lang="vi">${esc(site.site_name)}</span></a>
   <div class="topbar-actions">
-    <button class="icon-btn" type="button" data-toggle="big" aria-label="Chữ lớn" title="Chữ lớn">${icon("text")}</button>
-    <button class="icon-btn" type="button" data-toggle="theme" aria-label="Chế độ sáng" title="Chế độ sáng">${icon("moon")}</button>
+    <a class="icon-btn" href="${altHref}" hreflang="${other}" lang="${other}" data-lang="${other}" aria-label="${t("lang_switch_label")}" title="${t("lang_switch_title")}">${t("lang_switch_text")}</a>
+    <button class="icon-btn" type="button" data-toggle="big" aria-label="${t("big_text")}" title="${t("big_text")}">${icon("text")}</button>
+    <button class="icon-btn" type="button" data-toggle="theme" aria-label="${t("light_mode")}" title="${t("light_mode")}">${icon("moon")}</button>
   </div>
 </header>
 <main id="main" class="wrap">
@@ -120,13 +137,13 @@ ${crumbs}
 ${p.body}
 </main>
 <footer class="footer wrap">
-  <nav class="footer-links">${foot.filter(([u]) => u !== "/video/" || site.has_video).map(([u, n]) => `<a href="${u}">${n}</a>`).join("")}</nav>
-  <p class="muted">Video thuộc bản quyền của các kênh YouTube được ghi tên, nhúng theo chức năng chia sẻ của YouTube.</p>
-  <p class="by"><span>Một sản phẩm của</span> <span class="yendan"><svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M2.5 9.5c4.2.2 7.6 1.9 10.2 5.1l2.6-4.4c1.3-2.2 3.6-3.6 6.2-3.6 1.9 0 3.6.7 4.9 2l-3 1.1 1.6 1.4c-.6 4.8-4.7 8.4-9.6 8.4h-2.6L7 27.5l2.3-7.6C5.4 17.8 3.2 14 2.5 9.5z"/><circle cx="21.8" cy="9.4" r="1" fill="var(--bg)"/></svg>yendan</span></p>
-  <p class="muted">© ${new Date().getFullYear()} ${esc(site.site_name)}</p>
+  <nav class="footer-links">${foot.filter(([u]) => u !== "/video/" || site.has_video).map(([u, n]) => `<a href="${u}">${t(n)}</a>`).join("")}</nav>
+  <p class="muted">${t("foot_video_note")}</p>
+  <p class="by"><span>${t("made_by")}</span> <span class="yendan"><svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M2.5 9.5c4.2.2 7.6 1.9 10.2 5.1l2.6-4.4c1.3-2.2 3.6-3.6 6.2-3.6 1.9 0 3.6.7 4.9 2l-3 1.1 1.6 1.4c-.6 4.8-4.7 8.4-9.6 8.4h-2.6L7 27.5l2.3-7.6C5.4 17.8 3.2 14 2.5 9.5z"/><circle cx="21.8" cy="9.4" r="1" fill="var(--bg)"/></svg>yendan</span></p>
+  <p class="muted">© ${new Date().getFullYear()} <span lang="vi">${esc(site.site_name)}</span></p>
 </footer>
-<nav class="tabbar" aria-label="Điều hướng chính">
-${nav.map(([u, n, ic]) => `<a href="${u}"${active(u) ? ' aria-current="page"' : ""}>${icon(ic)}<span>${n}</span><b class="badge" data-badge="${ic}" hidden></b></a>`).join("\n")}
+<nav class="tabbar" aria-label="${t("main_nav")}">
+${nav.map(([u, n, ic]) => `<a href="${u}"${active(u) ? ' aria-current="page"' : ""}>${icon(ic)}<span>${t(n)}</span><b class="badge" data-badge="${ic}" hidden></b></a>`).join("\n")}
 </nav>
 <div class="timer-chip" data-timer-chip hidden></div>
 <script type="module" src="/assets/app.js?v=${site.build_id}"></script>
@@ -138,7 +155,8 @@ ${nav.map(([u, n, ic]) => `<a href="${u}"${active(u) ? ' aria-current="page"' : 
 export function adSlot(site, key) {
   const slot = site[`adsense_slot_${key}`];
   if (!site.adsense_client || !slot) return "";
-  return `<aside class="ad-slot" aria-label="Quảng cáo"><span class="ad-label">Quảng cáo</span><ins class="adsbygoogle" style="display:block" data-ad-client="${esc(site.adsense_client)}" data-ad-slot="${esc(slot)}" data-ad-format="auto" data-full-width-responsive="true"></ins><script>(adsbygoogle=window.adsbygoogle||[]).push({});</script></aside>`;
+  const t = tr(site.lang || "vi");
+  return `<aside class="ad-slot" aria-label="${t("ad")}"><span class="ad-label">${t("ad")}</span><ins class="adsbygoogle" style="display:block" data-ad-client="${esc(site.adsense_client)}" data-ad-slot="${esc(slot)}" data-ad-format="auto" data-full-width-responsive="true"></ins><script>(adsbygoogle=window.adsbygoogle||[]).push({});</script></aside>`;
 }
 
 export const emptyState = (title, text = "") =>
@@ -147,17 +165,18 @@ export const emptyState = (title, text = "") =>
 export const ytThumb = (id) => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
 
 /** Khung trung tính khi món chưa có ảnh (hoặc ảnh hỏng link): nền ấm + tên món chữ Lora, không giả làm ảnh. Ảnh thật nằm đè lên trên. */
-export const noPhoto = (ten) => `<span class="ph" aria-hidden="true"><span>${esc(ten)}</span></span>`;
+export const noPhoto = (ten) => `<span class="ph" aria-hidden="true"><span lang="vi">${esc(ten)}</span></span>`;
 
 /** Thẻ món: ảnh 4:3 có badge thời gian, độ khó, calo, video. attrs = thêm data-* để lọc/sắp xếp phía trình duyệt. */
-export function recipeCard(r, attrs = false) {
+export function recipeCard(r, attrs = false, lang = "vi") {
+  const t = tr(lang);
   const data = attrs ? ` data-k="${esc((r.do_kho || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase())}" data-m="${r.total || 0}" data-cal="${r.cal || 0}" data-d="${esc(r.cap_nhat || "")}"` : "";
   const k = (r.do_kho || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
   return `<a class="rcard${["de", "vua", "kho"].includes(k) ? ` k-${k}` : ""}" href="/mon/${r.slug}/"${data}>
   <div class="rcard-img">${noPhoto(r.ten)}${r.img ? `<img src="${esc(r.img)}" alt="" loading="lazy" decoding="async" width="480" height="360">` : ""}
-    ${r.yt ? `<span class="badge-video">${icon("play")} Video</span>` : ""}
+    ${r.yt ? `<span class="badge-video">${icon("play")} ${t("video")}</span>` : ""}
   </div>
-  <div class="rcard-body"><small class="rcard-cat">${esc(r.cat?.ten || "")}</small><strong>${esc(r.ten)}</strong>
-    <span class="rcard-meta"><span>${r.total ? `${icon("clock")} ${r.total} phút` : ""}</span>${r.do_kho ? `<b>${esc(r.do_kho)}</b>` : ""}</span></div>
+  <div class="rcard-body"><small class="rcard-cat" lang="vi">${esc(r.cat?.ten || "")}</small><strong lang="vi">${esc(r.ten)}</strong>
+    <span class="rcard-meta"><span>${r.total ? `${icon("clock")} ${t("min", r.total)}` : ""}</span>${r.do_kho ? `<b>${esc(diffText(t, k, r.do_kho))}</b>` : ""}</span></div>
 </a>`;
 }
