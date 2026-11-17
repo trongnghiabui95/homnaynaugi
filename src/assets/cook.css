@@ -2,7 +2,7 @@
 .cook { position: fixed; inset: 0; z-index: 70; background: var(--bg); display: flex; flex-direction: column; gap: 12px; padding: 18px; padding-top: calc(18px + env(safe-area-inset-top)); padding-bottom: calc(18px + env(safe-area-inset-bottom)); }
 .cook-top { display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-weight: 600; }
 .cook-bar { height: 6px; background: var(--surface-2); border-radius: 999px; overflow: hidden; }
-.cook-bar span { display: block; height: 100%; background: var(--accent); transition: width .3s; }
+.cook-bar span { display: block; height: 100%; background: var(--accent); transform: scaleX(0); transform-origin: left; transition: transform .3s cubic-bezier(.23,1,.32,1); }
 .cook-body { flex: 1; overflow-y: auto; display: flex; flex-direction: column; justify-content: center; max-width: 720px; width: 100%; margin: 0 auto; }
 .cook-title { margin: 0 0 8px; font-size: 1.3em; color: var(--primary); }
 .cook-text { font-size: 1.65em; line-height: 1.45; font-weight: 500; margin: 0; }
