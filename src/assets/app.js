@@ -35,7 +35,7 @@ const S = {
     shopEmpty: "Danh sách trống", shopEmptyP: "Ở trang công thức, bấm “Thêm vào Đi chợ”, hoặc quay mâm cơm ở trang chủ.", home: "Hôm nay nấu gì?",
     rm: (n) => `Bỏ món ${n}`, nothing: "Không còn gì cần mua", toBuy: (n) => `🛒 Cần mua (${n} món):`, copiedZalo: "Đã chép danh sách, dán vào Zalo để gửi.",
     unchecked: "Đã bỏ dấu các món đã mua", cleared: "Đã xoá danh sách",
-    play: (t) => `Phát video ${t}`, vpos: (i, n) => `Video ${i}/${n}`, videoBy: (k) => (k ? `Video: kênh <strong>${k}</strong>` : "Video: YouTube"), watchYt: "Xem trên YouTube",
+    play: (t) => `Phát video ${t}`, vpos: (i, n) => `Video ${i}/${n}`, videoBy: (k) => (k ? `Video: kênh <strong>${k}</strong>` : "Video: YouTube"),
     light: "Chế độ sáng", dark: "Chế độ đêm",
   },
   en: {
@@ -62,7 +62,7 @@ const S = {
     shopEmpty: "Your list is empty", shopEmptyP: "On a recipe page, tap “Add to shopping list”, or spin a meal on the home page.", home: "What should I cook today?",
     rm: (n) => `Remove ${n}`, nothing: "Nothing left to buy", toBuy: (n) => `🛒 To buy (${n} ${n === 1 ? "item" : "items"}):`, copiedZalo: "List copied. Paste it into a chat to send.",
     unchecked: "Cleared ticks on bought items", cleared: "List cleared",
-    play: (t) => `Play video ${t}`, vpos: (i, n) => `Video ${i}/${n}`, videoBy: (k) => (k ? `Video: <strong lang="vi">${k}</strong> channel` : "Video: YouTube"), watchYt: "Watch on YouTube",
+    play: (t) => `Play video ${t}`, vpos: (i, n) => `Video ${i}/${n}`, videoBy: (k) => (k ? `Video: <strong lang="vi">${k}</strong> channel` : "Video: YouTube"),
     light: "Light mode", dark: "Dark mode",
   },
 }[LANG];
@@ -825,7 +825,7 @@ function pageVideo() {
     const vt = $("[data-vtitle]", st);
     vt.textContent = v.t;
     if (v.l) vt.setAttribute("lang", v.l); else vt.removeAttribute("lang");
-    $("[data-vcredit]", st).innerHTML = `${S.videoBy(esc(v.k))} · <a href="${esc(v.w)}" rel="noopener" target="_blank">${S.watchYt}</a>`;
+    $("[data-vcredit]", st).innerHTML = S.videoBy(esc(v.k)); // chỉ ghi công kênh, không link ra YouTube (#86)
     $("[data-vrecipe]", st).href = `${LP}/mon/${v.s}/`;
   };
   box.addEventListener("click", (e) => { if (e.target.closest("[data-vstart]")) { started = true; show(i, true); } });

@@ -20,7 +20,7 @@ Web tiếng Việt (giao diện có thêm bản tiếng Anh ở `/en/`) "Hôm Na
 ## Quy tắc nội dung
 - Món chỉ lên web khi `trang_thai` = `duyệt`, có danh mục hợp lệ, ít nhất 1 nguyên liệu và 1 bước. Không nới lỏng cổng này.
 - Công thức phải tự viết bằng lời của mình. Không chép phần mô tả video, công thức từ web hay sách khác.
-- Video chỉ **nhúng** bằng trình phát YouTube (`youtube-nocookie.com`), không tải về, luôn ghi tên kênh và link xem trên YouTube. Cột `video` nhận link YouTube, YouTube Shorts (hiện khung dọc 9:16) hoặc mã 11 ký tự. Không bịa link video.
+- Video chỉ **nhúng** bằng trình phát YouTube (`youtube-nocookie.com`), không tải về, luôn ghi tên kênh ("Video: kênh X"). Không đặt link đưa người xem ra YouTube để giữ người dùng ở lại web (chủ dự án quyết định, #86); trình phát nhúng vẫn có logo YouTube của chính nó. Cột `video` nhận link YouTube, YouTube Shorts (hiện khung dọc 9:16) hoặc mã 11 ký tự. Không bịa link video.
 - Không tự điền calo, chi phí khi chưa có số liệu thật; ô trống thì web ẩn thông số đó.
 - Không dùng ảnh không rõ quyền. Ảnh món: ảnh tự chụp, ảnh có giấy phép, hoặc ảnh thu nhỏ của chính video được nhúng.
 - Dữ liệu kiểm thử chỉ nằm trong `tests/fixtures/`, tên rõ là "thử".

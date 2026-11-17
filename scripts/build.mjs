@@ -190,8 +190,8 @@ async function main() {
 
   // ----- Video: thẻ phát tại chỗ (trang chủ) và trình xem liên tiếp (/video/). Chỉ nhúng youtube-nocookie, luôn ghi kênh + link YouTube.
   const withVideo = recipes.filter((r) => r.yt);
-  const watchUrl = (yt) => `https://www.youtube.com/${yt.shorts ? `shorts/${yt.id}` : `watch?v=${yt.id}`}`;
-  const videoCredit = (r) => `${t(r.anh ? "video_by" : "thumb_by", r.kenh ? esc(r.kenh) : "")} · <a href="${watchUrl(r.yt)}" rel="noopener" target="_blank">${t("watch_yt")}</a>`;
+  // Ghi công kênh nhưng không có link đưa người xem ra YouTube (chủ dự án muốn giữ người dùng ở lại, #86)
+  const videoCredit = (r) => t(r.anh ? "video_by" : "thumb_by", r.kenh ? esc(r.kenh) : "");
   const liteYT = (r, attr) => `<button class="lite-yt" type="button" ${attr} aria-label="${esc(t("play_video", r.ten))}"><img src="${ytThumb(r.yt.id)}" alt="" loading="lazy" width="480" height="360"><span class="play" aria-hidden="true"></span></button>`;
   const vcard = (r) => `<article class="vcard${r.yt.shorts ? " doc" : ""}" data-vcard data-id="${esc(r.yt.id)}">
   <div class="vcard-media">${liteYT(r, "data-vplay")}</div>
@@ -429,7 +429,7 @@ ${related.length ? `<section><h2 class="section-title">${t("more_in", r.cat.lv.t
 
   // ----- Video, tìm kiếm, đi chợ, đã lưu -----
   const v0 = withVideo[0];
-  const vdata = withVideo.map((r) => ({ id: r.yt.id, sh: r.yt.shorts ? 1 : 0, s: r.slug, t: r.ten, ...(r.lv.ten ? { l: r.lv.ten } : {}), k: r.kenh || "", w: watchUrl(r.yt) }));
+  const vdata = withVideo.map((r) => ({ id: r.yt.id, sh: r.yt.shorts ? 1 : 0, s: r.slug, t: r.ten, ...(r.lv.ten ? { l: r.lv.ten } : {}), k: r.kenh || "" }));
   await page(L, {
     path: "/video/", page: "video", title: t("video_title"), noindex: !withVideo.length, crumbs: [[t("nav_video"), "/video/"]],
     description: t("video_desc"),
