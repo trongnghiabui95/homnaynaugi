@@ -427,32 +427,6 @@ async function pageHome() {
 
 // ---------- Trang công thức ----------
 // ---------- Chế độ nấu: hàm thuần (kiểm thử trong e2e) ----------
-/** Từ khoá để dò một nguyên liệu trong câu: cả tên, từng phần ("Hành lá, ngò" → hành lá / ngò), 2 từ đầu, từ đầu dài ≥ 4 chữ. */
-function tuKhoa(ten) {
-  const out = new Set();
-  for (const p of fold(ten.replace(/\(.*?\)/g, "")).split(/,|\/|\bhoac\b|\bor\b/).map((x) => x.replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim()).filter(Boolean)) {
-    const w = p.split(" ");
-    out.add(p);
-    if (w.length > 2) out.add(w.slice(0, 2).join(" "));
-    if (w.length > 1 && w[0].length >= 4) out.add(w[0]);
-  }
-  return [...out].filter((k) => k.length >= 2);
-}
-/** Nguyên liệu được nhắc trong câu, theo thứ tự trong danh sách. Từ khoá dài khớp trước và "chiếm" chỗ đó ("hành tím" trước "hành"). */
-function dungO(cau, ds) {
-  let s = ` ${fold(cau).replace(/[^a-z0-9]+/g, " ")} `;
-  const hit = new Set(), kq = ds.flatMap((g, i) => g.keys.map((k) => [k, i])).sort((a, b) => b[0].length - a[0].length);
-  for (const [k, i] of kq) {
-    const at = s.indexOf(` ${k} `);
-    if (at < 0) continue;
-    hit.add(i);
-    s = s.slice(0, at + 1) + "#".repeat(k.length) + s.slice(at + 1 + k.length);
-  }
-  return [...hit].sort((a, b) => a - b).map((i) => ds[i]);
-}
-const NOI_BAT = /(\d+(?:[.,]\d+)?(?:\s*[–-]\s*\d+(?:[.,]\d+)?)?\s*(?:phút|giây|tiếng|giờ|°C|độ|cm|mm|minutes?|mins?|seconds?|hours?)|lửa (?:thật |rất )?(?:nhỏ|vừa|lớn|to|liu riu)|(?:low|medium|high) heat)(?![\p{L}])/giu;
-/** Tô đậm thời gian, nhiệt độ, mức lửa, kích cỡ. Chỉ thêm <strong>, không đổi chữ. */
-const toDam = (t) => esc(t).replace(NOI_BAT, "<strong>$1</strong>");
 /** Các số phút nhắc trong câu ("2–3 phút" → 3) để gợi ý hẹn giờ. */
 const soPhut = (t) => [...t.matchAll(/(\d+)(?:\s*[–-]\s*(\d+))?\s*(?:phút|min)/gi)].map((m) => Number(m[2] || m[1]));
 /** Nạp CSS riêng của một màn khi cần (ví dụ cook.css lúc mở chế độ nấu). */
@@ -550,9 +524,8 @@ async function pageRecipe() {
   // đoạn video của bước, xem trước bước sau, đọc to, vuốt để chuyển) → màn Hoàn thành. Giữ màn hình sáng.
   const view = $("[data-cook-view]"), body = $("[data-cook-body]"), extra = $("[data-cook-extra]");
   const lv = (el) => (el?.getAttribute("lang") ? ` lang="${el.getAttribute("lang")}"` : ""); // nội dung chưa dịch giữ lang="vi"
-  const ings = $$(".ings li").map((li) => ({ lv: lv(li), ten: $("strong", li).textContent, q: Number($(".qty", li).dataset.q) || 0, dv: $(".unit", li).textContent, gc: ($("small", li)?.textContent || "").replace(/^\(|\)$/g, ""), keys: tuKhoa($("strong", li).textContent) }));
+  const ings = $$(".ings li").map((li) => ({ lv: lv(li), ten: $("strong", li).textContent, q: Number($(".qty", li).dataset.q) || 0, dv: $(".unit", li).textContent, gc: ($("small", li)?.textContent || "").replace(/^\(|\)$/g, "") }));
   const luong = (g) => [g.q ? qtyText((g.q * serv) / base) : "", g.dv, g.q ? "" : g.gc].filter(Boolean).join(" ");
-  const chip = (g) => `<li${g.lv}><strong>${esc(g.ten)}</strong> <span>${esc(luong(g))}</span></li>`;
   const daSan = new Set();
   let idx = 0, lock = null;
   const say = (() => {
@@ -605,16 +578,16 @@ async function pageRecipe() {
       const p = li.querySelector("p").textContent, tit = li.querySelector("h3")?.textContent || "";
       body.dataset.man = "step";
       $("[data-cook-title]").textContent = tit;
-      $("[data-cook-text]").innerHTML = toDam(p);
+      $("[data-cook-text]").innerHTML = li.querySelector("p").innerHTML; // build đã thoát HTML và tô đậm (scripts/buoc.mjs)
       $("[data-cook-done]").checked = li.classList.contains("done");
-      const dung = dungO(p, ings);
+      const dung = $$(".uses > span", li); // build dò sẵn (doNguyenLieu), lượng đã đổi theo khẩu phần
       const seek = $("[data-seek]", li)?.dataset.seek;
-      extra.innerHTML = (dung.length ? `<p class="cook-lbl">${S.useHere}</p><ul class="cook-dung">${dung.map(chip).join("")}</ul>` : "")
+      extra.innerHTML = (dung.length ? `<p class="cook-lbl">${S.useHere}</p><ul class="cook-dung">${dung.map((x) => `<li${lv(x)}>${x.innerHTML}</li>`).join("")}</ul>` : "")
         + (ytId && seek != null ? `<div data-cook-vid>${nut(" ghost", `${IC.play} ${S.seePart}`, `data-cook-seek="${seek}"`)}</div>` : "");
       const phut = new Set([...$$("[data-timer]", li).map((b) => Number(b.dataset.timer)), ...soPhut(p)]);
       $("[data-cook-tools]").innerHTML = [...phut].filter((m) => m > 0 && m <= 180).map((m) => `<button class="mini" type="button" data-timer="${m}" data-label="${esc(tit || S.stepPos(idx + 1, n))}">${IC.timer} ${S.timerN(qtyText(m))}</button>`).join("");
       if (idx < n - 1) tiep(steps[idx + 1]); else $("[data-cook-upnext]").textContent = S.lastStep;
-      doc2 = `${tit}. ${p}${dung.length ? `. ${S.useHere}: ${dung.map((g) => `${g.ten} ${luong(g)}`).join(", ")}` : ""}`;
+      doc2 = `${tit}. ${p}${dung.length ? `. ${S.useHere}: ${dung.map((x) => x.textContent.replace(/\s+/g, " ")).join(", ")}` : ""}`;
     }
     say.noi(doc2);
   };

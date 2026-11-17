@@ -18,7 +18,8 @@
 .cook-lbl { margin: 18px 0 6px; font-size: .9em; font-weight: 600; color: var(--muted); }
 .cook-dung { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 8px; }
 .cook-dung li { padding: 8px 12px; border-radius: 12px; background: var(--surface-2); font-variant-numeric: tabular-nums; }
-.cook-dung span { color: var(--primary); font-weight: 600; white-space: nowrap; }
+.cook-dung li { font-weight: 600; }
+.cook-dung .qty, .cook-dung .qty + span { color: var(--primary); }
 .cook-prep { list-style: none; padding: 0; margin: 16px 0 8px; }
 .cook-prep li + li { border-top: 1px solid var(--line); }
 .cook-prep label { display: flex; align-items: center; gap: 12px; min-height: 52px; font-size: 1.1em; cursor: pointer; font-variant-numeric: tabular-nums; }

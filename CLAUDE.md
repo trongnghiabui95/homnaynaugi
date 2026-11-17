@@ -15,7 +15,7 @@ Web tiếng Việt (giao diện có thêm bản tiếng Anh ở `/en/`) "Hôm Na
 ## Lệnh
 - `node scripts/build.mjs --sample` – build bằng dữ liệu mẫu
 - `DATA_DIR=tests/fixtures node scripts/build.mjs && python3 tests/e2e.py` – kiểm thử trên trình duyệt; mọi dòng phải là `OK` và `errors: []`
-- `node --test tests/commons.test.mjs tests/thanh-qua.test.mjs` – kiểm thử ảnh Wikimedia Commons và API Thành quả (không cần mạng; D1 giả lập bằng `node:sqlite`). Không chạy `node --test tests/` vì `tests/may-chu-thu.mjs` là máy chủ chạy mãi
+- `node --test tests/commons.test.mjs tests/thanh-qua.test.mjs tests/buoc.test.mjs` – kiểm thử ảnh Wikimedia Commons, API Thành quả, hàm tô đậm và dò nguyên liệu trong bước (không cần mạng; D1 giả lập bằng `node:sqlite`). Không chạy `node --test tests/` vì `tests/may-chu-thu.mjs` là máy chủ chạy mãi
 
 ## Quy tắc nội dung
 - Món chỉ lên web khi `trang_thai` = `duyệt`, có danh mục hợp lệ, ít nhất 1 nguyên liệu và 1 bước. Không nới lỏng cổng này.
