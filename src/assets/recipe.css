@@ -1,9 +1,11 @@
 /* Trang món: thông số, nguyên liệu, các bước dạng dòng thời gian, chế độ nấu. Chỉ trang món tải file này. */
 .recipe { max-width: 760px; margin: 0 auto; }
 @media (min-width: 900px) { .recipe { max-width: none; } .r-cols { display: grid; grid-template-columns: 380px 1fr; gap: 28px; align-items: start; margin-top: 16px; } .r-side .media, .r-main h2 { margin-top: 0; } }
-.recipe h1 { font-size: 2.1em; margin: .15em 0 .35em; }
-.facts { list-style: none; padding: 0; margin: 16px 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(76px, 1fr)); gap: 8px; }
-.facts li { display: flex; flex-direction: column; gap: 3px; align-items: flex-start; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 10px; font-size: .92em; }
+.recipe h1 { font-size: 2.5em; margin: .15em 0 .3em; }
+/* Thông số: một dải chia cột, không phải 4 thẻ */
+.facts { list-style: none; padding: 6px 0; margin: 16px 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.facts li { display: flex; flex-direction: column; gap: 3px; align-items: center; text-align: center; padding: 8px 6px; font-size: .92em; }
+.facts li + li { border-left: 1px solid var(--line); }
 .facts .ic { color: var(--accent); }
 .facts b { line-height: 1.2; }
 .facts small { color: var(--muted); font-size: 13px; }
@@ -66,7 +68,7 @@
 .step-tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .mini { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); color: var(--primary); font-weight: 600; font-size: .88em; cursor: pointer; }
 .mini .ic { width: 18px; height: 18px; }
-.tip { background: var(--herb-soft); border-radius: var(--radius); padding: 4px 20px 10px; margin: 24px 0; }
-.tip h2 { color: var(--herb); display: flex; align-items: center; gap: 8px; font-size: 1.2em; }
+.tip { background: var(--nghe-soft); border-radius: var(--radius); padding: 4px 20px 10px; margin: 24px 0; }
+.tip h2 { color: var(--primary); display: flex; align-items: center; gap: 8px; font-size: 1.3em; }
 .tags { margin: 18px 0; }
 /* Chế độ đang nấu */

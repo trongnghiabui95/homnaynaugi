@@ -1,45 +1,48 @@
 ---
 version: alpha
 name: Hôm Nay Nấu Gì
-description: Tạp chí ẩm thực tiếng Việt trên điện thoại. Nền kem ấm, tiêu đề serif, ảnh món là nhân vật chính, đọc được khi tay đang nấu.
+description: Tạp chí ẩm thực tiếng Việt trên điện thoại. Nền giấy ấm, tiêu đề serif Fraunces, điểm nhấn nghệ vàng, ảnh món là nhân vật chính, đọc được khi tay đang nấu.
 colors:
   primary: "#B4421F"          # chữ nhấn, nút chính, vòng focus (≥ 4.67:1 trên mọi nền sáng, kể cả primary-soft, surface-2, herb-soft)
   on-primary: "#FFFFFF"
-  primary-soft: "#FBE6DD"     # nền nút phụ, ô đã chọn
+  primary-soft: "#F9E2D6"     # nền nút phụ, ô đã chọn
   accent: "#D95D39"           # CHỈ trang trí (viền, chấm), không dùng cho chữ
-  herb: "#437352"             # xanh thảo mộc: mẹo, nút Tủ lạnh, độ khó Dễ
-  herb-soft: "#E6F0E8"
-  neutral: "#FAF8F5"          # nền trang
-  surface: "#FFFFFF"          # thẻ
-  surface-2: "#F3EEE7"        # nền phụ, khung ảnh chờ
-  on-surface: "#2D2A26"       # chữ thân
-  muted: "#6B645C"            # chữ phụ (5.6:1 trên nền kem)
-  line: "#EBE4DA"             # viền 1px
-  level-easy: "#437352"
+  herb: "#3F6E4E"             # xanh thảo mộc: mẹo, nút Tủ lạnh, độ khó Dễ
+  herb-soft: "#E1EDE3"
+  nghe: "#E7A33E"             # nghệ vàng: CHỈ trang trí (gạch chân tiêu đề)
+  nghe-soft: "#FBEBCB"        # nền khung quay món, Bí quyết, ô danh mục thứ 3
+  neutral: "#F6F0E6"          # nền trang (giấy ấm)
+  surface: "#FFFCF7"          # thẻ
+  surface-2: "#EFE6D8"        # nền phụ, khung ảnh chờ
+  on-surface: "#231E19"       # chữ thân
+  muted: "#675F55"            # chữ phụ (≥ 5:1 trên nền giấy, surface-2, nghe-soft)
+  line: "#E6DCCD"             # viền 1px
+  level-easy: "#3F6E4E"
   level-medium: "#96610F"
   level-hard: "#B4421F"
-  dark-neutral: "#1D1A17"
-  dark-surface: "#27231F"
-  dark-surface-2: "#322C27"
-  dark-on-surface: "#F3EDE6"
-  dark-muted: "#BDB3A8"
-  dark-line: "#3E3730"
+  dark-neutral: "#171412"
+  dark-surface: "#221D19"
+  dark-surface-2: "#2D2621"
+  dark-on-surface: "#F4EEE6"
+  dark-muted: "#BDB2A6"
+  dark-line: "#3A322B"
+  dark-nghe-soft: "#392D19"
   dark-primary: "#F39A74"
   dark-on-primary: "#2A1208"
   dark-herb: "#92CFA2"
 typography:
   headline-lg:
-    fontFamily: Lora
-    fontSize: 1.9em
-    fontWeight: 700
-    lineHeight: 1.25
-    letterSpacing: -0.01em
+    fontFamily: Fraunces
+    fontSize: 2.1em
+    fontWeight: 650
+    lineHeight: 1.1
+    letterSpacing: -0.015em
   headline-md:
-    fontFamily: Lora
-    fontSize: 1.35em
-    fontWeight: 700
+    fontFamily: Fraunces
+    fontSize: 1.45em
+    fontWeight: 650
     lineHeight: 1.25
-    letterSpacing: -0.01em
+    letterSpacing: -0.015em
   headline-sm:
     fontFamily: Be Vietnam Pro
     fontSize: 1em
@@ -68,7 +71,7 @@ typography:
 rounded:
   sm: 10px
   md: 14px
-  lg: 18px
+  lg: 22px
   full: 9999px
 spacing:
   xs: 4px
@@ -85,7 +88,7 @@ components:
   button-primary:
     backgroundColor: "{colors.primary}"
     textColor: "{colors.on-primary}"
-    rounded: "{rounded.md}"
+    rounded: "{rounded.full}"
     height: 48px
     typography: "{typography.label-md}"
   button-primary-dark:
@@ -94,7 +97,7 @@ components:
   button-ghost:
     backgroundColor: "{colors.primary-soft}"
     textColor: "{colors.primary}"
-    rounded: "{rounded.md}"
+    rounded: "{rounded.full}"
     height: 48px
   chip:
     backgroundColor: "{colors.surface}"
@@ -114,7 +117,7 @@ components:
     backgroundColor: "{colors.dark-surface}"
     textColor: "{colors.dark-on-surface}"
   tip:
-    backgroundColor: "{colors.herb-soft}"
+    backgroundColor: "{colors.nghe-soft}"
     textColor: "{colors.on-surface}"
     rounded: "{rounded.lg}"
   page:
@@ -169,9 +172,10 @@ File này mô tả giao diện cho mọi AI agent (Claude Code, Codex…) và ng
 Hình mẫu: **một cuốn sổ công thức của gia đình được in đẹp như tạp chí**, mở trên bàn bếp. Người đọc đứng cạnh bếp, tay ướt, nhìn điện thoại từ xa nửa mét. Họ cần biết nhanh: nấu gì, mất bao lâu, cần mua gì, bước tiếp theo là gì.
 
 Đặc điểm nhận diện:
-- Nền kem ấm, thẻ trắng, đổ bóng rất mềm. Chế độ đêm là bản dựng lại từng màu, không đảo màu.
-- Tiêu đề serif Lora; nội dung, nhãn và số dùng Be Vietnam Pro.
-- Ảnh món thật là nhân vật chính. Khi chưa có ảnh: khung nền phẳng ghi tên món bằng Lora, không emoji, không hình minh hoạ giả.
+- Nền giấy ấm, thẻ trắng ngà, đổ bóng mềm ấm. Chế độ đêm là bản dựng lại từng màu, không đảo màu.
+- Tiêu đề serif **Fraunces** (Google Fonts, OFL, có tiếng Việt; trục `opsz` tự chỉnh nét theo cỡ chữ), chữ nghiêng làm điểm nhấn; nội dung, nhãn và số dùng Be Vietnam Pro.
+- Ba màu chợ quê: cam đất (chữ, nút), xanh thảo mộc (tích cực), nghệ vàng (nền khung quay, Bí quyết, gạch chân tiêu đề).
+- Ảnh món thật là nhân vật chính. Khi chưa có ảnh: khung nền phẳng ghi tên món bằng Fraunces nghiêng, không emoji, không hình minh hoạ giả.
 - Một màu nhấn cam đất. Màn hình phải 90–95% là màu trung tính; màu nhấn dưới 5% diện tích.
 - Chuyển động hiếm và ngắn. "Khoảnh khắc vui" duy nhất là vòng quay món.
 
@@ -192,7 +196,7 @@ Bộ ba "nền kem + serif + cam đất" bị nhiều bộ kiểm tra coi là gi
 ## Typography
 
 - Chữ thân 17px, giãn dòng 1.6. Chế độ chữ lớn (`data-big`) nâng lên 20px; mọi cỡ khác dùng `em` để tự lớn theo.
-- Thang chữ: h1 1.9em Lora, h2 1.35em Lora, h3 1em đậm sans, thân 1em, nhãn 0.85em, chữ nhỏ nhất 13px. Không thêm cỡ mới; mỗi loại phần tử chỉ một cỡ trên toàn web.
+- Thang chữ: h1 2.1em Fraunces (trang chủ 2.45em, 3em từ 700px; trang món 2.5em), h2 1.45em Fraunces, h3 1em đậm sans, thân 1em, nhãn 0.85em, chữ nhỏ nhất 13px. Không thêm cỡ mới; mỗi loại phần tử chỉ một cỡ trên toàn web.
 - Chỉ một `h1` mỗi trang; tiêu đề không nhảy cấp.
 - Đoạn văn dài tối đa ~65 ký tự mỗi dòng (`max-width: 65ch`).
 - Tiêu đề dùng `text-wrap: balance`, đoạn văn `text-wrap: pretty`. Tên món dài phải xuống dòng gọn, không tràn khung (`overflow-wrap: anywhere` trên thẻ).
@@ -217,29 +221,34 @@ Bộ ba "nền kem + serif + cam đất" bị nhiều bộ kiểm tra coi là gi
 - Bóng đổ duy nhất là `--shadow` (hai lớp mềm). Không thêm bóng mới, không bóng cứng không mờ.
 - Chế độ đêm: không bóng; phân tầng bằng màu nền sáng dần.
 - Không lồng thẻ trong thẻ. Không kính mờ, quầng sáng, gradient trang trí.
+- Chuyển trang: `@view-transition { navigation: auto; }` (trình duyệt tự làm mờ dần, không cần thư viện; trình duyệt chưa hỗ trợ thì chuyển trang như thường).
 
 ## Shapes
 
-- Bo góc theo thang: `sm` 10px (ô nhỏ, ảnh bước), `md` 14px (nút, ô chọn, seg), `lg` 18px (thẻ, khung lớn), `full` (chip, nút tròn, ảnh danh mục).
-- Ảnh món tỉ lệ 4:3, `object-fit: cover`, luôn có `width`/`height` hoặc `aspect-ratio` để không nhảy bố cục.
+- Bo góc theo thang: `sm` 10px (ô nhỏ, ảnh bước), `md` 14px (ô chọn, seg), `lg` 22px (thẻ, khung lớn), `full` (nút, chip, ô tìm, thanh tab, ảnh danh mục, "đĩa").
+- Ảnh trong thẻ món vuông 1:1, lồng trong thẻ cách mép 6px, bo 17px; ảnh trang món 16:10. Ảnh món `object-fit: cover`, luôn có `width`/`height` hoặc `aspect-ratio` để không nhảy bố cục.
 - Icon: SVG cùng một bộ nét (`icon()` trong `templates.mjs`), cùng độ dày nét. Không dùng emoji làm icon tính năng.
 
 ## Components
 
-- **Nút chính** (`.btn`): tô đầy `primary`, cao ≥ 48px, chữ đậm. Mỗi màn hình chỉ một nút chính tô đầy. Nhãn nút không xuống dòng ở 320px, không có mũi tên dính chữ.
+- **Nút chính** (`.btn`): tô đầy `primary`, bo tròn hẳn, cao ≥ 48px, chữ đậm. Mỗi màn hình chỉ một nút chính tô đầy. Nhãn nút không xuống dòng ở 320px, không có mũi tên dính chữ.
 - **Nút phụ** (`.btn.ghost`): nền `primary-soft`, chữ `primary`. Chỉ một kiểu nút phụ.
 - **Chip** (`.chip`): bo `full`, cao ≥ 44px; `aria-pressed` cho chip bật/tắt.
-- **Seg / radio**: nhóm lựa chọn loại trừ dùng `role="radiogroup"` hoặc `<input type=radio>` thật; ô được chọn có viền `primary` và nền `surface-2`. Vùng bấm là cả nhãn.
-- **Thẻ món** (`recipeCard()`): ảnh 4:3 trên, tên món, dòng phụ (thời gian, độ khó). Viền trên 3px theo độ khó. Chỉ **một** hiệu ứng hover đặt trên thẻ (nhấc nhẹ), không phóng to ảnh bên trong; hover nằm trong `@media (hover: hover) and (pointer: fine)`.
-- **Khung quay món**: radio Món ăn / Đồ uống → kiểu (Mâm cơm 3 món / 1 món) → Bộ lọc thu gọn → nút Quay → các ngăn. Ngăn mâm cơm nằm ngang trong một khay, mỗi ngăn cuộn dọc.
+- **Seg / radio**: nhóm lựa chọn loại trừ dùng `role="radiogroup"` hoặc `<input type=radio>` thật; ô được chọn có viền `primary` (radio Món ăn / Đồ uống là viên thuốc nền `surface`); seg trong khung quay: ô chọn nền `on-surface`, chữ `neutral`. Vùng bấm là cả nhãn.
+- **Thẻ món** (`recipeCard()`): ảnh vuông lồng trong thẻ, tên món Fraunces 1.1em, dòng phụ (thời gian, độ khó). Độ khó là chấm tròn 8px cùng màu chữ "Dễ/Vừa/Khó" (không còn viền trên 3px). Chỉ **một** hiệu ứng hover đặt trên thẻ (nhấc nhẹ), không phóng to ảnh bên trong; hover nằm trong `@media (hover: hover) and (pointer: fine)`.
+- **Đầu trang chủ**: h1 lớn, chữ cuối nghiêng màu `primary` gạch chân `nghe` dày .1em; góc phải là cụm 3 "đĩa" (ảnh tròn 64px, 104px từ 700px, viền 4px màu nền, chồng nhau, lệch cao thấp) lấy từ 3 món có ảnh chụp mới nhất, ảnh bản nhỏ 330px.
+- **Ô danh mục**: không viền, nền xen kẽ `primary-soft` / `herb-soft` / `nghe-soft`, ảnh tròn 88px viền 4px `surface`, tên Fraunces.
+- **Tiêu đề mục** (`.sec-head`): h2 Fraunces bên trái, link "Tất cả" là viên thuốc nền `primary-soft` bên phải.
+- **Thanh tab dưới**: nổi, cách mép 8px, bo 24px, viền `line` + bóng; nhãn không xuống dòng.
+- **Khung quay món**: nền `nghe-soft`, không viền, không bóng (khối nổi nhất trang chủ). Thứ tự: radio Món ăn / Đồ uống → kiểu (Mâm cơm 3 món / 1 món) → Bộ lọc thu gọn → nút Quay → các ngăn. Ngăn mâm cơm nằm ngang trong một khay, mỗi ngăn cuộn dọc.
 - **Ngăn 1 món / đồ uống** (`.slot.single`): dải thẻ ảnh nằm ngang cao 108px, hai mép mờ bằng `mask-image` (che bớt, không phải gradient trang trí), tam giác chỉ ở giữa phía trên. Khi quay: dải trượt ngang bằng `transform` và có vạch dọc 2px `primary` ở giữa. Khi dừng: vạch ẩn, thẻ giữa rõ và có viền `primary`, thẻ hai bên mờ 55%. Dưới dải: nhãn, tên món, thời gian và độ khó, rồi hàng "Cách nấu" | "Giữ".
-- **Mẹo** (`.tip`): nền `herb-soft`, bo `lg`. Không dùng sọc màu dày ở cạnh trái.
+- **Mẹo / Bí quyết** (`.tip`): nền `nghe-soft`, tiêu đề màu `primary`, bo `lg`. Không dùng sọc màu dày ở cạnh trái.
 - **Ô nhập**: nhãn hiển thị phía trên, không lấy placeholder làm nhãn; viền không đổi độ dày giữa các trạng thái; lỗi nằm ngay dưới ô, gắn `aria-describedby`.
 - **Trạng thái** của mọi thành phần tương tác: mặc định, hover (chỉ chuột), focus (`:focus-visible`, viền 3px `primary`, hiện ngay), nhấn (`:active` thu nhẹ), tắt (`disabled` thật + mờ + `cursor: not-allowed`), đang tải (spinner chỉ trong nút).
 - **Trạng thái rỗng** (`emptyState()`): nói cái gì đang trống, vì sao nó có ích, và một hành động. Ví dụ: "Sổ tay còn trống. Bấm Lưu ở món bạn thích để xem lại nhanh. [Quay món hôm nay]".
 - **Lỗi**: nói chuyện gì xảy ra, cách khắc phục, có nút thử lại. Mất mạng thì báo đang ngoại tuyến.
 - **Thành quả của bạn đọc** (`thanh-qua.css`, chỉ tải trên trang món): nút chính "Khoe món bạn nấu" có icon máy ảnh; lưới thẻ 2 cột (3 cột từ 700px), ảnh 4:3 trên, tên + thời gian + cảm nhận dưới; "Báo cáo" là nút chữ phụ, vùng bấm 44px. Hộp gửi là `<dialog>`: ô ảnh lớn khung đứt nét, cảm nhận, tên (máy nhớ), một nút Gửi. Chỉ một ô bắt buộc là tên.
-- **Logo yendan** (thương hiệu chủ quản): hình chim yến bay màu `primary` cạnh chữ "yendan" Lora 700, đặt ở chân trang dạng "Một sản phẩm của yendan". Header chỉ dùng logo "Hôm Nay Nấu Gì". SVG nội tuyến để tự đổi màu theo chế độ; bản màu cố định ở `src/assets/yendan.svg`.
+- **Logo yendan** (thương hiệu chủ quản): hình chim yến bay màu `primary` cạnh chữ "yendan" Fraunces 650, đặt ở chân trang dạng "Một sản phẩm của yendan". Header chỉ dùng logo "Hôm Nay Nấu Gì". SVG nội tuyến để tự đổi màu theo chế độ; bản màu cố định ở `src/assets/yendan.svg`.
 - **Các bước nấu** (`recipe.css`): dòng thời gian dọc, không viền hộp. Số bước là ô tích (vùng bấm 44px); đường mảnh 2px màu `line` nối các số.
   - Đầu khối: dòng tóm tắt "6 bước · 3 bước cần chờ · chờ lâu nhất 45 phút" (tính từ `hen_gio_phut`), thanh tiến độ "2/6 bước", nút "Làm lại từ đầu".
   - Bước phải chờ có nhãn đồng hồ + số phút cạnh tiêu đề.
@@ -248,9 +257,9 @@ Bộ ba "nền kem + serif + cam đất" bị nhiều bộ kiểm tra coi là gi
 - **Chế độ nấu** (`cook.css`, chỉ tải khi mở): màn **Chuẩn bị** (nguyên liệu theo khẩu phần, tích khi đã sẵn) → từng bước → màn **Hoàn thành** (tung bông, Khoe món, Lưu sổ tay).
   - Mỗi bước: chữ to; thời gian, nhiệt độ, mức lửa, kích cỡ tô đậm màu `primary`; khối "Dùng ở bước này" là các chip nền `surface-2` (tên đậm + lượng màu `primary`), chỉ hiện nguyên liệu dò được, không đoán; nút hẹn giờ cho mọi "N phút" trong câu; "Xem đoạn này" khi bước có `giay_video`; dòng "Tiếp theo: …".
   - Nút loa ở góc trên: đọc to từng bước bằng giọng có sẵn trên máy, nhớ lựa chọn. Vuốt trái/phải để chuyển bước.
-  - **Dải đầu**: ảnh món (ảnh bìa, không có thì ảnh bìa video) tràn ngang, lớp che phẳng `rgb(20 16 12 / .6)` (không gradient) để chữ trắng đủ tương phản; tên món Lora + vị trí bước; nút sáng/tối, loa, thoát màu trắng. Màn Chuẩn bị, Hoàn thành ảnh cao 34vh; màn bước cao 132px. Món không có ảnh: dải nền `surface`, chữ thường.
+  - **Dải đầu**: ảnh món (ảnh bìa, không có thì ảnh bìa video) tràn ngang, lớp che phẳng `rgb(20 16 12 / .6)` (không gradient) để chữ trắng đủ tương phản; tên món Fraunces + vị trí bước; nút sáng/tối, loa, thoát màu trắng. Màn Chuẩn bị, Hoàn thành ảnh cao 34vh; màn bước cao 132px. Món không có ảnh: dải nền `surface`, chữ thường.
   - **Thanh bước**: mỗi đoạn là một nút ≥ 44×44px (nhiều bước thì cuộn ngang) (Chuẩn bị + từng bước), vạch 6px: xong `herb`, đang làm `primary` (dày hơn bằng `scaleY`), còn lại `line`. Bấm để nhảy bước (không tự đánh dấu xong).
-  - **Thẻ nội dung**: nền `surface`, viền `line`, bo `lg`. Số bước Lora 3em màu `primary`; giai đoạn (cột `giai_doan`) là chip `herb-soft`/`herb` cạnh số.
+  - **Thẻ nội dung**: nền `surface`, viền `line`, bo `lg`. Số bước Fraunces 3em màu `primary`; giai đoạn (cột `giai_doan`) là chip `herb-soft`/`herb` cạnh số.
   - Nút sáng/tối có cả trong chế độ nấu (bếp sáng thì đọc nền sáng dễ hơn).
 - **Chế độ nấu, ảnh bước**: chữ hướng dẫn là chính; ảnh bước là khung 4:3 nhỏ (cao ≤ 190px và ≤ 22% màn hình), canh trái.
 - **Ghi nguồn**: dưới ảnh không tự chụp luôn có một dòng nhỏ 13px màu `muted` "Nguồn: tác giả, giấy phép", cả dòng là link tới trang ảnh, quá dài thì cắt "…" (không bỏ tên tác giả: CC BY/BY-SA bắt buộc); dưới video luôn có tên kênh và link YouTube.
@@ -319,7 +328,7 @@ Ma trận: độ rộng 320, 390, 768, 1280 · chế độ sáng, đêm (`data-t
 8. Giả lập reduced-motion: bấm quay vẫn ra kết quả, không còn chuyển động dịch chuyển.
 9. Tắt JS: trang món vẫn đọc được tên món, nguyên liệu, các bước.
 10. Quảng cáo đúng vị trí, có nhãn, cách nội dung ≥ 16px.
-11. Ngân sách: **mỗi trang** tải CSS < 30 KB, JS < 100 KB. CSS chia theo trang: `style.css` (mọi trang) + `home.css` (trang chủ) hoặc `recipe.css` + `thanh-qua.css` (trang món). Đo bằng `wc -c src/assets/*.css src/assets/*.js` rồi cộng theo trang.
+11. Ngân sách: **mỗi trang** tải CSS < 30 KB, JS < 100 KB. CSS chia theo trang: `style.css` (mọi trang) + `home.css` (trang chủ) hoặc `recipe.css` + `thanh-qua.css` (trang món). Đo bằng `wc -c dist/assets/*.css dist/assets/*.js` (CSS đã nén lúc build) rồi cộng theo trang.
 12. `tests/e2e.py`: mọi dòng `OK`, `errors: []`.
 
 **Reflex** (dò nhanh trong `style.css`)
@@ -350,7 +359,7 @@ Những chỗ hiện tại còn lệch hệ thống này (đo ngày 2026-11-17).
 8. Bo góc đang có 7 giá trị (10, 12, 14, 16, 18, 50%, 999px) và khoảng 15 cỡ chữ đặt tay: gom về thang ở trên.
 9. Khoảng 30 màu viết trực tiếp ngoài `:root`.
 10. `.cat-emoji` dùng emoji khi danh mục chưa có ảnh.
-11. (Đã xử lý 2026-11-17) CSS chia theo trang: trang chủ tải 25,6 KB, trang món 25 KB lúc mở; mở chế độ nấu tải thêm `cook.css` 5,5 KB (tổng 30,5 KB < 30 KiB). Không thêm CSS vào `cook.css` khi chưa bớt chỗ khác.
+11. (Đã xử lý 2026-11-17, cập nhật #77) CSS chia theo trang và **nén lúc build** (`nenCss()` trong `build.mjs`): trang chủ 24,5 KB, trang món 22,9 KB lúc mở, 27,6 KB khi mở thêm chế độ nấu.
 
 Đã sửa ngày 2026-11-17 (PR khung quay ngang): mục 1 (bỏ IN HOA giãn chữ ở `.kicker`, `.slot-label`, `.rcard-meta b`, `.ing-box h3`, `.ad-label`, nút quay), mục 2 (bỏ sọc trái `.sec-head h2`, `.tip`), mục 3 (hover nhấc thẻ trong `@media (hover: hover)`, bỏ phóng ảnh), mục 6 (khung chờ ảnh nền phẳng). Bỏ thêm lớp phủ gradient và hiệu ứng `filter` khi quay.
 
