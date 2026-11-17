@@ -377,9 +377,10 @@ ${site.turnstile_site_key ? `<section class="tq" data-tq data-mon="${r.slug}" da
 ${adSlot(L, "bottom")}
 ${related.length ? `<section><h2 class="section-title">${t("more_in", r.cat.lv.ten ? vi(esc(r.cat.ten)) : esc(r.cat.ten))}</h2>${grid(related, false, true)}</section>` : ""}
 <div class="cook" data-cook-view hidden role="dialog" aria-modal="true" aria-label="${t("cook_dlg")}">
-  <div class="cook-top"><span data-cook-pos></span><button class="icon-btn" type="button" data-cook-close aria-label="${t("cook_exit")}">✕</button></div>
+  <div class="cook-top"><span data-cook-pos></span><span><button class="icon-btn" type="button" data-cook-say aria-pressed="false" aria-label="${t("cook_say")}" title="${t("cook_say")}" hidden>${icon("loa")}</button><button class="icon-btn" type="button" data-cook-close aria-label="${t("cook_exit")}">✕</button></span></div>
   <div class="cook-bar"><span data-cook-bar></span></div>
-  <div class="cook-body"><h2 class="cook-title" data-cook-title${r.dich ? "" : LV}></h2><p class="cook-text" data-cook-text${r.dich ? "" : LV}></p><img class="cook-img" data-cook-img alt="" hidden></div>
+  <div class="cook-body" data-cook-body aria-live="polite"><h2 class="cook-title" data-cook-title${r.dich ? "" : LV}></h2><p class="cook-text" data-cook-text${r.dich ? "" : LV}></p><div data-cook-extra></div><img class="cook-img" data-cook-img alt="" hidden></div>
+  <p class="cook-next" data-cook-upnext></p>
   <label class="cook-done"><input type="checkbox" data-cook-done> ${t("cook_done")}</label>
   <div class="cook-tools" data-cook-tools></div>
   <div class="cook-nav"><button class="btn ghost" type="button" data-cook-prev>${t("prev")}</button><button class="btn" type="button" data-cook-next>${t("next")}</button></div>

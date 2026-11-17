@@ -245,7 +245,10 @@ Bộ ba "nền kem + serif + cam đất" bị nhiều bộ kiểm tra coi là gi
   - Bước phải chờ có nhãn đồng hồ + số phút cạnh tiêu đề.
   - Bước đang làm (bước đầu chưa xong): số nền `primary`; bước khác chữ `muted`; bước xong: số nền `herb` có dấu tích, thu gọn còn tiêu đề.
   - Tiến độ lưu theo món trên máy. Ảnh bước trên màn rộng là ảnh nhỏ bên phải, bấm để phóng to.
-- **Chế độ nấu**: chữ hướng dẫn là chính; ảnh bước là khung 4:3 nhỏ (cao ≤ 190px và ≤ 22% màn hình), canh trái.
+- **Chế độ nấu** (`cook.css`, chỉ tải khi mở): màn **Chuẩn bị** (nguyên liệu theo khẩu phần, tích khi đã sẵn) → từng bước → màn **Hoàn thành** (tung bông, Khoe món, Lưu sổ tay).
+  - Mỗi bước: chữ to; thời gian, nhiệt độ, mức lửa, kích cỡ tô đậm màu `primary`; khối "Dùng ở bước này" là các chip nền `surface-2` (tên đậm + lượng màu `primary`), chỉ hiện nguyên liệu dò được, không đoán; nút hẹn giờ cho mọi "N phút" trong câu; "Xem đoạn này" khi bước có `giay_video`; dòng "Tiếp theo: …".
+  - Nút loa ở góc trên: đọc to từng bước bằng giọng có sẵn trên máy, nhớ lựa chọn. Vuốt trái/phải để chuyển bước.
+- **Chế độ nấu, ảnh bước**: chữ hướng dẫn là chính; ảnh bước là khung 4:3 nhỏ (cao ≤ 190px và ≤ 22% màn hình), canh trái.
 - **Ghi nguồn**: dưới ảnh không tự chụp luôn có một dòng nhỏ 13px màu `muted` "Nguồn: tác giả, giấy phép", cả dòng là link tới trang ảnh, quá dài thì cắt "…" (không bỏ tên tác giả: CC BY/BY-SA bắt buộc); dưới video luôn có tên kênh và link YouTube.
 
 ## Do's and Don'ts
