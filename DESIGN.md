@@ -231,7 +231,8 @@ Bộ ba "nền kem + serif + cam đất" bị nhiều bộ kiểm tra coi là gi
 - **Chip** (`.chip`): bo `full`, cao ≥ 44px; `aria-pressed` cho chip bật/tắt.
 - **Seg / radio**: nhóm lựa chọn loại trừ dùng `role="radiogroup"` hoặc `<input type=radio>` thật; ô được chọn có viền `primary` và nền `surface-2`. Vùng bấm là cả nhãn.
 - **Thẻ món** (`recipeCard()`): ảnh 4:3 trên, tên món, dòng phụ (thời gian, độ khó). Viền trên 3px theo độ khó. Chỉ **một** hiệu ứng hover đặt trên thẻ (nhấc nhẹ), không phóng to ảnh bên trong; hover nằm trong `@media (hover: hover) and (pointer: fine)`.
-- **Khung quay món**: radio Món ăn / Đồ uống → kiểu (Mâm cơm 3 món / 1 món) → Bộ lọc thu gọn → nút Quay → các ngăn. Ngăn mâm cơm nằm ngang trong một khay.
+- **Khung quay món**: radio Món ăn / Đồ uống → kiểu (Mâm cơm 3 món / 1 món) → Bộ lọc thu gọn → nút Quay → các ngăn. Ngăn mâm cơm nằm ngang trong một khay, mỗi ngăn cuộn dọc.
+- **Ngăn 1 món / đồ uống** (`.slot.single`): dải thẻ ảnh nằm ngang cao 108px, hai mép mờ bằng `mask-image` (che bớt, không phải gradient trang trí), tam giác chỉ ở giữa phía trên. Khi quay: dải trượt ngang bằng `transform` và có vạch dọc 2px `primary` ở giữa. Khi dừng: vạch ẩn, thẻ giữa rõ và có viền `primary`, thẻ hai bên mờ 55%. Dưới dải: nhãn, tên món, thời gian và độ khó, rồi hàng "Cách nấu" | "Giữ".
 - **Mẹo** (`.tip`): nền `herb-soft`, bo `lg`. Không dùng sọc màu dày ở cạnh trái.
 - **Ô nhập**: nhãn hiển thị phía trên, không lấy placeholder làm nhãn; viền không đổi độ dày giữa các trạng thái; lỗi nằm ngay dưới ô, gắn `aria-describedby`.
 - **Trạng thái** của mọi thành phần tương tác: mặc định, hover (chỉ chuột), focus (`:focus-visible`, viền 3px `primary`, hiện ngay), nhấn (`:active` thu nhẹ), tắt (`disabled` thật + mờ + `cursor: not-allowed`), đang tải (spinner chỉ trong nút).
@@ -329,7 +330,9 @@ Những chỗ hiện tại còn lệch hệ thống này (đo ngày 2026-11-17).
 8. Bo góc đang có 7 giá trị (10, 12, 14, 16, 18, 50%, 999px) và khoảng 15 cỡ chữ đặt tay: gom về thang ở trên.
 9. Khoảng 30 màu viết trực tiếp ngoài `:root`.
 10. `.cat-emoji` dùng emoji khi danh mục chưa có ảnh.
-11. `style.css` 30.536 byte, sát trần 30 KB: các sửa ở trên phải cắt bớt nhiều hơn thêm vào; cân nhắc bước nén CSS khi build.
+11. `style.css` 30.616 byte, sát trần 30 KB (30.720 byte): các sửa ở trên phải cắt bớt nhiều hơn thêm vào; cân nhắc bước nén CSS khi build.
+
+Đã sửa ngày 2026-11-17 (PR khung quay ngang): mục 1 (bỏ IN HOA giãn chữ ở `.kicker`, `.slot-label`, `.rcard-meta b`, `.ing-box h3`, `.ad-label`, nút quay), mục 2 (bỏ sọc trái `.sec-head h2`, `.tip`), mục 3 (hover nhấc thẻ trong `@media (hover: hover)`, bỏ phóng ảnh), mục 6 (khung chờ ảnh nền phẳng). Bỏ thêm lớp phủ gradient và hiệu ứng `filter` khi quay.
 
 Đã sửa ngày 2026-11-17 (quét tương phản 9 trang × sáng/đêm):
 - `primary` `#C2492A` → `#B4421F`: chữ màu chính chỉ đạt 4.08–4.25:1 trên nền nhạt (nút phụ, radio đang chọn, định lượng đã tích, link trong mẹo).
