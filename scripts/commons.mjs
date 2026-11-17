@@ -18,7 +18,7 @@ export function commonsFile(u) {
   let m = s.match(/^(?:File|Tập tin|Tập_tin):(.+)$/i)
     || s.match(/^https?:\/\/(?:commons\.(?:m\.)?wikimedia\.org\/wiki\/|[\w.-]+\.wikipedia\.org\/wiki\/[^#]*#\/media\/)(?:File|Tập_tin|Tập tin):([^?#]+)/i);
   let name = m?.[1];
-  if (!name && (m = s.match(/^https?:\/\/upload\.wikimedia\.org\/wikipedia\/commons\/(thumb\/)?[0-9a-f]\/[0-9a-f]{2}\/([^/?#]+)/))) name = m[2];
+  if (!name && (m = s.match(/^https?:\/\/(?:upload|thumb)\.wikimedia\.org\/wikipedia\/commons\/(thumb\/)?[0-9a-f]\/[0-9a-f]{2}\/([^/?#]+)/))) name = m[2];
   if (!name) return "";
   try { name = decodeURIComponent(name); } catch {}
   name = name.replace(/_/g, " ").replace(/\s+/g, " ").trim();
@@ -41,10 +41,12 @@ function pageInfo(p) {
   const v = (k) => plain(meta[k]?.value);
   const license = v("LicenseShortName");
   if (!license) return { why: "không rõ giấy phép" };
-  const author = (v("Artist") || v("Credit")).slice(0, 120);
+  // Commons hay gắn link trang thảo luận sau tên: "Phương Huy (thảo luận)", "Name (talk)" – bỏ phần đó.
+  const author = (v("Artist") || v("Credit")).replace(/\s*\(\s*(thảo luận|talk|discussion|contribs|đóng góp)[^)]*\)/gi, "").trim().slice(0, 120);
   if (!author && !/public domain|cc0|pd/i.test(license)) return { why: "không rõ tác giả" };
-  const src = ii.thumburl || ii.url;
-  if (!/^https:\/\/upload\.wikimedia\.org\//.test(src || "")) return { why: "link ảnh lạ" };
+  const src = (ii.thumburl || ii.url || "").replace(/\?.*$/, ""); // bỏ ?utm_… Wikimedia gắn thêm
+  // Ảnh thu nhỏ có thể nằm ở upload.wikimedia.org hoặc thumb.wikimedia.org (máy chủ ảnh mới của Wikimedia)
+  if (!/^https:\/\/(upload|thumb)\.wikimedia\.org\//.test(src || "")) return { why: "link ảnh lạ" };
   const page = ii.descriptionurl || `https://commons.wikimedia.org/wiki/${encodeURI(p.title.replace(/ /g, "_"))}`;
   return { src, page, author, license, licenseUrl: v("LicenseUrl") };
 }
@@ -71,7 +73,7 @@ async function fetchBatch(batch) {
       const res = await fetch(`${API}?${q}`, { headers: { "User-Agent": "HomNayNauGi-build/1.0 (static recipe site builder)" }, signal: AbortSignal.timeout(20000) });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return await res.json();
-    } catch (e) { err = e; await new Promise((ok) => setTimeout(ok, 1500 * (lan + 1))); }
+    } catch (e) { err = e; await new Promise((ok) => setTimeout(ok, [2000, 8000, 20000][lan])); } // 429: chờ lâu dần
   }
   throw err;
 }
