@@ -271,6 +271,9 @@ select { min-height: 46px; padding: 0 12px; border: 1px solid var(--line); borde
 .steps li.done::before { content: "✓"; background: var(--herb); }
 .steps h3 { margin: 4px 0 2px; font-family: var(--serif); font-size: 1.1em; }
 .steps p { margin: 4px 0; cursor: pointer; }
+.uses { margin: 4px 0; color: var(--muted); font-size: .85em; }
+.steps, .cook-body, .qty { font-variant-numeric: tabular-nums; }
+.cook .uses { font-size: 1.1em; margin-top: 12px; }
 .step-img { border-radius: 12px; margin-top: 10px; width: 100%; aspect-ratio: 16/10; object-fit: cover; }
 .step-tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .mini { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); color: var(--primary); font-weight: 600; font-size: .88em; cursor: pointer; }

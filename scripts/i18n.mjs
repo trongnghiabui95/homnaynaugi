@@ -62,7 +62,7 @@ const vi = {
   // Tên danh mục, đơn vị đo theo ngôn ngữ. Tiếng Việt lấy từ Sheet nên ở đây trả về "" (giữ nguyên).
   cat_name: () => "", unit: () => "",
   tq_h2: "Thành quả của bạn đọc", tq_p: "Nấu xong rồi? Chụp một tấm cho mọi người cùng xem nhé.", tq_btn: "Khoe món bạn nấu",
-  cook_dlg: "Chế độ đang nấu", cook_exit: "Thoát chế độ nấu", cook_done: "Đã xong bước này", prev: "← Trước", next: "Tiếp →",
+  cook_dlg: "Chế độ đang nấu", cook_exit: "Thoát chế độ nấu", cook_done: "Đã xong bước này", step_uses: "Dùng ở bước này", prev: "← Trước", next: "Tiếp →",
   // Video, tìm kiếm, đi chợ, sổ tay
   video_title: "Video hướng dẫn nấu ăn", video_desc: "Video hướng dẫn nấu ăn, mỗi video đi kèm công thức chi tiết.", video_h1: "Video hướng dẫn",
   video_lead: "Mỗi video có công thức chi tiết đi kèm: nguyên liệu, từng bước, hẹn giờ.", video_stage: "Xem video liên tiếp",
@@ -152,7 +152,7 @@ const en = {
   unit: (k) => ({ "thia canh": "tbsp", "muong canh": "tbsp", "thia ca phe": "tsp", "muong ca phe": "tsp", "chen": "bowl", "bat": "bowl",
     "ly": "cup", "coc": "cup", "lat": "slices", "gram": "g", "g": "g", "kg": "kg", "ml": "ml", "l": "l", "lit": "l", "qua": "", "trai": "", "cai": "" })[k],
   tq_h2: "Readers' dishes", tq_p: "Cooked it? Share a photo for everyone to see.", tq_btn: "Show your dish",
-  cook_dlg: "Cooking mode", cook_exit: "Exit cooking mode", cook_done: "Done with this step", prev: "← Back", next: "Next →",
+  cook_dlg: "Cooking mode", cook_exit: "Exit cooking mode", cook_done: "Done with this step", step_uses: "Used in this step", prev: "← Back", next: "Next →",
   video_title: "Cooking video guides", video_desc: "Cooking videos, each one with a detailed recipe.", video_h1: "Video guides",
   video_lead: "Every video comes with a detailed recipe: ingredients, steps and timers.", video_stage: "Watch videos in a row",
   video_pos: (i, n) => `Video ${i}/${n}`, video_prev: "Previous video", video_next: "Next video", see_recipe: "See the recipe", next_short: "Next →",

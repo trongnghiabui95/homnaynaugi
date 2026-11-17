@@ -10,6 +10,7 @@ import { parseCSV, esc, fold, md, isSlug, imgUrl, parseYouTube } from "./lib.mjs
 import { commonsFile, resolveCommons, creditText } from "./commons.mjs";
 import { layout, adSlot, emptyState, ytThumb, icon, recipeCard, abs } from "./templates.mjs";
 import { LANGS, PREFIX, tr, diffText } from "./i18n.mjs";
+import { toDam, doNguyenLieu } from "./buoc.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const SRC = path.join(ROOT, "src");
@@ -286,7 +287,12 @@ ${rs.length ? filterBar(rs) + grid(rs, true) : emptyState(t("cat_empty"), t("cat
         r.yt && sec >= 0 ? `<button class="mini" type="button" data-seek="${sec}">${icon("play")} ${t("see_part", mmss(sec))}</button>` : "",
         tmin ? `<button class="mini" type="button" data-timer="${tmin}" data-label="${esc(s.tieu_de || t("step_n", i + 1))}">${icon("timer")} ${t("timer_min", qtyText(tmin))}</button>` : "",
       ].join("");
-      return `<li data-step id="buoc-${i + 1}">${s.tieu_de ? `<h3${A(s.lv.tieu_de)}>${esc(s.tieu_de)}</h3>` : ""}<p${A(s.lv.noi_dung)}>${esc(s.noi_dung)}</p>${s.img ? `<figure class="step-fig"><img class="step-img" src="${esc(s.img)}" alt="${esc(s.tieu_de || t("step_n", i + 1))}"${s.tieu_de ? A(s.lv.tieu_de) : ""} loading="lazy" width="800" height="600">${photoCredit(s.credit)}</figure>` : ""}${tools ? `<div class="step-tools">${tools}</div>` : ""}</li>`;
+      // "Dùng ở bước này": dò tên nguyên liệu (tiếng Việt) trong chữ gốc của bước; lượng có class qty để đổi theo khẩu phần.
+      const uses = doNguyenLieu(s.vi.noi_dung, r.ings.map((x) => x.vi.ten)).map((k) => {
+        const g = r.ings[k], q = num(g.so_luong, 0);
+        return `<span${A(g.lv.ten)}>${esc(g.ten)}${q ? `&nbsp;<b class="qty" data-q="${q}">${qtyText(q)}</b>${g.don_vi ? `&nbsp;<span${A(g.lv.don_vi)}>${esc(g.don_vi)}</span>` : ""}` : ""}</span>`;
+      }).join(" · ");
+      return `<li data-step id="buoc-${i + 1}">${s.tieu_de ? `<h3${A(s.lv.tieu_de)}>${esc(s.tieu_de)}</h3>` : ""}<p${A(s.lv.noi_dung)}>${toDam(s.noi_dung)}</p>${uses ? `<div class="uses">${t("step_uses")}: ${uses}</div>` : ""}${s.img ? `<figure class="step-fig"><img class="step-img" src="${esc(s.img)}" alt="${esc(s.tieu_de || t("step_n", i + 1))}"${s.tieu_de ? A(s.lv.tieu_de) : ""} loading="lazy" width="800" height="600">${photoCredit(s.credit)}</figure>` : ""}${tools ? `<div class="step-tools">${tools}</div>` : ""}</li>`;
     }).join("");
 
     // Món ăn kèm: lấy từ cột an_kem, thiếu thì gợi ý theo mâm cơm (mặn ↔ canh, rau)
@@ -375,7 +381,7 @@ ${related.length ? `<section><h2 class="section-title">${t("more_in", r.cat.lv.t
 <div class="cook" data-cook-view hidden role="dialog" aria-modal="true" aria-label="${t("cook_dlg")}">
   <div class="cook-top"><span data-cook-pos></span><button class="icon-btn" type="button" data-cook-close aria-label="${t("cook_exit")}">✕</button></div>
   <div class="cook-bar"><span data-cook-bar></span></div>
-  <div class="cook-body"><h2 class="cook-title" data-cook-title${r.dich ? "" : LV}></h2><p class="cook-text" data-cook-text${r.dich ? "" : LV}></p><img class="cook-img" data-cook-img alt="" hidden></div>
+  <div class="cook-body"><h2 class="cook-title" data-cook-title${r.dich ? "" : LV}></h2><p class="cook-text" data-cook-text${r.dich ? "" : LV}></p><div class="uses" data-cook-uses hidden></div><img class="cook-img" data-cook-img alt="" hidden></div>
   <label class="cook-done"><input type="checkbox" data-cook-done> ${t("cook_done")}</label>
   <div class="cook-tools" data-cook-tools></div>
   <div class="cook-nav"><button class="btn ghost" type="button" data-cook-prev>${t("prev")}</button><button class="btn" type="button" data-cook-next>${t("next")}</button></div>
