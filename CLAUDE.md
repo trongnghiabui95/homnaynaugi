@@ -29,7 +29,8 @@ Web tiếng Việt "Hôm Nay Nấu Gì" (homnaynaugi): gợi ý món và mâm c�
 - Mọi chữ hiển thị bằng tiếng Việt có dấu, câu ngắn, xưng "bạn".
 - JS < 100KB, CSS < 30KB. Không thêm thư viện ngoài khi chưa hỏi.
 - Quảng cáo chỉ qua `adSlot()` (có nhãn "Quảng cáo", cách nội dung ≥ 16px) ở các vị trí: dưới khung quay món, giữa khối Nguyên liệu và Cách làm, cuối bài. Không đặt bên trong danh sách nguyên liệu, giữa các bước hay trong chế độ nấu.
-- Màu nhấn `#D95D39` chỉ để trang trí; chữ và nút dùng `--primary` `#C2492A` để đủ tương phản. Tiêu đề font Lora, nội dung Be Vietnam Pro.
+- Màu nhấn `#D95D39` chỉ để trang trí; chữ và nút dùng `--primary` `#B4421F` để đủ tương phản. Tiêu đề font Lora, nội dung Be Vietnam Pro.
+- **Trước khi sửa giao diện, đọc `DESIGN.md`** (hệ thống thiết kế: token, thành phần, chuyển động, điều cấm). Sau khi sửa, chạy mục "Kiểm tra giao diện" trong đó và ghi điểm /20 vào PR. Đổi màu, cỡ chữ, khoảng cách thì sửa cả `:root` trong `style.css` lẫn token trong `DESIGN.md`.
 
 ## Cách làm việc
 1. Nhận việc từ GitHub Issue có nhãn `dev`.
