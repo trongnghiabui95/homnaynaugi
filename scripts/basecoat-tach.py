@@ -26,7 +26,7 @@ comps = [b for b in top if b.startswith('@layer components')]
 big = max(comps, key=len)
 props = [b for b in top if b.startswith('@property')]
 
-KEEP = re.compile(r"^\.(btn|card|tabs)\b")
+KEEP = re.compile(r"^\.(btn|tabs)\b")
 DROP = re.compile(r"\.card(\[data-size='sm'\])? > |\.card > section|tabpanel|data-size='(xs|sm|icon-xs|icon-sm|icon-lg)'|data-variant='(link|destructive)'|aria-orientation='vertical'|(?<!:not\()\[data-variant='line'\]")
 rules = []
 for b in [inner(x) for x in comps if x is not big] + [inner(big)]:
@@ -97,7 +97,7 @@ pdefs = [p for p in props if re.match(r'@property (--[\w-]+)', p).group(1) in se
 pdefs = [p for p in pdefs if 'initial-value' in p]
 css = re.sub(r'oklch\(0\.708 0 0\)', 'var(--ring)', css)
 head = """/*! Một phần Basecoat 1.1.0 (https://basecoat.ui, MIT License, Copyright (c) 2025 Ronan Berder),
-   biên dịch bằng Tailwind CSS v4 (MIT). Chỉ lấy: btn, card, tabs. Biến thể đổi sang lớp của web:
+   biên dịch bằng Tailwind CSS v4 (MIT). Chỉ lấy: btn, tabs (thẻ .card do style.css tự vẽ kiểu clay). Biến thể đổi sang lớp của web:
    .btn.ghost = secondary, .btn.outline, .btn.plain = ghost, .btn.big = lg, .btn.icon; .seg = tabs > [role=tablist].
    Token màu shadcn (--background, --primary...) đặt trong style.css. Tạo lại: python3 scripts/basecoat-tach.py basecoat.cdn.css src/assets/basecoat.css. --muted của shadcn đổi tên --sc-muted (web đã dùng --muted cho chữ phụ). */
 """

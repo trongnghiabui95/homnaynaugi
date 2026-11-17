@@ -10,7 +10,7 @@
 Google Sheets → `scripts/build.mjs` (chỉ lấy món đã duyệt, đổi link Drive/YouTube, tra ảnh Wikimedia Commons kèm tác giả + giấy phép) → `dist/` HTML tĩnh + `data/recipes.json` → GitHub Pages (xem thử) / Cloudflare Pages (chạy thật). Không dùng Next.js để không cần máy chủ; web tĩnh tải nhanh tương đương.
 
 ## Giao diện
-Giao diện shadcn/ui qua thư viện **Basecoat** (#79): nền trung tính tông stone `#FAFAF9`, thẻ trắng viền mảnh `#E7E5E4` bóng rất nhẹ, bo 10–14px, chữ Be Vietnam Pro (tiêu đề 700 chữ khít), màu chính cam đất `#B4421F` cho nút và link (màu trang trí `#D95D39`), xanh thảo mộc `#3F6E4E`, chữ `#1C1917`. Thẻ món ảnh 4:3; thời gian và độ khó (chấm màu: Dễ xanh `#3F6E4E`, Vừa vàng đất `#96610F`, Khó cam đậm `#B4421F`) nằm dưới tên món. Đầu trang chủ có cụm 3 ảnh món tròn. CSS nén lúc build. Mâm cơm 3 món hiện thành 3 ô nằm ngang trong một khay.
+Giao diện **khối màu + clay** (#82) theo hồ sơ "Recipe & Cooking App" của ui-ux-pro-max, khung nút/tab từ thư viện Basecoat: nền kem `#FFF8EF`, cam đất tươi `#C2410C` (nút, link, khối khung quay), xanh lá `#047857` (Tủ lạnh, Dễ), vàng bơ (Bí quyết, nút trên khối màu), tiêu đề Nunito tròn đậm, nội dung Be Vietnam Pro, thẻ bo 24px bóng clay nhiều lớp, nút ấn lún và nảy. Độ khó là chấm màu (Dễ xanh, Vừa vàng đất `#A16207`, Khó cam). Đầu trang chủ có cụm 3 ảnh món tròn, các phần tử hiện lần lượt khi mở. Mâm cơm 3 món hiện thành 3 ô nằm ngang trong một khay.
 
 ## Trang
 | Trang | Đường dẫn |
