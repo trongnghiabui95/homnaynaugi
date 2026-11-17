@@ -7,12 +7,12 @@
   --muted: #6b645c;
   --line: #ebe4da;
   --accent: #d95d39;          /* cam đất / đỏ cà chua – chỉ dùng trang trí */
-  --primary: #c2492a;         /* bản đậm hơn của màu nhấn, đủ tương phản cho chữ và nút */
+  --primary: #b4421f;         /* bản đậm hơn của màu nhấn, đủ tương phản cho chữ và nút */
   --primary-ink: #ffffff;
   --primary-soft: #fbe6dd;
-  --herb: #4a7c59;            /* xanh thảo mộc */
+  --herb: #437352;            /* xanh thảo mộc */
   --herb-soft: #e6f0e8;
-  --k-de: #4a7c59; --k-vua: #96610f; --k-kho: #c2492a;   /* màu theo độ khó: viền trên thẻ món và nhãn Dễ / Vừa / Khó */
+  --k-de: #437352; --k-vua: #96610f; --k-kho: #b4421f;   /* màu theo độ khó: viền trên thẻ món và nhãn Dễ / Vừa / Khó */
   --radius: 18px;
   --shadow: 0 1px 2px rgba(45, 42, 38, .05), 0 8px 24px rgba(45, 42, 38, .07);
   --fs: 17px;
@@ -52,7 +52,7 @@ button, select { font: inherit; color: inherit; }
 .muted { color: var(--muted); }
 .small { font-size: .85em; }
 .lead { font-size: 1.08em; color: var(--muted); margin-top: 0; }
-.kicker { margin: 4px 0 -10px; font-size: .78em; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+.kicker { margin: 4px 0 -10px; font-size: .78em; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--primary); }
 .kicker a { color: inherit; text-decoration: none; display: inline-flex; align-items: center; min-height: 44px; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 .skip { position: absolute; left: -999px; }
@@ -151,7 +151,7 @@ select { min-height: 46px; padding: 0 12px; border: 1px solid var(--line); borde
 .spin-slots.mam .slot.empty-slot > div { display: block; }
 .slot-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .slot-img .ph { padding: 8px; font-size: .78em; }
-.slot-label { font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.slot-label { font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--primary); }
 .slot > div:nth-child(2) { padding-right: 50px; min-width: 0; }
 .lock span { display: none; }
 .spin-slots.mam .lock span { display: inline; }
@@ -189,7 +189,7 @@ select { min-height: 46px; padding: 0 12px; border: 1px solid var(--line); borde
 .fridge-cta { display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; background: var(--herb-soft); border-color: transparent; }
 .fridge-cta h2 { margin: 0 0 4px; color: var(--herb); }
 .fridge-cta p { margin: 0; }
-.fridge-cta .btn { background: var(--herb); color: #fff; }
+.fridge-cta .btn { background: var(--herb); color: var(--primary-ink); }
 
 /* Thẻ món */
 .rgrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
