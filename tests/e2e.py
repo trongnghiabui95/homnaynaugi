@@ -267,7 +267,7 @@ async def main():
         check("thoát chế độ nấu: gỡ video đang phát", not await pg.query_selector("[data-cook-view] iframe"))
         # Logo thương hiệu yendan ở chân trang
         lg = await pg.evaluate("(()=>{const y=document.querySelector('.footer .yendan svg');return y?[y.getAttribute('role'), y.querySelector('title').textContent, Math.round(y.getBoundingClientRect().height), getComputedStyle(y.querySelector('path')).fill === getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || getComputedStyle(y.querySelector('path')).fill]:null})()")
-        check("chân trang có logo yendan PA1: chim yến + chữ, tên đọc được 'yendan', cao 28px", lg is not None and lg[:3] == ["img", "yendan", 28], str(lg))
+        check("chân trang có logo yendan (chữ d là quả cherry), tên đọc được 'yendan', cao 32px", lg is not None and lg[:3] == ["img", "yendan", 32], str(lg))
 
         # Ảnh Drive, video Shorts, xem đoạn, hẹn giờ, calo
         await pg.goto(B + "/mon/mon-thu-video/"); await pg.wait_for_timeout(400)
