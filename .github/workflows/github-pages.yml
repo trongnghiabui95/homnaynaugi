@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
   schedule:
+    # Giờ VN: 4:53, 5:43 (dự phòng, #91), 6:20 (mốc chính)
+    - cron: "53 21 * * *"
+    - cron: "43 22 * * *"
     - cron: "20 23 * * *"
   workflow_dispatch:
 permissions:

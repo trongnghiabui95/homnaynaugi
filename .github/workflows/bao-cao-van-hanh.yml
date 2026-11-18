@@ -1,11 +1,18 @@
 name: Báo cáo vận hành
-# Mỗi sáng 6:40 giờ Việt Nam (23:40 UTC), sau khi web đã cập nhật nội dung lúc 6:10.
+# Mỗi sáng giờ Việt Nam: 5:07 và 5:57 (dự phòng, sau các mốc cập nhật 4:47 và 5:37, #91), 6:40 (mốc chính).
 # Đọc Google Sheet, ghi báo cáo nội dung vào Issue nhãn "bao-cao" (tạo mới nếu chưa có).
+# Chạy nhiều lần trong ngày chỉ cập nhật lại nội dung Issue đó, không tạo Issue trùng.
 # Skill /van-hanh của Claude đọc Issue này để lên việc cho Dev, Biên tập, Marketing.
 on:
   schedule:
+    - cron: "7 22 * * *"
+    - cron: "57 22 * * *"
     - cron: "40 23 * * *"
   workflow_dispatch:
+# Hai lần chạy chồng nhau (lịch hoãn dồn lại) thì xếp hàng, tránh cả hai cùng thấy "chưa có Issue" và tạo 2 Issue.
+concurrency:
+  group: bao-cao-van-hanh
+  cancel-in-progress: false
 permissions:
   contents: read
   issues: write
