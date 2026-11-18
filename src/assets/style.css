@@ -194,8 +194,9 @@ select { min-height: 46px; padding: 0 12px; border: 1px solid var(--input); bord
 .footer { margin-top: 56px; padding-top: 18px; padding-bottom: 24px; border-top: 1px solid var(--line); font-size: .85em; }
 .footer-links { display: flex; flex-wrap: wrap; gap: 0 18px; margin: 4px 0; }
 .by { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; color: var(--muted); }
-.yendan { display: inline-flex; align-items: center; gap: 6px; font: 700 1.15em var(--serif); letter-spacing: -.02em; color: var(--text); }
-.yendan svg { width: 24px; height: 24px; color: var(--primary); }
+.yendan { display: inline-flex; align-items: center; color: #7a1530; --yd-cuong: #5b3a1e; } /* đỏ garnet; logo theo bé Yên Đan (Cherry) */
+:root[data-theme="dark"] .yendan { color: #ffe9ee; --yd-cuong: #d9a877; }
+.yendan svg { height: 32px; width: auto; }
 .toast { position: fixed; left: 50%; bottom: calc(86px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 12px; z-index: 90; font-size: .9em; max-width: 90vw; }
 
 @media print {
