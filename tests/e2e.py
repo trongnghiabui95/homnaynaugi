@@ -419,7 +419,9 @@ async def main():
         check("lọc theo chủ đề", set(tagged) == {"Đậu hũ sốt cà chua", "Rau muống xào tỏi"}, str(tagged))
 
         # Vùng bấm ≥ 44px và chữ ≥ 13px trên các trang chính (bỏ qua link nằm trong đoạn văn và link "Bỏ qua đến nội dung")
-        DO = """()=>{
+        # Đợi hiệu ứng vào trang (ví dụ .hero > * "len" 0,6s) chạy xong rồi mới đo: đang co giãn thì getBoundingClientRect nhỏ hơn kích thước thật (#90)
+        DO = """async ()=>{
+          await Promise.all(document.getAnimations().filter(a=>a.effect&&a.effect.getComputedTiming().iterations!==Infinity).map(a=>a.finished.catch(()=>{})));
           const vis=e=>{const r=e.getBoundingClientRect(),cs=getComputedStyle(e);return r.width>0&&r.height>0&&cs.visibility!='hidden'&&cs.display!='none'};
           const inText=e=>e.tagName=='A'&&e.closest('p,li,figcaption,small')&&!e.closest('.footer-links,.crumbs,.tags,.kicker');
           const nho=[...document.querySelectorAll('a,button,select,input:not([type=checkbox]):not([type=radio]),label:has(input[type=checkbox],input[type=radio])')].filter(e=>vis(e)&&!inText(e)&&!e.classList.contains('skip')&&e.getBoundingClientRect().height<43.5).map(e=>(e.innerText||e.getAttribute('aria-label')||e.tagName).trim().slice(0,20)+' '+Math.round(e.getBoundingClientRect().height)+'px');
