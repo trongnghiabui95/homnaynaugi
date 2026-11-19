@@ -8,6 +8,14 @@ export const LANGS = ["vi", "en"];
 export const PREFIX = { vi: "", en: "/en" };
 export const LOCALE = { vi: "vi_VN", en: "en_US" };
 
+/** Thời lượng: dưới 60 phút giữ "45 phút"; từ 60 phút "6 giờ 20 phút", tròn giờ "2 giờ". Giá trị không phải số nguyên (ví dụ "1,5") giữ nguyên. */
+const gioPhut = (n, gio, phut) => {
+  const v = Number(n);
+  if (!Number.isInteger(v) || v < 60) return `${n} ${phut}`;
+  const h = Math.floor(v / 60), m = v % 60;
+  return m ? `${h} ${gio} ${m} ${phut}` : `${h} ${gio}`;
+};
+
 const vi = {
   // Khung trang
   nav_home: "Trang chủ", nav_cats: "Danh mục", nav_search: "Tìm món", nav_shop: "Đi chợ", nav_saved: "Sổ tay", nav_video: "Video",
@@ -18,7 +26,7 @@ const vi = {
   made_by: "Một sản phẩm của", ad: "Quảng cáo",
   lang_switch_label: "EN, Switch to English", lang_switch_text: "EN", lang_switch_title: "English",
   // Thẻ món, thông số
-  min: (n) => `${n} phút`, people: (n) => `${n} người`, video: "Video", n_dishes: (n) => `${n} món`,
+  min: (n) => gioPhut(n, "giờ", "phút"), people: (n) => `${n} người`, video: "Video", n_dishes: (n) => `${n} món`,
   diff_de: "Dễ", diff_vua: "Vừa", diff_kho: "Khó",
   source: "Nguồn", photo: "Ảnh",
   // Mâm cơm
@@ -111,7 +119,7 @@ const en = {
   foot_video_note: "Videos belong to the YouTube channels named with them and are embedded with YouTube's sharing feature.",
   made_by: "A product of", ad: "Advertisement",
   lang_switch_label: "VI, Chuyển sang tiếng Việt", lang_switch_text: "VI", lang_switch_title: "Tiếng Việt",
-  min: (n) => `${n} min`, people: (n) => `${n} ${n === 1 ? "person" : "people"}`, video: "Video", n_dishes: (n) => `${n} ${n === 1 ? "dish" : "dishes"}`,
+  min: (n) => gioPhut(n, "hr", "min"), people: (n) => `${n} ${n === 1 ? "person" : "people"}`, video: "Video", n_dishes: (n) => `${n} ${n === 1 ? "dish" : "dishes"}`,
   diff_de: "Easy", diff_vua: "Medium", diff_kho: "Hard",
   source: "Source", photo: "Photo",
   mam_man: "Main dish", mam_canh: "Soup", mam_rau: "Greens / stir-fry",

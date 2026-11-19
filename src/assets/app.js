@@ -9,10 +9,17 @@ const BASE = document.documentElement.dataset.base || "";
 const LANG = document.documentElement.lang === "en" ? "en" : "vi";
 const LP = BASE + (LANG === "en" ? "/en" : "");
 const LV = LANG === "vi" ? "" : ' lang="vi"'; // tên món, nguyên liệu (tiếng Việt, chưa dịch) trong trang tiếng Anh
+// Thời lượng: dưới 60 phút "45 phút"; từ 60 phút "6 giờ 20 phút", tròn giờ "2 giờ" (giống scripts/i18n.mjs).
+const gioPhut = (n, gio, phut) => {
+  const v = Number(n);
+  if (!Number.isInteger(v) || v < 60) return `${n} ${phut}`;
+  const h = Math.floor(v / 60), m = v % 60;
+  return m ? `${h} ${gio} ${m} ${phut}` : `${h} ${gio}`;
+};
 // Chữ giao diện phía trình duyệt. Chữ lúc build nằm ở scripts/i18n.mjs.
 const S = {
   vi: {
-    copyFail: "Không chép được, hãy thử lại", min: (n) => `${n} phút`, people: (n) => `${n} người`,
+    copyFail: "Không chép được, hãy thử lại", min: (n) => gioPhut(n, "giờ", "phút"), people: (n) => `${n} người`,
     diff: { de: "Dễ", vua: "Vừa", kho: "Khó" },
     stopTimer: "Tắt hẹn giờ", timerSet: (n) => `Đã hẹn ${n} phút`, timeUp: (l) => `Hết giờ: ${l}`, timer: "Hẹn giờ",
     drinkFor: "Đồ uống cho bạn", forYou: "Gợi ý cho bạn", waiting: "Chờ quay", howTo: "Cách nấu",
@@ -39,7 +46,7 @@ const S = {
     light: "Chế độ sáng", dark: "Chế độ đêm",
   },
   en: {
-    copyFail: "Could not copy, please try again", min: (n) => `${n} min`, people: (n) => `${n} ${n === 1 ? "person" : "people"}`,
+    copyFail: "Could not copy, please try again", min: (n) => gioPhut(n, "hr", "min"), people: (n) => `${n} ${n === 1 ? "person" : "people"}`,
     diff: { de: "Easy", vua: "Medium", kho: "Hard" },
     stopTimer: "Stop timer", timerSet: (n) => `Timer set for ${n} min`, timeUp: (l) => `Time's up: ${l}`, timer: "Timer",
     drinkFor: "A drink for you", forYou: "Picked for you", waiting: "Ready to spin", howTo: "How to cook",
