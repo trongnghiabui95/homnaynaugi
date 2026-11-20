@@ -85,3 +85,18 @@ test("thẻ xác minh Google: điền mã hoặc dán nguyên thẻ đều ra đ
     assert.ok(!doc("mon/thit-kho-trung/index.html").includes("google-site-verification"));
   }
 });
+
+test("bản chính thiếu cả SITE_URL lẫn site_url: canonical, sitemap, robots, og:url dùng tên miền chính, không có example.com (#99)", () => {
+  const doc = build({});
+  for (const p of ["index.html", "mon/thit-kho-trung/index.html", "en/index.html", "sitemap.xml", "robots.txt"]) {
+    assert.ok(!doc(p).includes("example.com"), p);
+  }
+  assert.ok(doc("mon/thit-kho-trung/index.html").includes(`<link rel="canonical" href="${CHINH}/mon/thit-kho-trung/"`));
+  assert.match(doc("robots.txt"), /Sitemap: https:\/\/cookwhattoday\.com\/sitemap\.xml/);
+  assert.match(doc("sitemap.xml"), /<loc>https:\/\/cookwhattoday\.com\/mon\/thit-kho-trung\/<\/loc>/);
+});
+
+test("site_url trong Sheet có dấu cách hoặc / ở cuối vẫn ra địa chỉ sạch", () => {
+  const tmp = build({}, "site_url, https://cookwhattoday.com/ \n");
+  assert.ok(tmp("mon/thit-kho-trung/index.html").includes(`<link rel="canonical" href="${CHINH}/mon/thit-kho-trung/"`));
+});

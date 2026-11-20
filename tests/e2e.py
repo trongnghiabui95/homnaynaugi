@@ -517,11 +517,11 @@ async def main():
         # Tiếng Anh (/en/): giao diện không còn chữ tiếng Việt (trừ nội dung món đánh dấu lang="vi" và bài của bạn đọc),
         # nút đổi ngôn ngữ về đúng trang tương ứng, nhớ lựa chọn, link nội bộ ở lại /en/, hreflang + sitemap đủ 2 ngôn ngữ.
         h = open(os.path.join(DIST, "en", "mon", "trung-chien-hanh", "index.html"), encoding="utf-8").read()
-        check("bản /en/: lang=en, hreflang vi/en/x-default, og:locale en_US", '<html lang="en"' in h and 'hreflang="vi" href="https://example.com/mon/trung-chien-hanh/"' in h and 'hreflang="en" href="https://example.com/en/mon/trung-chien-hanh/"' in h and 'hreflang="x-default"' in h and 'og:locale" content="en_US"' in h)
+        check("bản /en/: lang=en, hreflang vi/en/x-default, og:locale en_US", '<html lang="en"' in h and 'hreflang="vi" href="https://cookwhattoday.com/mon/trung-chien-hanh/"' in h and 'hreflang="en" href="https://cookwhattoday.com/en/mon/trung-chien-hanh/"' in h and 'hreflang="x-default"' in h and 'og:locale" content="en_US"' in h)
         h = open(os.path.join(DIST, "mon", "trung-chien-hanh", "index.html"), encoding="utf-8").read()
-        check("bản tiếng Việt: lang=vi, có hreflang en", '<html lang="vi"' in h and 'hreflang="en" href="https://example.com/en/mon/trung-chien-hanh/"' in h and 'og:locale" content="vi_VN"' in h)
+        check("bản tiếng Việt: lang=vi, có hreflang en", '<html lang="vi"' in h and 'hreflang="en" href="https://cookwhattoday.com/en/mon/trung-chien-hanh/"' in h and 'og:locale" content="vi_VN"' in h)
         sm = open(os.path.join(DIST, "sitemap.xml"), encoding="utf-8").read()
-        check("sitemap có cả /en/, kèm link hreflang", "<loc>https://example.com/en/mon/trung-chien-hanh/</loc>" in sm and "<loc>https://example.com/mon/trung-chien-hanh/</loc>" in sm and 'hreflang="en"' in sm and "/en/danh-muc/an-vat/" not in sm)
+        check("sitemap có cả /en/, kèm link hreflang", "<loc>https://cookwhattoday.com/en/mon/trung-chien-hanh/</loc>" in sm and "<loc>https://cookwhattoday.com/mon/trung-chien-hanh/</loc>" in sm and 'hreflang="en"' in sm and "/en/danh-muc/an-vat/" not in sm)
         manifest = open(os.path.join(DIST, "manifest.webmanifest"), encoding="utf-8").read()
         check("manifest giữ tiếng Việt", "Hôm Nay Nấu Gì" in manifest)
         VN = """()=>{const re=/[ăâđêôơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹàáèéìíòóùúýõã]/i,out=[];

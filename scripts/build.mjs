@@ -86,6 +86,9 @@ async function page(site, p) {
   await write(PREFIX[lang] + (p.path === "/404" ? "/404.html" : path.join(p.path, "index.html")), html);
 }
 
+// Tên miền chính (từ 2026-11-20), dùng khi chưa cấu hình SITE_URL / site_url
+const SITE_CHINH = "https://cookwhattoday.com";
+
 async function main() {
   const raw = {};
   for (const t of TABS) raw[t] = await loadTab(t);
@@ -98,7 +101,9 @@ async function main() {
   // Mã xác minh Google Search Console: nhận cả mã lẫn nguyên thẻ <meta … content="…"> dán vào Sheet
   if (site.google_site_verification) site.google_site_verification = (String(site.google_site_verification).match(/content=["']([^"']+)/)?.[1] || site.google_site_verification).trim();
   site.preview = /^(1|true|yes)$/i.test(process.env.PREVIEW || "");
-  site.site_url = ((site.preview ? process.env.CANONICAL_URL || site.site_url : process.env.SITE_URL || site.site_url) || "https://example.com").replace(/\/+$/, "");
+  // Thiếu cả biến môi trường lẫn site_url trong Sheet thì dùng tên miền chính, không bao giờ rơi về example.com (#99):
+  // canonical sai làm Google lập chỉ mục nhầm địa chỉ và AdSense/Search Console không nhận web.
+  site.site_url = String((site.preview ? process.env.CANONICAL_URL || site.site_url : process.env.SITE_URL || site.site_url) || SITE_CHINH).trim().replace(/\/+$/, "");
   site.build_id = Date.now().toString(36);
 
   // Ảnh Wikimedia Commons: tra link ảnh, tác giả, giấy phép một lần cho cả web.
