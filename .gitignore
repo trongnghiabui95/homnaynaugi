@@ -2,6 +2,3 @@ dist/
 node_modules/
 .DS_Store
 *.log
-# Khoá TikTok: không bao giờ đưa vào repo (xem ops/TIKTOK.md)
-tiktok-khoa*.json
-.tiktok-*.tmp

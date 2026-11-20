@@ -7,7 +7,7 @@ Bốn "nhân viên AI" làm việc qua GitHub Issues: Dev, BA, Checker, Marketin
 | `dev` | Dev | Pull Request | Bấm xem, rồi Merge |
 | `noi-dung` | BA | Mỗi ngày 3 món mới tự viết trong Google Sheets, trạng thái `nháp`, kèm Issue "BA – món mới <ngày>" | Không cần làm gì; Checker duyệt |
 | `noi-dung` | Checker | Kiểm tra món của BA theo bảng tiêu chí: đạt thì đổi sang `duyệt`, chưa đạt thì trả về BA | Xem danh sách món mới duyệt trong báo cáo 7:00; món nào chưa ổn thì đổi về `nháp` |
-| `marketing` | Marketing | Clip TikTok dọc + caption + link về món | Đăng lên TikTok |
+| `marketing` | Marketing | Clip TikTok dọc + caption + link về món | Đăng lên TikTok qua Zernio (không có code trong repo) |
 
 ## Lịch chạy mỗi ngày
 | Giờ | Ai | Việc |
