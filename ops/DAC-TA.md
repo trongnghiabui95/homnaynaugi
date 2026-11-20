@@ -61,5 +61,5 @@ Khung `adSlot()` có nhãn "Quảng cáo": dưới khung quay món, giữa Nguy�
 ## Lộ trình
 1. **Chặng 1 – khung** (PR #2): toàn bộ trang và tính năng trên, 9 món mẫu.
 2. **Chặng 2 – nội dung**: 30–50 món đầu tiên có video Shorts, ảnh món từ Drive.
-3. **Chặng 3 – tăng trưởng**: clip TikTok dẫn về từng món, bài tổng hợp "thực đơn tuần".
+3. **Chặng 3 – tăng trưởng**: clip TikTok dẫn về từng món, bài tổng hợp "thực đơn tuần". Đăng TikTok (@cookwhattoday1) qua Zernio do Marketing làm, không có code trong repo (#105).
 4. **Chặng 4 – kiếm tiền**: domain riêng, Search Console, AdSense, app Android.
