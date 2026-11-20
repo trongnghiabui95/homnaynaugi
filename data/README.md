@@ -33,8 +33,8 @@ Muốn một bước có nút "Xem đoạn này": ghi số giây của đoạn �
 3. Khi build, web tự lấy ảnh cỡ vừa (1280px) và **tự ghi** tác giả, giấy phép, link trang ảnh dưới ảnh. Không cần tải ảnh về, không cần điền `anh_nguon`. Nếu điền `anh_nguon` thì web dùng phần bạn ghi.
 4. Ảnh bị xoá, sai tên hoặc thiếu thông tin giấy phép thì web **không hiện ảnh đó** và ghi cảnh báo trong log build. Lúc build không kết nối được Commons thì các ảnh Commons tạm ẩn, lần build sau tự hiện lại.
 
-## Bản dịch tiếng Anh (trang `/en/`)
-Mỗi cột nội dung có thể thêm một cột cùng tên kèm đuôi `_en` (tuỳ chọn, để trống được). Thêm cột vào cuối tab; build tự nhận theo tên cột.
+## Bản dịch (trang `/en/`, `/ja/`, `/ko/`, `/fr/`)
+Mỗi cột nội dung có thể thêm một cột cùng tên kèm đuôi ngôn ngữ `_en` (Anh), `_ja` (Nhật), `_ko` (Hàn), `_fr` (Pháp) (tuỳ chọn, để trống được). Các bảng dưới ghi tên cột `_en`; ngôn ngữ khác thay đuôi tương ứng. Thêm cột vào cuối tab; build tự nhận theo tên cột.
 
 | Tab | Cột bản dịch |
 | --- | --- |
@@ -42,17 +42,18 @@ Mỗi cột nội dung có thể thêm một cột cùng tên kèm đuôi `_en` 
 | `ingredients` | `ten_en`, `ghi_chu_en`, `don_vi_en` (đơn vị, ví dụ `cloves`), `nhom_en` (tên nhóm) |
 | `steps` | `tieu_de_en`, `noi_dung_en`, `giai_doan_en`, `dau_hieu_en`, `luu_y_en` |
 
-- Trang `/en/mon/<slug>/` dùng bản `_en` khi có; ô nào chưa dịch thì hiện tiếng Việt (đánh dấu `lang="vi"`).
+- Trang `/xx/mon/<slug>/` dùng bản `_xx` khi có; ô nào chưa dịch thì hiện tiếng Việt (đánh dấu `lang="vi"`).
 - Món **đã dịch** khi có đủ `ten_en`, `tom_tat_en`, mọi nguyên liệu có `ten_en` (và `ghi_chu_en` nếu có ghi chú), mọi bước có `noi_dung_en` (và `tieu_de_en` nếu có tiêu đề). Khi đó trang không còn dòng "This recipe is not translated yet." và dữ liệu Google (`Recipe`) ghi `inLanguage: "en"`. Mẹo, nhóm, đơn vị không bắt buộc.
 - Số lượng giữ nguyên. Đơn vị: dùng `don_vi_en`; trống thì tra từ điển trong `scripts/i18n.mjs` (thìa canh → tbsp, thìa cà phê → tsp, quả → bỏ trống…); không có thì giữ tiếng Việt.
 - Tên danh mục và độ khó tiếng Anh lấy từ từ điển giao diện (`cat_name`, `diff_*` trong `scripts/i18n.mjs`). Danh mục mới chưa có trong từ điển thì giữ tên tiếng Việt.
 - Bản dịch không đổi cổng duyệt: món vẫn chỉ lên web khi `trang_thai` = `duyệt`. Báo cáo vận hành có dòng "Món đã dịch tiếng Anh: X/Y".
+- Ngày 2026-11-20 đã thêm cột bản dịch 4 ngôn ngữ vào Sheet (recipes U:AF, ingredients G:R, steps H:O) và điền cho cả 48 món. Món mới thêm sau thì bổ sung bản dịch ở các cột này.
 - Dịch bằng lời của mình, câu ngắn, xưng "you".
 
 ## Các tab
 | Tab | Một dòng là | Cột |
 | --- | --- | --- |
-| `settings` | Một cài đặt | key, value — `site_name`, `tagline`, `tagline_en` (câu giới thiệu ở trang tiếng Anh `/en/`, có thể trống), `site_url` (địa chỉ web thật), `contact_email`, `chu_de` (chủ đề nổi bật, cách nhau dấu phẩy, phải trùng với tags của món); khi có AdSense: `adsense_client`, `adsense_slot_home`, `adsense_slot_mid`, `adsense_slot_bottom`; `turnstile_site_key` (Site Key Cloudflare Turnstile, bật mục "Thành quả của bạn đọc", xem `ops/BAT-THANH-QUA.md`); `google_site_verification` (mã xác minh Google Search Console, xem mục SEO trong `ops/DAC-TA.md`) |
+| `settings` | Một cài đặt | key, value — `site_name`, `tagline`, `tagline_en`, `tagline_ja`, `tagline_ko`, `tagline_fr` (câu giới thiệu ở trang chủ từng ngôn ngữ, có thể trống), `site_url` (địa chỉ web thật), `contact_email`, `chu_de` (chủ đề nổi bật, cách nhau dấu phẩy, phải trùng với tags của món); khi có AdSense: `adsense_client`, `adsense_slot_home`, `adsense_slot_mid`, `adsense_slot_bottom`; `turnstile_site_key` (Site Key Cloudflare Turnstile, bật mục "Thành quả của bạn đọc", xem `ops/BAT-THANH-QUA.md`); `google_site_verification` (mã xác minh Google Search Console, xem mục SEO trong `ops/DAC-TA.md`) |
 | `categories` | Một danh mục | slug, ten, mo_ta, bieu_tuong (một emoji), anh (link ảnh tròn, có thể trống), thu_tu |
 | `recipes` | Một món | slug, ten, danh_muc (slug danh mục), tom_tat, khau_phan (số người), phut_chuan_bi, phut_nau, do_kho (Dễ / Vừa / Khó), bua (sáng, trưa, tối – cách nhau dấu phẩy), nguyen_lieu_chinh (Thịt heo, Gà, Cá, Trứng…), calo (kcal mỗi phần, để trống nếu chưa biết), chi_phi (đồng, để trống nếu chưa biết), anh, video, kenh, tags (cách nhau dấu phẩy), meo (bí quyết), an_kem (slug món ăn kèm, cách nhau dấu phẩy), trang_thai (nháp / duyệt), cap_nhat (2026-11-16), anh_nguon (ghi công ảnh không tự chụp: tên tác giả, giấy phép, link trang ảnh; ảnh tự chụp thì để trống) |
 | `ingredients` | Một nguyên liệu | recipe_slug, nhom (ví dụ "Ướp thịt", có thể trống), ten, so_luong (số; ½ ghi `0.5`), don_vi, ghi_chu |

@@ -5,8 +5,8 @@
 const CAM = '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2L9 5h6l1.5 2h2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z"/><circle cx="12" cy="13" r="3.5"/></svg>';
 
 // Chữ giao diện theo ngôn ngữ trang (vi: "/", en: "/en/"). Bài của bạn đọc giữ nguyên chữ người viết.
-const EN = document.documentElement.lang === "en";
-const S = EN ? {
+const EN = (document.documentElement.lang || "vi") !== "vi"; // trang không phải tiếng Việt: không hiện lỗi tiếng Việt từ máy chủ
+const S_en = {
   now: "just now", ago: (n, u) => `${n} ${u}${n === 1 ? "" : "s"} ago`, u: ["minute", "hour", "day"], date: "en-GB",
   imgAlt: (n) => `${n}, cooked by a reader`, reported: "You reported this post", report: "Report", empty: "No one has shared this dish yet. Be the first!",
   askReport: "Report this post as inappropriate?", thanks: "Thank you. We will review this post.", reportFail: "Could not send the report, please try again",
@@ -18,7 +18,8 @@ const S = EN ? {
   filter: "Filter posts", hidden: "Hidden", all: "All", isHidden: "Hidden", isShown: "Visible", reports: (n) => `${n} report${n === 1 ? "" : "s"}`,
   show: "Show again", hide: "Hide", del: "Delete", noPosts: "No posts.", wrongCode: "Wrong admin code.", noServer: "Could not reach the server.",
   askDel: "Delete this post for good? It cannot be restored.", updated: "Updated", failed: "That did not work, please try again",
-} : {
+};
+const S_vi = {
   now: "vừa xong", ago: (n, u) => `${n} ${u} trước`, u: ["phút", "giờ", "ngày"], date: "vi-VN",
   imgAlt: (n) => `Món ${n} đã nấu`, reported: "Bạn đã báo cáo bài này", report: "Báo cáo", empty: "Chưa có ai khoe món này. Bạn là người đầu tiên nhé!",
   askReport: "Báo cáo bài này là không phù hợp?", thanks: "Cảm ơn bạn. Chúng tôi sẽ xem lại bài này.", reportFail: "Chưa gửi được báo cáo, bạn thử lại nhé",
@@ -31,6 +32,46 @@ const S = EN ? {
   show: "Hiện lại", hide: "Ẩn", del: "Xoá hẳn", noPosts: "Không có bài nào.", wrongCode: "Sai mã quản trị.", noServer: "Chưa kết nối được máy chủ.",
   askDel: "Xoá hẳn bài này? Không khôi phục được.", updated: "Đã cập nhật", failed: "Chưa làm được, bạn thử lại nhé",
 };
+const S_ja = {
+  now: "たった今", ago: (n, u) => `${n}${u}前`, u: ["分", "時間", "日"], date: "ja-JP",
+  imgAlt: (n) => `読者が作った${n}`, reported: "この投稿を報告しました", report: "報告", empty: "この料理はまだ誰もシェアしていません。最初の一人になりましょう！",
+  askReport: "この投稿を不適切として報告しますか？", thanks: "ありがとうございます。この投稿を確認します。", reportFail: "報告を送信できませんでした。もう一度お試しください",
+  title: "作った料理を見せる", pick: "写真を撮る・選ぶ", feel: "感想", feelPh: "例：唐辛子を少し足したら、ご飯がすすみました。",
+  name: "表示名", public: "写真とコメントは、この料理の下に公開されます。", later: "今はしない", send: "送信",
+  preparing: "写真を準備しています…", chosen: "選んだ写真", change: "写真を変更", badImg: "この写真を読み込めませんでした。別の写真を選んでください。",
+  noTs: "スパム対策を読み込めませんでした。接続を確認して、もう一度お試しください。", needSome: "写真か、ひとことを入れてください。",
+  needName: "表示名を入力してください。", sending: "送信中…", sendFail: "送信できませんでした。もう一度お試しください。", posted: "投稿しました。ありがとうございます！",
+  filter: "投稿を絞り込む", hidden: "非表示", all: "すべて", isHidden: "非表示", isShown: "表示中", reports: (n) => `報告${n}件`,
+  show: "再表示", hide: "非表示にする", del: "削除", noPosts: "投稿はありません。", wrongCode: "管理コードが違います。", noServer: "サーバーに接続できませんでした。",
+  askDel: "この投稿を完全に削除しますか？元に戻せません。", updated: "更新しました", failed: "うまくいきませんでした。もう一度お試しください",
+};
+const S_ko = {
+  now: "방금 전", ago: (n, u) => `${n}${u} 전`, u: ["분", "시간", "일"], date: "ko-KR",
+  imgAlt: (n) => `독자가 만든 ${n}`, reported: "이 게시물을 신고했어요", report: "신고", empty: "아직 이 요리를 공유한 사람이 없어요. 첫 번째로 올려 보세요!",
+  askReport: "이 게시물을 부적절한 게시물로 신고할까요?", thanks: "감사해요. 이 게시물을 검토할게요.", reportFail: "신고를 보내지 못했어요. 다시 시도해 주세요",
+  title: "내 요리 자랑하기", pick: "사진 찍기 또는 고르기", feel: "한마디", feelPh: "예: 고추를 조금 넣었더니 밥이랑 잘 어울려요.",
+  name: "표시 이름", public: "사진과 댓글이 이 요리 아래에 공개돼요.", later: "나중에", send: "보내기",
+  preparing: "사진 준비 중…", chosen: "고른 사진", change: "사진 바꾸기", badImg: "이 사진을 읽지 못했어요. 다른 사진을 골라 주세요.",
+  noTs: "스팸 확인을 불러오지 못했어요. 연결을 확인하고 다시 시도해 주세요.", needSome: "사진이나 몇 마디를 남겨 주세요.",
+  needName: "표시 이름을 입력해 주세요.", sending: "보내는 중…", sendFail: "보내지 못했어요. 다시 시도해 주세요.", posted: "올렸어요. 감사해요!",
+  filter: "게시물 필터", hidden: "숨김", all: "전체", isHidden: "숨김", isShown: "표시 중", reports: (n) => `신고 ${n}건`,
+  show: "다시 표시", hide: "숨기기", del: "삭제", noPosts: "게시물이 없어요.", wrongCode: "관리자 코드가 틀렸어요.", noServer: "서버에 연결하지 못했어요.",
+  askDel: "이 게시물을 완전히 삭제할까요? 복구할 수 없어요.", updated: "업데이트했어요", failed: "잘 안 됐어요. 다시 시도해 주세요",
+};
+const S_fr = {
+  now: "à l’instant", ago: (n, u) => `il y a ${n} ${u}${n > 1 ? "s" : ""}`, u: ["minute", "heure", "jour"], date: "fr-FR",
+  imgAlt: (n) => `${n}, cuisiné par un lecteur`, reported: "Vous avez signalé cette publication", report: "Signaler", empty: "Personne n’a encore partagé ce plat. Soyez le premier !",
+  askReport: "Signaler cette publication comme inappropriée ?", thanks: "Merci. Nous allons examiner cette publication.", reportFail: "Impossible d’envoyer le signalement, veuillez réessayer",
+  title: "Montrez votre plat", pick: "Prendre ou choisir une photo", feel: "Votre avis", feelPh: "Par exemple : on a ajouté un peu de piment, parfait avec du riz.",
+  name: "Nom affiché", public: "Votre photo et votre commentaire apparaîtront publiquement sous ce plat.", later: "Plus tard", send: "Envoyer",
+  preparing: "Préparation de la photo…", chosen: "Votre photo", change: "Changer de photo", badImg: "Impossible de lire cette photo. Veuillez en choisir une autre.",
+  noTs: "Impossible de charger la vérification anti-spam. Vérifiez votre connexion et réessayez.", needSome: "Ajoutez une photo ou quelques mots.",
+  needName: "Veuillez saisir un nom affiché.", sending: "Envoi…", sendFail: "Envoi impossible. Veuillez réessayer.", posted: "Publié. Merci !",
+  filter: "Filtrer les publications", hidden: "Masquées", all: "Toutes", isHidden: "Masquée", isShown: "Visible", reports: (n) => `${n} ${n > 1 ? "signalements" : "signalement"}`,
+  show: "Afficher à nouveau", hide: "Masquer", del: "Supprimer", noPosts: "Aucune publication.", wrongCode: "Code administrateur incorrect.", noServer: "Impossible de joindre le serveur.",
+  askDel: "Supprimer définitivement cette publication ? Elle ne pourra pas être restaurée.", updated: "Mis à jour", failed: "Cela n’a pas fonctionné, veuillez réessayer",
+};
+const S = { en: S_en, ja: S_ja, ko: S_ko, fr: S_fr }[document.documentElement.lang] || S_vi;
 
 const luc = (t) => {
   const s = (Date.now() - t) / 1000;
@@ -145,7 +186,7 @@ export async function thanhQua({ $, esc, store, toast, BASE }) {
     dlg.showModal();
     try {
       const ts = await napTurnstile();
-      if (wid === null) wid = ts.render($("[data-tq-ts]", dlg), { sitekey: key, appearance: "interaction-only", language: EN ? "en" : "vi", callback: (t) => (token = t), "expired-callback": () => (token = ""), "error-callback": () => (token = "") });
+      if (wid === null) wid = ts.render($("[data-tq-ts]", dlg), { sitekey: key, appearance: "interaction-only", language: S === S_vi ? "vi" : document.documentElement.lang, callback: (t) => (token = t), "expired-callback": () => (token = ""), "error-callback": () => (token = "") });
     } catch { baoLoi(S.noTs); }
   };
 

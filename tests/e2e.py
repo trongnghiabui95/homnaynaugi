@@ -541,14 +541,15 @@ async def main():
         p6.on("pageerror", lambda e: errs.append(str(e)))
         p6.on("console", lambda m: errs.append(m.text) if m.type == "error" and not any(x in m.text for x in BO_QUA) else None)
         await p6.goto(B + "/mon/trung-chien-hanh/"); await p6.wait_for_timeout(300)
-        nut = [await p6.get_attribute("[data-lang]", "href"), await p6.text_content("[data-lang]"), (await p6.evaluate("(()=>{const r=document.querySelector('[data-lang]').getBoundingClientRect();return [r.width,r.height]})()"))]
-        check("nút đổi ngôn ngữ ở đầu trang: EN, ≥ 44px, trỏ đúng trang tiếng Anh", nut[0] == "/en/mon/trung-chien-hanh/" and nut[1] == "EN" and min(nut[2]) >= 44 and await p6.get_attribute("[data-lang]", "aria-label") == "EN, Switch to English", str(nut))
+        # Menu đổi ngôn ngữ (5 ngôn ngữ): nút mã ngôn ngữ hiện tại ≥ 44px, mở ra 5 link sang đúng trang tương ứng
+        nut = await p6.evaluate("(()=>{const s=document.querySelector('.lang-menu summary'),r=s.getBoundingClientRect();return [s.textContent.trim(), Math.round(r.width)>=44&&Math.round(r.height)>=44, s.getAttribute('aria-label'), [...document.querySelectorAll('.lang-menu [data-lang]')].map(a=>[a.dataset.lang,a.getAttribute('href'),a.textContent])]})()")
+        check("menu đổi ngôn ngữ: nút 'VI' ≥ 44px, 5 ngôn ngữ trỏ đúng trang món tương ứng", nut[:3] == ["VI", True, "Đổi ngôn ngữ"] and nut[3] == [["vi","/mon/trung-chien-hanh/","Tiếng Việt"],["en","/en/mon/trung-chien-hanh/","English"],["ja","/ja/mon/trung-chien-hanh/","日本語"],["ko","/ko/mon/trung-chien-hanh/","한국어"],["fr","/fr/mon/trung-chien-hanh/","Français"]], str(nut))
         # Rà giao diện (#69): màn 320px + chữ lớn, nút khẩu phần xuống hàng thay vì tràn ngang
         await p6.set_viewport_size({"width": 320, "height": 700}); await p6.evaluate("document.documentElement.dataset.big='1'"); await p6.wait_for_timeout(100)
         sv = await p6.evaluate("(()=>{const b=[...document.querySelectorAll('.serv-quick .chip')].map(e=>e.getBoundingClientRect());return [document.documentElement.scrollWidth<=innerWidth, Math.min(...b.map(r=>r.width)) >= 44, Math.max(...b.map(r=>r.right)) <= innerWidth]})()")
         check("320px + chữ lớn: nút khẩu phần không tràn ngang, mỗi nút ≥ 44px", sv == [True, True, True], str(sv))
         await p6.evaluate("delete document.documentElement.dataset.big"); await p6.set_viewport_size({"width": 390, "height": 844})
-        await p6.click("[data-lang]"); await p6.wait_for_load_state(); await p6.wait_for_timeout(300)
+        await p6.click(".lang-menu summary"); await p6.click('[data-lang="en"]'); await p6.wait_for_load_state(); await p6.wait_for_timeout(300)
         check("bấm EN ở trang công thức: sang đúng món bản tiếng Anh", p6.url == B + "/en/mon/trung-chien-hanh/" and await p6.evaluate("document.documentElement.lang") == "en", p6.url)
         check("món chưa dịch: hiện dòng 'This recipe is not translated yet.'", (await p6.text_content("[data-not-translated]")) == "This recipe is not translated yet." and await p6.get_attribute("h1", "lang") == "vi")
         # Bản dịch món (cột *_en): món dịch đủ hiện tiếng Anh, Recipe inLanguage "en"; dịch thiếu thì phần thiếu giữ tiếng Việt kèm dòng "not translated yet"
@@ -611,12 +612,31 @@ async def main():
             nho, chu = await p6.evaluate(DO)
             check(f"EN {u}: không chữ tiếng Việt ở giao diện, link ở lại /en/, vùng bấm ≥ 44px, chữ ≥ 13px", not vn and not ra and not nho and not chu, f"{vn[:4]} {ra[:3]} {nho[:3]} {chu[:3]}")
         await p6.goto(B + "/en/404.html"); await p6.wait_for_timeout(200)
-        check("EN trang 404: không tự chuyển trang, nút đổi ngôn ngữ về trang chủ tiếng Việt", p6.url.endswith("/en/404.html") and await p6.get_attribute("[data-lang]", "href") == "/")
+        check("EN trang 404: không tự chuyển trang, nút đổi ngôn ngữ về trang chủ tiếng Việt", p6.url.endswith("/en/404.html") and await p6.get_attribute('[data-lang="vi"]', "href") == "/")
+        # Ngôn ngữ mới (Nhật, Hàn, Pháp): lang đúng, nút mã ngôn ngữ, không chữ tiếng Việt ở giao diện, link ở lại /xx/, vùng bấm ≥ 44px, chữ ≥ 13px, không lỗi JS
+        for L, MA in (("ja", "JA"), ("ko", "KO"), ("fr", "FR")):
+            c7 = await b.new_context(viewport={"width": 390, "height": 844})
+            for host in ("lh3.googleusercontent.com", "i.ytimg.com", "upload.wikimedia.org"):
+                await c7.route(f"https://{host}/**", anh_that)
+            p7 = await c7.new_page()
+            p7.on("pageerror", lambda e: errs.append(str(e)))
+            p7.on("console", lambda m: errs.append(m.text) if m.type == "error" and not any(x in m.text for x in BO_QUA) else None)
+            for u in [f"/{L}/", f"/{L}/mon/thit-kho-trung/", f"/{L}/danh-muc/", f"/{L}/tim-kiem/", f"/{L}/di-cho/", f"/{L}/video/"]:
+                await p7.goto(B + u); await p7.wait_for_timeout(250)
+                await p7.evaluate(ND)
+                vn = await p7.evaluate(VN)
+                ra = await p7.evaluate(f"[...document.querySelectorAll('a[href^=\"/\"]:not([data-lang])')].map(a=>a.getAttribute('href')).filter(h=>!h.startsWith('/{L}/'))")
+                nho, chu = await p7.evaluate(DO)
+                tt = [await p7.evaluate("document.documentElement.lang"), (await p7.text_content(".lang-menu summary")).strip()]
+                check(f"{MA} {u}: lang={L}, nút {MA}, không chữ tiếng Việt ở giao diện, link ở lại /{L}/, vùng bấm ≥ 44px, chữ ≥ 13px", tt == [L, MA] and not vn and not ra and not nho and not chu, f"{tt} {vn[:4]} {ra[:3]} {nho[:3]} {chu[:3]}")
+            h = await (await p7.goto(B + f"/{L}/mon/thit-kho-trung/")).text()
+            check(f"{MA}: hreflang đủ 5 ngôn ngữ + x-default", all(f'hreflang="{x}"' in h for x in ("vi", "en", "ja", "ko", "fr", "x-default")))
+            await c7.close()
         # Đổi về tiếng Việt: về đúng trang, nhớ lựa chọn
         await p6.goto(B + "/en/video/"); await p6.wait_for_timeout(200)
-        check("nút ở bản tiếng Anh: VI, trỏ về trang tiếng Việt tương ứng", await p6.text_content("[data-lang]") == "VI" and await p6.get_attribute("[data-lang]", "href") == "/video/")
+        check("menu ở bản tiếng Anh: nút EN, link Tiếng Việt trỏ về trang tương ứng", (await p6.text_content(".lang-menu summary")).strip() == "EN" and await p6.get_attribute('[data-lang="vi"]', "href") == "/video/")
         await p6.screenshot(path=f"{OUT}/11-en-video.png")
-        await p6.click("[data-lang]"); await p6.wait_for_load_state(); await p6.wait_for_timeout(300)
+        await p6.click(".lang-menu summary"); await p6.click('[data-lang="vi"]'); await p6.wait_for_load_state(); await p6.wait_for_timeout(300)
         check("bấm VI: về /video/ tiếng Việt", p6.url == B + "/video/" and await p6.evaluate("document.documentElement.lang") == "vi", p6.url)
         await p6.goto(B + "/en/mon/trung-chien-hanh/"); await p6.wait_for_timeout(300)
         check("đã chọn Tiếng Việt: link /en/ tự về trang tiếng Việt", p6.url == B + "/mon/trung-chien-hanh/", p6.url)

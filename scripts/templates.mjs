@@ -1,6 +1,6 @@
 // Khung HTML dùng chung cho mọi trang.
 import { esc } from "./lib.mjs";
-import { tr, diffText, PREFIX, LOCALE, LANGS } from "./i18n.mjs";
+import { tr, diffText, PREFIX, LOCALE, LANGS, LANG_NAME, LANG_CODE } from "./i18n.mjs";
 
 const ICON = {
   home: '<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/><path d="M10 19.5v-5h4v5"/>',
@@ -62,7 +62,7 @@ function ogTags(site, p) {
 export const abs = (site, lang, path) => site.site_url + PREFIX[lang] + path;
 
 /**
- * site.lang = "vi" | "en". Link nội bộ trong HTML vẫn viết "/x"; page() trong build.mjs đổi thành "/en/x" cho bản tiếng Anh.
+ * site.lang = "vi" | "en" | "ja" | "ko" | "fr". Link nội bộ trong HTML vẫn viết "/x"; page() trong build.mjs thêm tiền tố ngôn ngữ ("/en/x", "/ja/x"…).
  * Tên món, danh mục (nội dung chưa dịch) đặt trong phần tử lang="vi" để trình đọc màn hình đọc đúng giọng.
  * @param p { path, title, description, body, page, jsonld[], crumbs[[name,path,isContent]], noindex, ogType, ogImage, titleVi }
  */
@@ -70,13 +70,13 @@ export const abs = (site, lang, path) => site.site_url + PREFIX[lang] + path;
 const YENDAN = `<svg viewBox="0 0 213 80" role="img" aria-labelledby="yd-t"><title id="yd-t">yendan</title><path d="M14.9 74.6Q13.2 74.6 12.1 73.7Q11.1 72.8 10.8 71.3Q10.6 69.9 11.3 68.3L15 60.1V64.2L5.5 42.3Q4.7 40.6 5 39.1Q5.2 37.7 6.5 36.8Q7.7 35.9 9.8 35.9Q11.6 35.9 12.7 36.8Q13.8 37.6 14.7 39.9L20.3 54.5H18.4L24.3 39.9Q25.2 37.6 26.4 36.8Q27.5 35.9 29.5 35.9Q31.2 35.9 32.2 36.8Q33.2 37.7 33.4 39.1Q33.6 40.6 32.9 42.3L20.2 70.8Q19.2 73.1 18 73.8Q16.8 74.6 14.9 74.6ZM52.2 64.6Q47.2 64.6 43.5 62.9Q39.8 61.1 37.9 57.8Q35.9 54.6 35.9 50.2Q35.9 45.9 37.8 42.7Q39.7 39.5 42.9 37.7Q46.2 35.8 50.4 35.8Q53.5 35.8 56 36.8Q58.5 37.8 60.3 39.7Q62.1 41.5 63.1 44.2Q64 46.8 64 50.1Q64 51.2 63.4 51.7Q62.7 52.2 61.4 52.2H44.3V47.5H56.7L55.8 48.3Q55.8 46.2 55.2 44.9Q54.7 43.6 53.6 42.9Q52.5 42.3 50.9 42.3Q49.1 42.3 47.9 43.1Q46.6 43.9 45.9 45.5Q45.3 47 45.3 49.4V49.9Q45.3 53.9 47 55.6Q48.8 57.3 52.5 57.3Q53.7 57.3 55.3 57Q56.9 56.7 58.4 56.1Q59.8 55.5 60.9 55.9Q62 56.3 62.5 57.1Q63.1 58 63.2 59.1Q63.2 60.2 62.7 61.2Q62.1 62.3 60.8 62.8Q58.9 63.7 56.7 64.2Q54.5 64.6 52.2 64.6ZM73.2 64.5Q70.9 64.5 69.6 63.2Q68.3 61.9 68.3 59.5V40.9Q68.3 38.5 69.5 37.2Q70.8 35.9 73.2 35.9Q75.5 35.9 76.7 37.2Q78 38.5 78 40.9V43.6L77.4 41.3Q78.7 38.6 81.2 37.2Q83.7 35.8 86.9 35.8Q90.2 35.8 92.3 37.1Q94.4 38.4 95.5 41Q96.6 43.7 96.6 47.7V59.5Q96.6 61.9 95.3 63.2Q94 64.5 91.6 64.5Q89.2 64.5 87.9 63.2Q86.6 61.9 86.6 59.5V48.1Q86.6 45.6 85.7 44.5Q84.9 43.4 83.2 43.4Q80.9 43.4 79.6 44.9Q78.3 46.3 78.3 48.7V59.5Q78.3 64.5 73.2 64.5Z" fill="currentColor"/><path d="M134.3 64V20C134.3 12 139.3 8 145.3 6" style="stroke:var(--yd-cuong)" stroke-width="7.5" fill="none" stroke-linecap="round"/><path transform="translate(144.3 7) rotate(-25) scale(0.6)" d="M0 0C6 -12 22 -16 34 -10C26 2 12 6 0 0Z" fill="#16A34A"/><path transform="translate(144.3 7) rotate(-25) scale(0.6)" d="M2 -1C12 -6 22 -9 30 -9" stroke="#fff" stroke-opacity=".45" stroke-width="1.6" fill="none" stroke-linecap="round"/><path d="M118.3 34.7C124.3 30.7 135.3 33.5 135.3 48.9C135.3 60.8 126.8 65 118.3 65C109.8 65 101.3 60.8 101.3 48.9C101.3 33.5 112.4 30.7 118.3 34.7Z" fill="#D21F3C"/><ellipse cx="111.2" cy="43.8" rx="3.1" ry="5.1" transform="rotate(25 111.2 43.8)" fill="#fff" fill-opacity=".55"/><path d="M155.8 64.6Q152.6 64.6 150.2 63.4Q147.7 62.3 146.4 60.2Q145 58.2 145 55.5Q145 52.5 146.6 50.8Q148.1 49 151.6 48.3Q155.1 47.5 160.8 47.5H163.9V52.2H160.8Q158.7 52.2 157.2 52.5Q155.8 52.9 155.1 53.5Q154.5 54.1 154.5 55.2Q154.5 56.4 155.4 57.3Q156.3 58.1 158 58.1Q159.4 58.1 160.5 57.5Q161.6 56.9 162.3 55.8Q163 54.7 163 53.2V46.8Q163 44.7 161.9 43.9Q160.9 43.1 158.4 43.1Q157 43.1 155.4 43.4Q153.7 43.7 151.6 44.5Q150.1 45 149 44.6Q148 44.2 147.4 43.3Q146.8 42.3 146.8 41.2Q146.8 40.1 147.5 39.1Q148.2 38.1 149.7 37.5Q152.4 36.5 154.7 36.2Q156.9 35.8 158.8 35.8Q163.4 35.8 166.4 37.1Q169.4 38.5 170.9 41.2Q172.4 43.9 172.4 48.2V59.5Q172.4 61.9 171.2 63.2Q170 64.5 167.8 64.5Q165.5 64.5 164.3 63.2Q163.1 61.9 163.1 59.5V58L163.4 58.8Q163.1 60.6 162.1 61.9Q161.1 63.2 159.5 63.9Q157.9 64.6 155.8 64.6ZM183 64.5Q180.6 64.5 179.3 63.2Q178 61.9 178 59.5V40.9Q178 38.5 179.3 37.2Q180.6 35.9 182.9 35.9Q185.3 35.9 186.5 37.2Q187.7 38.5 187.7 40.9V43.6L187.1 41.3Q188.4 38.6 190.9 37.2Q193.4 35.8 196.6 35.8Q199.9 35.8 202.1 37.1Q204.2 38.4 205.2 41Q206.3 43.7 206.3 47.7V59.5Q206.3 61.9 205 63.2Q203.7 64.5 201.3 64.5Q198.9 64.5 197.6 63.2Q196.3 61.9 196.3 59.5V48.1Q196.3 45.6 195.5 44.5Q194.6 43.4 192.9 43.4Q190.7 43.4 189.3 44.9Q188 46.3 188 48.7V59.5Q188 64.5 183 64.5Z" fill="currentColor"/></svg>`;
 
 export function layout(site, p) {
-  const lang = site.lang || "vi", t = tr(lang), other = LANGS.find((l) => l !== lang);
+  const lang = site.lang || "vi", t = tr(lang), others = LANGS.filter((l) => l !== lang);
   const url = abs(site, lang, p.path);
   const fullTitle = p.path === "/" ? `${site.site_name} – ${site.tagline}` : `${p.title} | ${site.site_name}`;
   // Nút đổi ngôn ngữ: sang đúng trang tương ứng. Trang 404 không có bản tương ứng nên về trang chủ.
-  // "/__vi__/…" là đánh dấu để build không thêm /en vào link trỏ về bản tiếng Việt.
+  // "/__l-xx__/…" là đánh dấu: build đổi thành đúng tiền tố của ngôn ngữ xx (vi → "/", en → "/en/"…), không thêm tiền tố trang hiện tại.
   const altPath = p.path === "/404" ? "/" : p.path;
-  const altHref = other === "en" ? "/en" + altPath : "/__vi__" + altPath;
+  const altHref = (l) => `/__l-${l}__${altPath}`;
   const vi = (n, on) => (on && lang !== "vi" ? `<span lang="vi">${esc(n)}</span>` : esc(n));
   const crumbs = p.crumbs?.length
     ? `<nav class="crumbs" aria-label="${t("crumbs")}"><a href="/">${t("nav_home")}</a>${p.crumbs
@@ -112,7 +112,7 @@ ${p.noindex || site.preview ? '<meta name="robots" content="noindex">' : ""}${p.
 <meta property="og:url" content="${esc(url)}">
 <meta property="og:site_name" content="${esc(site.site_name)}">
 <meta property="og:locale" content="${LOCALE[lang]}">
-<meta property="og:locale:alternate" content="${LOCALE[other]}">
+${others.map((l) => `<meta property="og:locale:alternate" content="${LOCALE[l]}">`).join("\n")}
 ${ogTags(site, p)}
 <meta name="theme-color" content="#1a1210">
 <link rel="manifest" href="/manifest.webmanifest">
@@ -122,8 +122,8 @@ ${ogTags(site, p)}
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Nunito:wght@800;900&display=swap">
 <link rel="stylesheet" href="/assets/basecoat.css?v=${site.build_id}">
-<link rel="stylesheet" href="/assets/style.css?v=${site.build_id}">${{ home: 1, recipe: 1, video: 1, shop: 1, list: 1 }[p.page] ? `\n<link rel="stylesheet" href="/assets/${p.page}.css?v=${site.build_id}">` : ""}
-<script>document.documentElement.classList.add("js");try{var s=JSON.parse(localStorage.getItem("hnng-prefs")||"{}");if(s.theme==="light"){document.documentElement.dataset.theme="light";document.querySelector('meta[name="theme-color"]').content="#fff8ef"}if(s.big)document.documentElement.dataset.big="1"${p.path === "/404" ? "" : `;var h=document.documentElement,b=h.dataset.base||"",q=location.pathname.slice(b.length);if(s.lang&&s.lang!==h.lang)location.replace(b+(s.lang==="en"?"/en"+q:q.replace(/^\\/en(\\/|$)/,"/"))+location.search+location.hash)`}}catch(e){}</script>
+<link rel="stylesheet" href="/assets/style.css?v=${site.build_id}">${{ home: 1, recipe: 1, video: 1, shop: 1, list: 1, search: 1 }[p.page] ? `\n<link rel="stylesheet" href="/assets/${p.page}.css?v=${site.build_id}">` : ""}
+<script>document.documentElement.classList.add("js");try{var s=JSON.parse(localStorage.getItem("hnng-prefs")||"{}");if(s.theme==="light"){document.documentElement.dataset.theme="light";document.querySelector('meta[name="theme-color"]').content="#fff8ef"}if(s.big)document.documentElement.dataset.big="1"${p.path === "/404" ? "" : `;var h=document.documentElement,b=h.dataset.base||"",q=location.pathname.slice(b.length),P=${JSON.stringify(PREFIX)};if(s.lang&&s.lang!==h.lang&&s.lang in P)location.replace(b+P[s.lang]+q.replace(/^\\/(${LANGS.filter((l) => PREFIX[l]).join("|")})(\\/|$)/,"/")+location.search+location.hash)`}}catch(e){}</script>
 ${ld.map((o) => `<script type="application/ld+json">${JSON.stringify(o).replace(/</g, "\\u003c")}</script>`).join("\n")}
 ${adsense}
 </head>
@@ -132,7 +132,7 @@ ${adsense}
 <header class="topbar">
   <a class="brand" href="/"><img src="/assets/icons/icon.svg" alt="" width="30" height="30"><span lang="vi">${esc(site.site_name)}</span></a>
   <div class="topbar-actions">
-    <a class="icon-btn" href="${altHref}" hreflang="${other}" lang="${other}" data-lang="${other}" aria-label="${t("lang_switch_label")}" title="${t("lang_switch_title")}">${t("lang_switch_text")}</a>
+    <details class="lang-menu"><summary class="icon-btn" aria-label="${t("lang_menu")}" title="${t("lang_menu")}">${LANG_CODE[lang]}</summary><ul>${LANGS.map((l) => `<li><a href="${altHref(l)}" hreflang="${l}" lang="${l}" data-lang="${l}"${l === lang ? ' aria-current="true"' : ""}>${LANG_NAME[l]}</a></li>`).join("")}</ul></details>
     <button class="icon-btn" type="button" data-toggle="big" aria-label="${t("big_text")}" title="${t("big_text")}">${icon("text")}</button>
     <button class="icon-btn" type="button" data-toggle="theme" aria-label="${t("light_mode")}" title="${t("light_mode")}">${icon("moon")}</button>
   </div>

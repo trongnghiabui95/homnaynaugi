@@ -207,7 +207,7 @@ Bộ ba "nền kem + serif + cam đất" bị nhiều bộ kiểm tra coi là gi
 - Tiêu đề dùng `text-wrap: balance`, đoạn văn `text-wrap: pretty`. Tên món dài phải xuống dòng gọn, không tràn khung (`overflow-wrap: anywhere` trên thẻ).
 - Số thay đổi được (phút, khẩu phần, định lượng, đồng hồ hẹn giờ) dùng `font-variant-numeric: tabular-nums`. Không để số tách dòng khỏi đơn vị.
 - Không dùng nhãn chữ IN HOA giãn chữ cho chữ nhỏ. Nhãn viết thường như câu, đậm hơn hoặc màu phụ.
-- Văn bản: tiếng Việt có dấu, câu ngắn, xưng "bạn" (bản `/en/`: tiếng Anh câu ngắn, xưng "you"; nút EN/VI ở đầu trang là `a.icon-btn` 44×44px, chữ 15px đậm). Không từ rỗng ("tuyệt vời", "hoàn hảo", "đỉnh cao"), không câu hỏi rồi tự trả lời, không bịa số liệu.
+- Văn bản: tiếng Việt có dấu, câu ngắn, xưng "bạn" (bản `/en/`: tiếng Anh câu ngắn, xưng "you"; menu đổi ngôn ngữ ở đầu trang là `<details class="lang-menu">`: nút `summary.icon-btn` 44×44px ghi mã ngôn ngữ hiện tại (VI/EN/JA/KO/FR) chữ 15px đậm, mở ra thẻ nổi bo 18px với 5 link 44px (tên ngôn ngữ viết bằng chính ngôn ngữ đó, mục hiện tại nền `secondary`) đậm). Không từ rỗng ("tuyệt vời", "hoàn hảo", "đỉnh cao"), không câu hỏi rồi tự trả lời, không bịa số liệu.
 
 ## Layout
 
