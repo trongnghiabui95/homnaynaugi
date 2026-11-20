@@ -32,7 +32,7 @@ jobs:
           BASE_PATH: /${{ github.event.repository.name }}
           # Bản xem thử: noindex toàn bộ, robots.txt chặn hết, canonical/hreflang trỏ về bản chính (Issue #68)
           PREVIEW: "1"
-          CANONICAL_URL: https://homnaynaugi.pages.dev
+          CANONICAL_URL: https://cookwhattoday.com
         run: node scripts/build.mjs
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

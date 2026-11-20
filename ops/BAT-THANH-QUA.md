@@ -22,7 +22,7 @@ Mục này **chỉ chạy trên bản thật (Cloudflare Pages)**. Bản xem th�
    - Làm cho cả Production và Preview.
 4. **Tạo ô chống bot.** Cloudflare → Turnstile → Add widget.
    - Tên: Hôm Nay Nấu Gì.
-   - Hostname: tên miền của web (ví dụ `homnaynaugi.pages.dev`, cộng tên miền riêng nếu có).
+   - Hostname: tên miền của web: `cookwhattoday.com`, `www.cookwhattoday.com` và `homnaynaugi.pages.dev`.
    - Widget mode: **Managed**.
    - Chép **Site Key** và **Secret Key**.
 5. **Khoá bí mật cho web.** Dự án Pages → Settings → Variables and Secrets → Add, chọn loại **Secret**:
