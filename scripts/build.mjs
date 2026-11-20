@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 import { parseCSV, esc, fold, md, isSlug, imgUrl, parseYouTube, moTaNgan, thieuTruongRecipe } from "./lib.mjs";
 import { commonsFile, resolveCommons, creditText } from "./commons.mjs";
 import { layout, adSlot, emptyState, ytThumb, icon, recipeCard, abs } from "./templates.mjs";
-import { LANGS, PREFIX, tr, diffText } from "./i18n.mjs";
+import { LANGS, PREFIX, INTL, tr, diffText } from "./i18n.mjs";
 import { toDam, doNguyenLieu } from "./buoc.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -49,7 +49,7 @@ const byOrder = (a, b) => num(a.thu_tu, 999) - num(b.thu_tu, 999);
 const list = (s) => String(s || "").split(",").map((x) => x.trim()).filter(Boolean);
 const iso = (m) => `PT${Math.round(m)}M`;
 const mmss = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
-const money = (v) => (lang === "vi" ? `${Math.round(v).toLocaleString("vi-VN")}đ` : `${Math.round(v).toLocaleString("en-US")}₫`);
+const money = (v) => (lang === "vi" ? `${Math.round(v).toLocaleString("vi-VN")}đ` : `${Math.round(v).toLocaleString(INTL[lang])}₫`);
 export function qtyText(q) {
   if (!q) return "";
   const whole = Math.floor(q), frac = Math.round((q - whole) * 100) / 100;
@@ -79,9 +79,10 @@ async function write(rel, content) {
 async function page(site, p) {
   if (!p.noindex) pages.push({ path: PREFIX[lang] + p.path, alt: p.path, lastmod: p.lastmod });
   let html = layout({ ...site, lang }, p);
-  // Bản tiếng Anh: link trang nội bộ "/x" → "/en/x" (trừ tài nguyên tĩnh); "/__vi__/x" là link về bản tiếng Việt → "/x".
-  if (lang !== "vi") html = html.replace(/(\s(?:href|action)=")\/(?!\/|en\/|assets\/|data\/|api\/|manifest\.webmanifest|__vi__\/)/g, `$1${PREFIX[lang]}/`);
-  html = html.replace(/(\s(?:href|action)=")\/__vi__\//g, "$1/");
+  // Bản dịch: link trang nội bộ "/x" → "/en/x", "/ja/x"… (trừ tài nguyên tĩnh); "/__l-xx__/x" là link sang ngôn ngữ xx → tiền tố của xx.
+  const TT = LANGS.filter((l) => PREFIX[l]).join("|");
+  if (lang !== "vi") html = html.replace(new RegExp(`(\\s(?:href|action)=")\\/(?!\\/|(?:${TT})\\/|assets\\/|data\\/|api\\/|manifest\\.webmanifest|__l-)`, "g"), `$1${PREFIX[lang]}/`);
+  html = html.replace(/(\s(?:href|action)=")\/__l-(\w+)__\//g, (_, a, l) => `${a}${PREFIX[l] ?? ""}/`);
   await write(PREFIX[lang] + (p.path === "/404" ? "/404.html" : path.join(p.path, "index.html")), html);
 }
 
@@ -144,13 +145,12 @@ async function main() {
   if (report.errors.length) { console.error("LỖI:\n- " + report.errors.join("\n- ")); process.exit(1); }
   recipes.sort((a, b) => (b.cap_nhat || "").localeCompare(a.cap_nhat || "") || a.ten.localeCompare(b.ten, "vi"));
   const bySlug = Object.fromEntries(recipes.map((r) => [r.slug, r]));
-  // Bản dịch tiếng Anh (cột *_en, có thể trống). Giữ chữ gốc tiếng Việt ở .vi; localize() đổi chữ hiển thị theo ngôn ngữ đang dựng.
+  // Bản dịch (cột *_en, *_ja, *_ko, *_fr, có thể trống). Giữ chữ gốc tiếng Việt ở .vi; localize() đổi chữ hiển thị theo ngôn ngữ đang dựng.
   for (const c of cats) c.vi = { ten: c.ten, mo_ta: c.mo_ta };
   for (const r of recipes) {
     r.vi = { ten: r.ten, tom_tat: r.tom_tat, meo: r.meo };
     for (const i of r.ings) i.vi = { ten: i.ten, ghi_chu: i.ghi_chu, nhom: i.nhom, don_vi: i.don_vi };
     for (const s of r.steps) s.vi = { tieu_de: s.tieu_de, noi_dung: s.noi_dung, giai_doan: s.giai_doan, dau_hieu: s.dau_hieu, luu_y: s.luu_y };
-    r.dich = daDich(r, "en");
   }
   const catCount = (c) => recipes.filter((r) => r.danh_muc === c.slug).length;
   const catsShown = cats.filter((c) => catCount(c) >= MIN_MON_DANH_MUC);
@@ -166,11 +166,11 @@ async function main() {
   }
 
   // Chỉ mục cho vòng quay, tìm kiếm, tủ lạnh, đi chợ, đã lưu (phía trình duyệt)
-  const tEn = tr("en");
+  const NGOAI = LANGS.filter((l) => l !== "vi");
   const index = recipes.map((r) => ({
-    s: r.slug, t: r.ten, c: r.danh_muc, cn: r.cat.ten, ...(r.ten_en ? { te: r.ten_en } : {}), ...(tEn("cat_name", r.danh_muc) ? { ce: tEn("cat_name", r.danh_muc) } : {}), m: r.total, k: r.do_kho, img: r.img, v: r.imgDoc ? 2 : r.yt ? 1 : 0,
+    s: r.slug, t: r.ten, c: r.danh_muc, cn: r.cat.ten, ...dichMap("tt", NGOAI.map((l) => [l, r[`ten_${l}`]])), ...dichMap("ct", NGOAI.map((l) => [l, tr(l)("cat_name", r.danh_muc)])), m: r.total, k: r.do_kho, img: r.img, v: r.imgDoc ? 2 : r.yt ? 1 : 0,
     cal: r.cal || 0, b: r.bua, n: r.nguyen_lieu_chinh || "", d: r.cap_nhat || "", tg: r.tagList.map(fold),
-    f: fold([r.ten, r.tom_tat, r.cat.ten, r.tags, r.nguyen_lieu_chinh, r.ten_en, r.tom_tat_en, tEn("cat_name", r.danh_muc)].join(" ")),
+    f: fold([r.ten, r.tom_tat, r.cat.ten, r.tags, r.nguyen_lieu_chinh, ...NGOAI.flatMap((l) => [r[`ten_${l}`], r[`tom_tat_${l}`], tr(l)("cat_name", r.danh_muc)])].join(" ")),
     g: r.ings.filter((i) => !PANTRY.includes(fold(i.ten))).map((i) => fold(i.ten)),
     sv: r.serv, ig: r.ings.map((i) => [i.ten, num(i.so_luong, 0), i.don_vi]),
   }));
@@ -214,7 +214,7 @@ async function main() {
     body: `
 <section class="hero">
   ${plates.length ? `<div class="plates" aria-hidden="true">${plates.map((r) => `<img src="${esc(nho(r.anh))}" alt="" width="104" height="104" decoding="async">`).join("")}</div>` : ""}
-  <h1>${esc(t("hero_h1")).replace(/(\S+)$/, "<em>$1</em>")}</h1>
+  <h1>${esc(t("hero_h1")).replace(/(\S+(?:[\s\u00a0][?!:])?)$/, "<em>$1</em>") /* tiếng Pháp: "aujourd’hui ?" không tách dấu */}</h1>
   ${L.tagline ? `<p class="lead">${esc(L.tagline)}</p>` : ""}
   <form class="search big" action="/tim-kiem/" role="search">${icon("search")}<label class="sr-only" for="hq">${t("search_label")}</label><input id="hq" name="q" type="search" placeholder="${t("search_ph")}"></form>
   ${themes.length ? `<nav class="chips" aria-label="${t("themes")}">${themes.map((x) => `<a class="chip" href="/tim-kiem/?tag=${encodeURIComponent(x)}"${LV}>${esc(x)}</a>`).join("")}</nav>` : ""}
@@ -530,6 +530,11 @@ function nenCss(css) {
 function nho(src) { return /\/thumb\/.+\/\d+px-[^/]+$/.test(src) ? src.replace(/\/\d+px-([^/]+)$/, "/330px-$1") : /lh3\.googleusercontent\.com\/d\/[\w-]+$/.test(src) ? src + "=w240" : src; }
 function A(l) { return l ? ` lang="${l}"` : ""; }
 /** Món "đã dịch" khi có đủ tên, tóm tắt, mọi nguyên liệu (kể cả ghi chú) và mọi bước (kể cả tiêu đề bước). Mẹo, nhóm, đơn vị không bắt buộc. */
+/** { tt: { en: "…", ja: "…" } } chỉ gồm các ngôn ngữ có chữ; rỗng thì không thêm trường. */
+function dichMap(k, pairs) {
+  const o = Object.fromEntries(pairs.filter(([, v]) => String(v || "").trim()));
+  return Object.keys(o).length ? { [k]: o } : {};
+}
 function daDich(r, lang) {
   const has = (o, k) => !String((o.vi || o)[k] || "").trim() || String(o[`${k}_${lang}`] || "").trim();
   return !!(String(r[`ten_${lang}`] || "").trim() && String(r[`tom_tat_${lang}`] || "").trim()
@@ -539,6 +544,7 @@ function daDich(r, lang) {
 /** Đổi chữ hiển thị của món, nguyên liệu, bước, danh mục sang ngôn ngữ đang dựng; thiếu bản dịch thì giữ tiếng Việt và ghi o.lv[k] = "vi". */
 function localize(lang, cats, recipes) {
   const t = tr(lang);
+  for (const r of recipes) r.dich = lang !== "vi" && daDich(r, lang); // món đã dịch đủ sang ngôn ngữ đang dựng
   const set = (o, k, en) => {
     const goc = o.vi[k];
     const v = lang === "vi" ? goc : String(en ?? o[`${k}_${lang}`] ?? "").trim();

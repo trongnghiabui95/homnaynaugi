@@ -6,8 +6,8 @@ const fold = (s) => String(s ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").rep
 // Đường dẫn gốc khi web chạy trong thư mục con (GitHub Pages: /ten-repo).
 const BASE = document.documentElement.dataset.base || "";
 // Ngôn ngữ trang (vi: "/", en: "/en/"). Link trang dùng LP; dữ liệu, tài nguyên tĩnh dùng BASE (chung cho 2 ngôn ngữ).
-const LANG = document.documentElement.lang === "en" ? "en" : "vi";
-const LP = BASE + (LANG === "en" ? "/en" : "");
+const LANG = ["en", "ja", "ko", "fr"].includes(document.documentElement.lang) ? document.documentElement.lang : "vi";
+const LP = BASE + (LANG === "vi" ? "" : "/" + LANG);
 const LV = LANG === "vi" ? "" : ' lang="vi"'; // tên món, nguyên liệu (tiếng Việt, chưa dịch) trong trang tiếng Anh
 // Thời lượng: dưới 60 phút "45 phút"; từ 60 phút "6 giờ 20 phút", tròn giờ "2 giờ" (giống scripts/i18n.mjs).
 const gioPhut = (n, gio, phut) => {
@@ -72,6 +72,87 @@ const S = {
     play: (t) => `Play video ${t}`, vpos: (i, n) => `Video ${i}/${n}`, videoBy: (k) => (k ? `Video: <strong lang="vi">${k}</strong> channel` : "Video: YouTube"),
     light: "Light mode", dark: "Dark mode",
   },
+  ja: {
+    copyFail: "コピーできませんでした。もう一度お試しください", min: (n) => gioPhut(n, "時間", "分"), people: (n) => `${n}人分`,
+    diff: { de: "かんたん", vua: "ふつう", kho: "むずかしい" },
+    stopTimer: "タイマーを止める", timerSet: (n) => `${n}分のタイマーをセットしました`, timeUp: (l) => `時間です：${l}`, timer: "タイマー",
+    drinkFor: "おすすめの飲み物", forYou: "おすすめの一品", waiting: "回す準備ができました", howTo: "作り方",
+    lockA: (on, n) => `${n}の${on ? "ロックを解除" : "ロック"}`, kept: "キープ中", keep: "キープ", picking: "選んでいます…",
+    addMam: "献立をまるごと買い物リストに追加", addShop: "買い物リストに追加", allLocked: "すべての料理がロックされています。変えたい料理のロックを解除してください。",
+    spinning: "回転中…", again: "もう一度回す", noMatch: "一部の枠で条件に合う料理がありません。絞り込みをゆるめてみてください。",
+    soundOn: "効果音オン", soundOff: "効果音オフ", addedN: (n) => `${n}品を買い物リストに追加しました`,
+    saved: "保存済み", save: "保存", unsaved: "保存を解除しました", savedT: "保存済み",
+    shopText: (n, s) => `🛒 買い物：${n}（${s}人分）`, shopTitle: "買い物リスト", copiedNote: "リストをコピーしました。チャットやメモに貼り付けてください。",
+    addedIng: (n) => `食材${n}点を買い物リストに追加しました`, videoGuide: "作り方動画",
+    stepProg: (d, n) => `${d}/${n}ステップ`, stepPos: (i, n) => `ステップ ${i}/${n}`,
+    noVoice: "この言語の音声が端末にありません。端末の読み上げ設定で追加してください。",
+    prep: "準備", prepTitle: (n) => `${n}人分の材料をそろえましょう`, prepHint: "台の上に用意できたものから、チェックを入れてください。", prepReady: (d, n) => `${d}/${n}準備OK`,
+    useHere: "このステップで使うもの", upNext: (t) => `次：${t}`, lastStep: "これが最後のステップです", seePart: "この部分を見る", timerN: (n) => `タイマー${n}分`,
+    startCook: "ステップ1を始める →", doneKicker: "完成", doneTitle: "できあがり！", doneText: "どうぞ召し上がれ。写真を撮って、みんなにシェアしましょう。",
+    showOff: "作った料理をシェア", saveIt: "マイレシピに保存", saved: "マイレシピに保存しました", closeCook: "閉じる", finish: "完了", next: "次へ →", done: "すべて完了！どうぞ召し上がれ。",
+    nDishes: (n) => `${n}品`, noFilter: "条件に合う料理がありません。", pickOne: "食材を1つ以上選んでください。",
+    have: (full, g, n) => `${full ? "✅ 全部そろっています" : "手元にある材料"} ${g}/${n}`, canCook: (n) => `手元の食材で作れる料理：${n}品`,
+    noneIng: "これらの食材を使う料理はまだありません。", notFound: "該当する料理がありません。短い言葉で試してみてください。",
+    shopEmpty: "リストは空です", shopEmptyP: "レシピのページで「買い物リストに追加」をタップするか、ホームで献立のルーレットを回してください。", home: "今日は何を作ろう？",
+    rm: (n) => `${n}を削除`, nothing: "買うものはもうありません", toBuy: (n) => `🛒 買うもの（${n}点）：`, copiedZalo: "リストをコピーしました。チャットに貼り付けて送ってください。",
+    unchecked: "買ったもののチェックを外しました", cleared: "リストを消去しました",
+    play: (t) => `動画を再生：${t}`, vpos: (i, n) => `動画 ${i}/${n}`, videoBy: (k) => (k ? `動画：<strong lang="vi">${k}</strong> チャンネル` : "動画：YouTube"),
+    light: "ライトモード", dark: "ダークモード",
+  },
+  ko: {
+    copyFail: "복사하지 못했어요. 다시 시도해 주세요", min: (n) => gioPhut(n, "시간", "분"), people: (n) => `${n}명`,
+    diff: { de: "쉬움", vua: "보통", kho: "어려움" },
+    stopTimer: "타이머 끄기", timerSet: (n) => `${n}분 타이머를 맞췄어요`, timeUp: (l) => `시간 됐어요: ${l}`, timer: "타이머",
+    drinkFor: "추천 음료", forYou: "추천 요리", waiting: "돌릴 준비 완료", howTo: "만드는 법",
+    lockA: (on, n) => `${n} ${on ? "고정 해제" : "고정"}`, kept: "고정됨", keep: "고정", picking: "고르는 중…",
+    addMam: "상차림 전체를 장보기에 추가", addShop: "장보기 목록에 추가", allLocked: "모든 요리가 고정돼 있어요. 바꾸고 싶은 요리의 고정을 풀어 주세요.",
+    spinning: "돌리는 중…", again: "다시 돌리기", noMatch: "일부 칸에 필터에 맞는 요리가 없어요. 필터를 조금 풀어 보세요.",
+    soundOn: "소리 켜짐", soundOff: "소리 꺼짐", addedN: (n) => `요리 ${n}가지를 장보기 목록에 추가했어요`,
+    saved: "저장됨", save: "저장", unsaved: "저장에서 삭제했어요", savedT: "저장됨",
+    shopText: (n, s) => `🛒 장보기: ${n} (${s}인분)`, shopTitle: "장보기 목록", copiedNote: "목록을 복사했어요. 채팅이나 메모에 붙여 넣으세요.",
+    addedIng: (n) => `재료 ${n}개를 장보기에 추가했어요`, videoGuide: "영상 가이드",
+    stepProg: (d, n) => `${d}/${n}단계`, stepPos: (i, n) => `${i}/${n}단계`,
+    noVoice: "기기에 이 언어의 음성이 없어요. 기기의 음성 설정에서 추가해 주세요.",
+    prep: "준비하기", prepTitle: (n) => `${n}인분 재료 준비`, prepHint: "조리대에 준비된 재료마다 체크하세요.", prepReady: (d, n) => `${d}/${n} 준비됨`,
+    useHere: "이 단계에 쓰는 재료", upNext: (t) => `다음: ${t}`, lastStep: "마지막 단계예요", seePart: "이 부분 보기", timerN: (n) => `${n}분 타이머`,
+    startCook: "1단계 시작 →", doneKicker: "완성", doneTitle: "요리 완성!", doneText: "맛있게 드세요. 사진을 찍어 모두와 나눠 보세요.",
+    showOff: "내 요리 자랑하기", saveIt: "요리책에 저장", saved: "요리책에 저장했어요", closeCook: "닫기", finish: "마치기", next: "다음 →", done: "모두 끝났어요! 맛있게 드세요.",
+    nDishes: (n) => `${n}가지 요리`, noFilter: "필터에 맞는 요리가 없어요.", pickOne: "재료를 하나 이상 골라 주세요.",
+    have: (full, g, n) => `${full ? "✅ 재료 모두 있음" : "보유 재료"} ${g}/${n}`, canCook: (n) => `가진 재료로 만들 수 있는 요리 ${n}가지`,
+    noneIng: "아직 이 재료를 쓰는 요리가 없어요.", notFound: "맞는 요리가 없어요. 더 짧은 단어로 찾아보세요.",
+    shopEmpty: "목록이 비어 있어요", shopEmptyP: "레시피 페이지에서 “장보기 목록에 추가”를 누르거나, 홈에서 상차림을 뽑아 보세요.", home: "오늘 뭐 해 먹지?",
+    rm: (n) => `${n} 삭제`, nothing: "더 살 재료가 없어요", toBuy: (n) => `🛒 살 재료 (${n}개):`, copiedZalo: "목록을 복사했어요. 채팅에 붙여 넣어 보내세요.",
+    unchecked: "산 재료의 체크를 지웠어요", cleared: "목록을 비웠어요",
+    play: (t) => `${t} 영상 재생`, vpos: (i, n) => `영상 ${i}/${n}`, videoBy: (k) => (k ? `영상: <strong lang="vi">${k}</strong> 채널` : "영상: YouTube"),
+    light: "라이트 모드", dark: "다크 모드",
+  },
+  fr: {
+    copyFail: "Impossible de copier, veuillez réessayer", min: (n) => gioPhut(n, "h", "min"), people: (n) => `${n} ${n > 1 ? "personnes" : "personne"}`,
+    diff: { de: "Facile", vua: "Moyen", kho: "Difficile" },
+    stopTimer: "Arrêter le minuteur", timerSet: (n) => `Minuteur réglé sur ${n} min`, timeUp: (l) => `C’est l’heure : ${l}`, timer: "Minuteur",
+    drinkFor: "Une boisson pour vous", forYou: "Choisi pour vous", waiting: "Prêt à tirer", howTo: "Comment le cuisiner",
+    lockA: (on, n) => `${on ? "Déverrouiller" : "Verrouiller"} ${n}`, kept: "Gardé", keep: "Garder", picking: "Tirage…",
+    addMam: "Ajouter tout le repas aux courses", addShop: "Ajouter aux courses", allLocked: "Tous les plats sont verrouillés. Déverrouillez celui que vous voulez changer.",
+    spinning: "Tirage en cours…", again: "Tirer à nouveau", noMatch: "Aucun plat ne correspond aux filtres pour certaines places. Essayez de les assouplir.",
+    soundOn: "Son activé", soundOff: "Son désactivé", addedN: (n) => `${n} ${n > 1 ? "plats ajoutés" : "plat ajouté"} à la liste de courses`,
+    saved: "Enregistré", save: "Enregistrer", unsaved: "Retiré des favoris", savedT: "Enregistré",
+    shopText: (n, s) => `🛒 Courses : ${n} (${s} ${s > 1 ? "personnes" : "personne"})`, shopTitle: "Liste de courses", copiedNote: "Liste copiée. Collez-la dans une discussion ou vos notes.",
+    addedIng: (n) => `${n} ${n > 1 ? "ingrédients ajoutés" : "ingrédient ajouté"} aux courses`, videoGuide: "Vidéo explicative",
+    stepProg: (d, n) => `${d}/${n} étapes`, stepPos: (i, n) => `Étape ${i}/${n}`,
+    noVoice: "Votre appareil n’a pas de voix pour cette langue. Ajoutez-en une dans les réglages de synthèse vocale.",
+    prep: "Préparez-vous", prepTitle: (n) => `Réunissez les ingrédients pour ${n} ${n > 1 ? "personnes" : "personne"}`, prepHint: "Cochez chaque ingrédient une fois prêt sur le plan de travail.", prepReady: (d, n) => `${d}/${n} prêts`,
+    useHere: "Utilisé dans cette étape", upNext: (t) => `Ensuite : ${t}`, lastStep: "C’est la dernière étape", seePart: "Voir ce passage", timerN: (n) => `Minuteur ${n} min`,
+    startCook: "Commencer l’étape 1 →", doneKicker: "Terminé", doneTitle: "Le plat est prêt !", doneText: "Bon appétit ! Prenez une photo et partagez-la avec tout le monde.",
+    showOff: "Partagez votre plat", saveIt: "Ajouter au carnet", saved: "Ajouté au carnet", closeCook: "Fermer", finish: "Terminer", next: "Suivant →", done: "C’est fini ! Bon appétit.",
+    nDishes: (n) => `${n} ${n > 1 ? "plats" : "plat"}`, noFilter: "Aucun plat ne correspond aux filtres.", pickOne: "Choisissez au moins un ingrédient.",
+    have: (full, g, n) => `${full ? "✅ Tous les" : "Vous avez"} ${g}/${n} ingrédients`, canCook: (n) => `${n} ${n > 1 ? "plats" : "plat"} à cuisiner avec vos ingrédients`,
+    noneIng: "Aucun plat n’utilise encore ces ingrédients.", notFound: "Aucun plat trouvé. Essayez un mot plus court.",
+    shopEmpty: "Votre liste est vide", shopEmptyP: "Sur une page de recette, touchez « Ajouter aux courses », ou tirez un repas sur la page d’accueil.", home: "On mange quoi aujourd’hui ?",
+    rm: (n) => `Retirer ${n}`, nothing: "Plus rien à acheter", toBuy: (n) => `🛒 À acheter (${n} ${n > 1 ? "articles" : "article"}) :`, copiedZalo: "Liste copiée. Collez-la dans une discussion pour l’envoyer.",
+    unchecked: "Coches des articles achetés effacées", cleared: "Liste effacée",
+    play: (t) => `Lire la vidéo ${t}`, vpos: (i, n) => `Vidéo ${i}/${n}`, videoBy: (k) => (k ? `Vidéo : chaîne <strong lang="vi">${k}</strong>` : "Vidéo : YouTube"),
+    light: "Mode clair", dark: "Mode sombre",
+  },
 }[LANG];
 const diffText = (k) => S.diff[fold(k)] || k || "";
 
@@ -115,7 +196,7 @@ const toast = (msg) => {
 let recipesCache;
 // Trang tiếng Anh: dùng tên món (te), tên danh mục (ce) tiếng Anh khi có; chưa dịch thì giữ tiếng Việt, đánh dấu tl/cl = "vi".
 const allRecipes = () => (recipesCache ??= fetch(BASE + "/data/recipes.json").then((r) => (r.ok ? r.json() : [])).catch(() => [])
-  .then((a) => (LANG === "vi" ? a : a.map((r) => ({ ...r, t: r.te || r.t, tl: r.te ? "" : "vi", cn: r.ce || r.cn, cl: r.ce ? "" : "vi" })))));
+  .then((a) => (LANG === "vi" ? a : a.map((r) => ({ ...r, t: r.tt?.[LANG] || r.t, tl: r.tt?.[LANG] ? "" : "vi", cn: r.ct?.[LANG] || r.cn, cl: r.ct?.[LANG] ? "" : "vi" })))));
 /** lang="vi" cho chữ chưa dịch trong trang tiếng Anh. */
 const LA = (l) => (LANG !== "vi" && l !== "" ? ' lang="vi"' : "");
 const copyOrShare = async (title, text, okMsg) => {
@@ -550,8 +631,8 @@ async function pageRecipe() {
     const noi = (txt) => {
       if (!ok || !prefs.say) return;
       speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(txt), l = LANG === "en" ? "en" : "vi";
-      u.lang = l === "vi" ? "vi-VN" : "en-US"; u.rate = 0.95;
+      const u = new SpeechSynthesisUtterance(txt), l = LANG;
+      u.lang = { vi: "vi-VN", en: "en-US", ja: "ja-JP", ko: "ko-KR", fr: "fr-FR" }[l]; u.rate = 0.95;
       const vs = speechSynthesis.getVoices(), v = vs.find((x) => x.lang.toLowerCase().startsWith(l));
       if (vs.length && !v) { prefs.say = false; savePrefs(); veSay(); return toast(S.noVoice); } // danh sách giọng có nhưng thiếu ngôn ngữ này
       if (v) u.voice = v;
@@ -872,7 +953,7 @@ $('[data-toggle="big"]')?.addEventListener("click", () => {
   savePrefs();
 });
 // Đổi ngôn ngữ: nhớ lựa chọn để lần sau mở web (kể cả link cũ) tự về đúng ngôn ngữ. Đoạn chuyển trang nằm trong <head> (templates.mjs).
-$("[data-lang]")?.addEventListener("click", (e) => { prefs.lang = e.currentTarget.dataset.lang; savePrefs(); });
+$$("[data-lang]").forEach((a) => a.addEventListener("click", (e) => { prefs.lang = e.currentTarget.dataset.lang; savePrefs(); }));
 
 // ---------- Khởi động ----------
 // Thành quả của bạn đọc (ảnh món đã nấu + bình luận): tải lười, chỉ khi trang có mục này.

@@ -1,6 +1,6 @@
 # Hôm Nay Nấu Gì — quy tắc cho Claude (nhân viên Dev)
 
-Web tiếng Việt (giao diện có thêm bản tiếng Anh ở `/en/`) "Hôm Nay Nấu Gì" (homnaynaugi): gợi ý món và mâm cơm 3 món, công thức kiểu tạp chí ẩm thực, mỗi món có thể kèm video YouTube/Shorts. Kiếm tiền bằng Google AdSense. Đặc tả: `ops/DAC-TA.md`.
+Web tiếng Việt (giao diện có thêm bản tiếng Anh `/en/`, Nhật `/ja/`, Hàn `/ko/`, Pháp `/fr/`) "Hôm Nay Nấu Gì" (homnaynaugi): gợi ý món và mâm cơm 3 món, công thức kiểu tạp chí ẩm thực, mỗi món có thể kèm video YouTube/Shorts. Kiếm tiền bằng Google AdSense. Đặc tả: `ops/DAC-TA.md`.
 
 ## Ngăn xếp (không đổi khi chưa được chủ dự án đồng ý)
 - Web tĩnh HTML/CSS/JS thuần, **không framework, không bước bundle**. Node ≥ 20 chỉ dùng để build.
@@ -27,8 +27,8 @@ Web tiếng Việt (giao diện có thêm bản tiếng Anh ở `/en/`) "Hôm Na
 
 ## Quy tắc giao diện
 - Ưu tiên điện thoại; chữ thân 17px; nút ≥ 44px; tương phản WCAG AA; có chế độ đêm và chữ lớn.
-- Giao diện có 2 ngôn ngữ: tiếng Việt ở `/`, tiếng Anh ở `/en/` (build dựng cả hai, slug giữ nguyên). Không viết chuỗi giao diện cứng: chữ lúc build nằm trong `scripts/i18n.mjs` (thêm khoá ở cả `vi` lẫn `en`, thiếu thì build dừng), chữ phía trình duyệt nằm trong object `S` ở đầu `src/assets/app.js` và `src/assets/thanh-qua.js`.
-- Tiếng Việt có dấu, câu ngắn, xưng "bạn"; tiếng Anh câu ngắn, xưng "you". Nội dung món (tên, nguyên liệu, các bước, danh mục) chưa dịch thì giữ tiếng Việt và đặt trong phần tử `lang="vi"`.
+- Giao diện có 5 ngôn ngữ: tiếng Việt ở `/`, Anh `/en/`, Nhật `/ja/`, Hàn `/ko/`, Pháp `/fr/` (`LANGS` trong `scripts/i18n.mjs`; build dựng tất cả, slug giữ nguyên). Không viết chuỗi giao diện cứng: chữ lúc build nằm trong `scripts/i18n.mjs` (thêm khoá ở mọi ngôn ngữ, thiếu thì build dừng), chữ phía trình duyệt nằm trong object `S` ở đầu `src/assets/app.js` và `src/assets/thanh-qua.js`.
+- Tiếng Việt có dấu, câu ngắn, xưng "bạn"; tiếng Anh câu ngắn, xưng "you"; tiếng Nhật です・ます調, tiếng Hàn 해요체, tiếng Pháp xưng "vous". Bản dịch giao diện và nội dung món (cột `*_en`, `*_ja`, `*_ko`, `*_fr`) do Claude dịch nháp, cần người bản xứ đọc lại khi có điều kiện. Nội dung món (tên, nguyên liệu, các bước, danh mục) chưa dịch thì giữ tiếng Việt và đặt trong phần tử `lang="vi"`.
 - JS < 100KB, CSS < 35KB mỗi trang (đo file trong `dist/assets` sau khi build nén; chủ dự án nâng từ 30KB khi dùng Basecoat, #79). Không thêm thư viện ngoài khi chưa hỏi.
 - Quảng cáo chỉ qua `adSlot()` (có nhãn "Quảng cáo", cách nội dung ≥ 16px) ở các vị trí: dưới khung quay món, giữa khối Nguyên liệu và Cách làm, cuối bài. Không đặt bên trong danh sách nguyên liệu, giữa các bước hay trong chế độ nấu.
 - Màu nhấn `#D95D39` chỉ để trang trí; chữ và nút dùng `--primary` `#B4421F` để đủ tương phản. Giao diện dùng thư viện **Basecoat** (shadcn/ui, MIT) theo yêu cầu chủ dự án (#79): chỉ một phần nằm trong `src/assets/basecoat.css` (tạo bằng `scripts/basecoat-tach.py`, không sửa tay), ghi đè trong `style.css`. Phong cách khối màu + clay theo hồ sơ "Recipe & Cooking App" của ui-ux-pro-max (#82): tiêu đề Nunito, nội dung Be Vietnam Pro, token trong `:root` của `style.css`.

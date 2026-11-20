@@ -1,0 +1,6 @@
+/* Trang Tìm món: ô tìm kiếm. Chỉ trang /tim-kiem/ tải file này. Token ở style.css. */
+.search { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 2px solid var(--input); border-radius: 999px; padding: 0 18px; color: var(--muted); margin: 10px 0; box-shadow: var(--shadow); }
+.search input { flex: 1; border: 0; background: none; min-height: 52px; font: inherit; color: var(--text); min-width: 0; }
+.search input:focus { outline: none; }
+.search:focus-within { border-color: var(--ring); box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 35%, transparent); }
+.search.big input { min-height: 58px; }
