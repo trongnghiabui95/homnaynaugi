@@ -11,7 +11,7 @@ import { moTaNgan, thieuTruongRecipe } from "../scripts/lib.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const FIX = path.join(ROOT, "tests", "fixtures");
-const CHINH = "https://homnaynaugi.pages.dev";
+const CHINH = "https://cookwhattoday.com";
 
 function build(env, settingsThem = "") {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "seo-thu-"));
@@ -48,7 +48,7 @@ test("bản chính: không noindex, robots cho phép, có sitemap; mô tả món
     assert.ok(!h.includes('name="robots" content="noindex"'), p);
     assert.ok(h.includes(`<link rel="canonical" href="${CHINH}/`), p);
   }
-  assert.match(doc("robots.txt"), /Allow: \/\nSitemap: https:\/\/homnaynaugi\.pages\.dev\/sitemap\.xml/);
+  assert.match(doc("robots.txt"), /Allow: \/\nSitemap: https:\/\/cookwhattoday\.com\/sitemap\.xml/);
   assert.ok(!doc("index.html").includes("google-site-verification"), "chưa điền khoá thì không in thẻ");
   const slugs = fs.readFileSync(path.join(FIX, "recipes.csv"), "utf8").split("\n").slice(1).map((l) => l.split(",")[0]).filter((s) => s && s !== "mon-thu-nhap");
   for (const lang of ["", "en/"]) {

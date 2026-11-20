@@ -5,7 +5,7 @@ Web tiếng Việt (giao diện có thêm bản tiếng Anh `/en/`, Nhật `/ja/
 ## Ngăn xếp (không đổi khi chưa được chủ dự án đồng ý)
 - Web tĩnh HTML/CSS/JS thuần, **không framework, không bước bundle**. Node ≥ 20 chỉ dùng để build.
 - Nội dung nằm trong **Google Sheets** (tab `settings`, `categories`, `recipes`, `ingredients`, `steps`; cấu trúc cột trong `data/README.md`). Ảnh có thể là link chia sẻ Google Drive (build tự đổi sang `lh3.googleusercontent.com/d/ID`). `scripts/build.mjs` tải Sheet (ID trong `sheet.json`, hoặc biến `SHEET_ID`) hoặc CSV trong `data/sample/` (`--sample`) / `DATA_DIR`, kiểm tra, rồi sinh `dist/`. Môi trường Claude không truy cập được docs.google.com nên kiểm thử bằng `--sample` và fixtures; build thật chạy trên GitHub Actions.
-- Deploy: bản xem thử trên GitHub Pages (`.github/workflows/github-pages.yml`, tự lấy tên repo làm `BASE_PATH`, build với `PREVIEW=1` nên noindex, canonical về bản chính); bản chạy thật trên Cloudflare Pages, build command `node scripts/build.mjs`, output `dist`.
+- Deploy: bản xem thử trên GitHub Pages (`.github/workflows/github-pages.yml`, tự lấy tên repo làm `BASE_PATH`, build với `PREVIEW=1` nên noindex, canonical về bản chính); bản chạy thật trên Cloudflare Pages tại tên miền riêng **https://cookwhattoday.com** (từ 2026-11-20; `homnaynaugi.pages.dev` vẫn chạy, canonical trỏ về tên miền riêng), build command `node scripts/build.mjs`, output `dist`.
 - Link nội bộ trong HTML viết bắt đầu bằng `/`; build tự thêm `BASE_PATH`. Trong `app.js` luôn ghép `BASE` vào trước đường dẫn.
 - PWA: `src/sw.js`, `src/manifest.webmanifest`. Sau này đóng gói Android bằng Capacitor từ `dist/`.
 - Sổ tay món ngon, danh sách đi chợ, kết quả quay món chỉ lưu trên máy người dùng (IndexedDB). Không gửi dữ liệu người dùng ra ngoài.
