@@ -203,4 +203,7 @@ select { min-height: 46px; padding: 0 12px; border: 1px solid var(--input); bord
   .topbar, .tabbar, .footer, .actions, .media, .ad-slot, .crumbs, .step-tools, .stepper, .serv-quick, .ing-box .row { display: none !important; }
   body { padding: 0; background: #fff; color: #000; }
 }
+/* Bông giấy dự phòng khi trình duyệt không có Element.animate (WebView cũ), xem tungBong() trong app.js */
+.bong.bay { animation: bong var(--t) cubic-bezier(.2,.7,.4,1) forwards; }
+@keyframes bong { 45% { transform: translate(var(--dx), var(--dy)) rotate(var(--q1)); opacity: 1; } to { transform: translate(var(--dx2), var(--dy2)) rotate(var(--q)); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
