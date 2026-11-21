@@ -339,20 +339,38 @@ const amThanh = (() => {
     keng() { if (!mo()) return; const t = ctx.currentTime; [523, 659, 784, 1047].forEach((f, i) => not(t + i * 0.09, f, 0.3, "triangle", 0.16)); [523, 659, 784].forEach((f) => not(t + 0.4, f, 0.9, "sine", 0.1)); },
   };
 })();
-/** Bông giấy màu của web bung ra từ khung kết quả, rơi xuống rồi tự xoá (~1,5 giây). Bỏ qua khi bật giảm chuyển động. */
+const itDong = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+/** Bông giấy màu của web bung ra từ khung kết quả, rơi xuống rồi tự xoá (~1,5 giây).
+ * Bật giảm chuyển động: chỉ 16 mảnh hiện mờ dần, rơi nhẹ vài chục px (< 1 giây), không bung xa, không xoay.
+ * Trình duyệt không có Element.animate (WebView cũ): dùng @keyframes bong trong style.css; mảnh luôn tự xoá bằng setTimeout. */
 function tungBong(el) {
-  if (matchMedia("(prefers-reduced-motion: reduce)").matches || !el.animate) return;
+  const it = itDong(), wa = typeof el.animate === "function";
+  if (it && !wa) return; // CSS đã tắt mọi animation khi giảm chuyển động: không có cách nhẹ an toàn, chỉ hiện kết quả
   const r = el.getBoundingClientRect(), cs = getComputedStyle(document.documentElement);
   const mau = ["--accent", "--herb", "--k-vua", "--primary"].map((v) => cs.getPropertyValue(v).trim());
   const x0 = r.left + r.width / 2, y0 = r.top + Math.min(r.height / 2, 120);
-  for (let i = 0; i < 90; i++) {
+  for (let i = 0, n = it ? 16 : 90; i < n; i++) {
     const s = document.createElement("i"), w = 8 + Math.random() * 7;
+    const x = it ? r.left + Math.random() * r.width : x0, y = it ? r.top + Math.random() * Math.min(r.height, 160) : y0;
     s.className = "bong";
-    s.style.cssText = `position:fixed;left:${x0}px;top:${y0}px;width:${w}px;height:${w * 0.45}px;background:${mau[i % mau.length]};border-radius:2px;pointer-events:none;z-index:60`;
+    s.style.cssText = `position:fixed;left:${x}px;top:${y}px;width:${w}px;height:${w * 0.45}px;background:${mau[i % mau.length]};border-radius:2px;pointer-events:none;z-index:60`;
     document.body.append(s);
+    const xoa = () => s.remove();
+    if (it) {
+      s.animate([{ opacity: 0 }, { opacity: 1, offset: 0.25 }, { transform: `translateY(${30 + Math.random() * 40}px)`, opacity: 0 }],
+        { duration: 600 + Math.random() * 300, easing: "ease-out" }).onfinish = xoa;
+      continue;
+    }
     const a = Math.random() * Math.PI * 2, v = 110 + Math.random() * 220, dx = Math.cos(a) * v, dy = Math.sin(a) * v - 150, q = Math.random() * 720 - 360;
-    s.animate([{ transform: "none", opacity: 1 }, { transform: `translate(${dx}px,${dy}px) rotate(${q / 2}deg)`, opacity: 1, offset: 0.45 }, { transform: `translate(${dx * 1.3}px,${dy + 320}px) rotate(${q}deg)`, opacity: 0 }],
-      { duration: 1200 + Math.random() * 500, easing: "cubic-bezier(.2,.7,.4,1)" }).onfinish = () => s.remove();
+    const dur = 1200 + Math.random() * 500;
+    if (wa) {
+      s.animate([{ transform: "none", opacity: 1 }, { transform: `translate(${dx}px,${dy}px) rotate(${q / 2}deg)`, opacity: 1, offset: 0.45 }, { transform: `translate(${dx * 1.3}px,${dy + 320}px) rotate(${q}deg)`, opacity: 0 }],
+        { duration: dur, easing: "cubic-bezier(.2,.7,.4,1)" }).onfinish = xoa;
+    } else {
+      for (const [k, v2] of [["--dx", dx + "px"], ["--dy", dy + "px"], ["--q1", q / 2 + "deg"], ["--dx2", dx * 1.3 + "px"], ["--dy2", dy + 320 + "px"], ["--q", q + "deg"], ["--t", dur + "ms"]]) s.style.setProperty(k, v2);
+      s.classList.add("bay");
+      setTimeout(xoa, dur + 100);
+    }
   }
 }
 
@@ -489,10 +507,26 @@ async function pageHome() {
       rolls.push({ d, p, fin: pickFin(p.length > 1 ? p.filter((r) => r.s !== st.picks[d.key]) : p) });
     }
     amThanh.mo();
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches || !rolls.length) {
+    if (!rolls.length) {
+      render();
+    } else if (itDong()) {
+      // Giảm chuyển động: không cuộn dải ảnh. Tên món trong ngăn đổi nhanh 4 lần (~450ms), viền đổi màu,
+      // rồi ngăn mới hiện mờ dần và vài bông giấy rơi nhẹ: vẫn thấy "đang quay" và lúc ra kết quả mà không có dịch chuyển lớn.
+      busy = true; goBtn.disabled = true; goText.textContent = S.spinning;
+      slotsEl.setAttribute("aria-busy", "true");
+      const els = rolls.map(({ d }) => $(`[data-slot="${d.key}"]`, slotsEl));
+      els.forEach((el) => el.classList.add("rolling"));
+      amThanh.tach(4, 450);
+      for (let k = 0; k < 4; k++) {
+        rolls.forEach(({ p }, j) => { const t = els[j] && $("strong, p", els[j]); if (t) t.textContent = rand(p).t; });
+        await wait(110);
+      }
       rolls.forEach(({ d, fin }) => (st.picks[d.key] = fin.s));
       render();
-      if (rolls.length) amThanh.keng();
+      rolls.forEach(({ d }) => { const el = $(`[data-slot="${d.key}"]`, slotsEl); el.classList.add("landed"); el.animate?.([{ opacity: 0.3 }, { opacity: 1 }], { duration: 240, easing: "ease-out" }); });
+      amThanh.keng(); tungBong(slotsEl);
+      busy = false; goBtn.disabled = false; goText.textContent = S.again;
+      slotsEl.removeAttribute("aria-busy");
     } else {
       busy = true; goBtn.disabled = true; goBtn.classList.add("spinning"); goText.textContent = S.spinning;
       slotsEl.setAttribute("aria-busy", "true");

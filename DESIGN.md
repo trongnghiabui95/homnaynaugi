@@ -308,13 +308,14 @@ motion:
   - Đường cong `cubic-bezier(.15,.85,.15,1)`, trùng hằng `EASE` trong `app.js`.
   - Âm thanh tự tạo bằng Web Audio, không tải file: tiếng "tách" khớp từng ảnh lướt qua vạch, "ting" khi mỗi ngăn dừng, "ta-da" khi chốt món. Có nút loa bật/tắt, máy nhớ lựa chọn.
   - Tung 90 mảnh bông giấy màu token, chạy 1,2–1,7 giây, mỗi lượt quay một lần rồi tự xoá.
-  - Bật giảm chuyển động: không cuộn, không bông, chỉ hiện kết quả kèm "ta-da".
+  - Bật giảm chuyển động (#109): không cuộn dải ảnh. Tên món trong ngăn đổi nhanh 4 lần (~450ms), viền ngăn đổi màu, rồi ngăn mới hiện mờ dần (240ms) kèm "ta-da" và 16 bông giấy hiện mờ, rơi nhẹ 30–70px rồi tan (< 1 giây, không bung xa, không xoay). Nhiều máy bật cờ này mà người dùng không biết (Android "Xoá hiệu ứng động", Windows tắt hiệu ứng hoạt ảnh), bỏ hẳn hiệu ứng thì họ tưởng web hỏng.
+  - Trình duyệt không có `Element.animate` (WebView cũ): bông giấy chạy bằng `@keyframes bong` trong `style.css`, mảnh luôn tự xoá bằng `setTimeout`. Vừa giảm chuyển động vừa thiếu `Element.animate` thì bỏ bông.
 - Chỉ animate `transform` và `opacity`. Không `transition: all`, không animate `width/height/top/left/filter` trên nhiều phần tử.
 - Dùng ease-out cho phần tử vào/ra; không dùng `ease-in` cho giao diện. Không nảy, không vượt đích, trừ khoảnh khắc ngăn quay "rơi" vào món.
 - Ưu tiên `transition` (ngắt được giữa chừng) hơn `@keyframes`; điều khiển bằng JS thì dùng `element.animate()`.
 - Phản hồi khi nhấn: `:active { transform: scale(0.97) }`. Không bao giờ bắt đầu từ `scale(0)`.
 - Không làm thẻ hiện dần khi cuộn, không ghim khi cuộn, không cuộn mượt giả, không hiệu ứng theo con trỏ.
-- `prefers-reduced-motion`: bỏ dịch chuyển và phóng to, **giữ** đổi màu/độ mờ ngắn để người dùng vẫn thấy trạng thái thay đổi. Vòng quay hiện kết quả ngay.
+- `prefers-reduced-motion`: bỏ dịch chuyển và phóng to, **giữ** đổi màu/độ mờ ngắn để người dùng vẫn thấy trạng thái thay đổi. Vòng quay dùng bản nhẹ ở trên (đổi chữ, độ mờ), không cuộn.
 - Thứ gì chuyển động quá 5 giây phải dừng được; không nhấp nháy quá 3 lần mỗi giây.
 
 ## Kiểm tra giao diện
@@ -331,7 +332,7 @@ Ma trận: độ rộng 320, 390, 768, 1280 · chế độ sáng, đêm (`data-t
 5. Cỡ chữ tính toán ≥ 13px (riêng nhãn "Quảng cáo" ≥ 11px); chữ thân ≥ 17px, ≥ 20px khi bật chữ lớn.
 6. Ảnh có `alt`, có kích thước giữ chỗ; ảnh hỏng thì tự ẩn.
 7. Đúng một `h1`, tiêu đề không nhảy cấp.
-8. Giả lập reduced-motion: bấm quay vẫn ra kết quả, không còn chuyển động dịch chuyển.
+8. Giả lập reduced-motion: bấm quay vẫn ra kết quả, chỉ còn bản quay nhẹ (đổi chữ, độ mờ, vài bông rơi ngắn), không cuộn dải ảnh.
 9. Tắt JS: trang món vẫn đọc được tên món, nguyên liệu, các bước.
 10. Quảng cáo đúng vị trí, có nhãn, cách nội dung ≥ 16px.
 11. Ngân sách: **mỗi trang** tải CSS < 35 KB (tính cả `cook.css` khi mở chế độ nấu; nâng từ 30 KB khi dùng Basecoat, #79), JS < 100 KB. CSS chia theo trang: `basecoat.css` + `style.css` (mọi trang) + `home.css` (trang chủ), `recipe.css` + `thanh-qua.css` + `cook.css` (trang món), `list.css` (danh mục), `video.css`, `shop.css`. Thành phần chỉ vài trang dùng (ô danh mục) đặt ở CSS của các trang đó, không ở `style.css`. Đo bằng `wc -c dist/assets/*.css dist/assets/*.js` (CSS đã nén lúc build) rồi cộng theo trang.
