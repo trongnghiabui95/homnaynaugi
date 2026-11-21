@@ -135,10 +135,15 @@ async function main() {
     const vraw = r.video || r.youtube_id || "";
     const yt = parseYouTube(vraw);
     if (vraw && !yt) report.warnings.push(`recipes ${r.slug}: video "${vraw}" không phải link/mã YouTube hợp lệ, bỏ video`);
+    // Ngày đăng video (cột ngay_video, YYYY-MM-DD, lấy đúng ngày trên trang YouTube): Google bắt buộc uploadDate cho VideoObject.
+    // Thiếu hoặc sai dạng thì vẫn nhúng video trên trang nhưng không khai báo VideoObject, để Search Console không báo lỗi.
+    const ngayVideo = String(r.ngay_video || "").trim();
+    const uploadDate = /^\d{4}-\d{2}-\d{2}$/.test(ngayVideo) && !isNaN(Date.parse(ngayVideo)) ? ngayVideo : "";
+    if (yt && !uploadDate) report.warnings.push(`recipes ${r.slug}: ${ngayVideo ? `ngay_video "${ngayVideo}" không đúng dạng YYYY-MM-DD` : "thiếu ngay_video"}, chưa khai báo video cho Google`);
     const p = pic(r.anh, `recipes ${r.slug}`), anh = p.src;
     const stepPics = steps.map((s) => { const q = pic(s.anh, `steps ${r.slug} bước ${s.buoc}`); return { ...s, img: q.src, credit: q.src ? s.anh_nguon || q.credit : "" }; });
     recipes.push({
-      ...r, anh_nguon: r.anh_nguon || p.credit, ings, steps: stepPics, cat: catBySlug[r.danh_muc], yt, anh,
+      ...r, anh_nguon: r.anh_nguon || p.credit, ings, steps: stepPics, cat: catBySlug[r.danh_muc], yt, uploadDate, anh,
       serv: num(r.khau_phan, 2) || 2, prep: num(r.phut_chuan_bi), cook: num(r.phut_nau), total: num(r.phut_chuan_bi) + num(r.phut_nau),
       cal: num(r.calo), cost: num(r.chi_phi), bua: list(r.bua).map(fold), tagList: list(r.tags), anKem: list(r.an_kem),
       // Chưa có ảnh mà có video → ảnh bìa của chính video (thẻ món, vòng quay, og:image, schema.org). imgDoc: ảnh bìa Shorts (khung dọc nằm giữa nền đen) cần phóng to để lấp khung 4:3.
@@ -352,7 +357,7 @@ ${rs.length ? filterBar(rs) + grid(rs, true) : emptyState(t("cat_empty"), t("cat
         const st = g.steps.map((s, k) => ({ "@type": "HowToStep", position: g.from + k + 1, ...(s.tieu_de ? { name: s.tieu_de } : {}), text: s.noi_dung, url: `${abs(site, lang, `/mon/${r.slug}/`)}#buoc-${g.from + k + 1}`, ...(s.img ? { image: s.img } : {}) }));
         return g.ten ? [{ "@type": "HowToSection", name: g.ten, itemListElement: st }] : st;
       }),
-      ...(r.yt ? { video: { "@type": "VideoObject", name: r.ten, description: r.tom_tat, thumbnailUrl: [ytThumb(r.yt.id)], embedUrl: `https://www.youtube-nocookie.com/embed/${r.yt.id}`, contentUrl: watch } } : {}),
+      ...(r.yt && r.uploadDate ? { video: { "@type": "VideoObject", name: r.ten, description: r.tom_tat, thumbnailUrl: [ytThumb(r.yt.id)], uploadDate: r.uploadDate, embedUrl: `https://www.youtube-nocookie.com/embed/${r.yt.id}`, contentUrl: watch } } : {}),
     };
     // Trình kiểm tra cục bộ Recipe (Google): thiếu ảnh gom thành một dòng cảnh báo, thiếu trường khác báo từng món
     const thieuLD = thieuTruongRecipe(ld), khac = thieuLD.filter((k) => k !== "image");

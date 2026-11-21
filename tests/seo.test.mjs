@@ -100,3 +100,14 @@ test("site_url trong Sheet có dấu cách hoặc / ở cuối vẫn ra địa c
   const tmp = build({}, "site_url, https://cookwhattoday.com/ \n");
   assert.ok(tmp("mon/thit-kho-trung/index.html").includes(`<link rel="canonical" href="${CHINH}/mon/thit-kho-trung/"`));
 });
+
+test("VideoObject có uploadDate từ cột ngay_video; thiếu ngày thì không khai báo video (Search Console: thiếu uploadDate)", () => {
+  const doc = build({ SITE_URL: CHINH });
+  const ld = (s) => [].concat(JSON.parse(doc(`mon/${s}/index.html`).match(/<script type="application\/ld\+json">(.*?)<\/script>/s)[1])).find((x) => x["@type"] === "Recipe");
+  const co = ld("mon-thu-video");
+  assert.equal(co.video["@type"], "VideoObject");
+  assert.equal(co.video.uploadDate, "2024-03-15");
+  for (const k of ["name", "description", "thumbnailUrl", "uploadDate"]) assert.ok(co.video[k], `video.${k}`);
+  assert.equal(ld("mon-thu-video-ngang").video, undefined, "thiếu ngay_video thì không có VideoObject");
+  assert.ok(doc("mon/mon-thu-video-ngang/index.html").includes("NGANGthu001"), "video vẫn nhúng trên trang");
+});

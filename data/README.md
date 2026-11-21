@@ -16,7 +16,7 @@ Muốn dùng Sheet khác: tạo 5 tab đúng tên `settings`, `categories`, `rec
 Để vòng quay **Mâm cơm 3 món** chạy, cần có món trong cả 3 danh mục `mon-man`, `mon-canh`, `mon-rau-xao`.
 
 ## Video YouTube và YouTube Shorts
-Dán **link** vào cột `video` của món, ví dụ `https://youtube.com/shorts/AbCdEfGhIjK` hoặc `https://youtu.be/AbCdEfGhIjK`. Link Shorts hiện khung dọc 9:16. Ghi tên kênh vào cột `kenh`.
+Dán **link** vào cột `video` của món, ví dụ `https://youtube.com/shorts/AbCdEfGhIjK` hoặc `https://youtu.be/AbCdEfGhIjK`. Link Shorts hiện khung dọc 9:16. Ghi tên kênh vào cột `kenh`. Ghi ngày đăng video (xem dưới tên video trên YouTube) vào cột `ngay_video`, dạng `2022-01-12`: Google bắt buộc ngày này cho dữ liệu video. Thiếu ngày thì video vẫn hiện trên web nhưng Google không nhận là video của món.
 
 Không có ảnh riêng thì web lấy ảnh bìa của video làm ảnh món.
 
@@ -55,7 +55,7 @@ Mỗi cột nội dung có thể thêm một cột cùng tên kèm đuôi ngôn 
 | --- | --- | --- |
 | `settings` | Một cài đặt | key, value — `site_name`, `tagline`, `tagline_en`, `tagline_ja`, `tagline_ko`, `tagline_fr` (câu giới thiệu ở trang chủ từng ngôn ngữ, có thể trống), `site_url` (địa chỉ web thật), `contact_email`, `chu_de` (chủ đề nổi bật, cách nhau dấu phẩy, phải trùng với tags của món); khi có AdSense: `adsense_client`, `adsense_slot_home`, `adsense_slot_mid`, `adsense_slot_bottom`; `turnstile_site_key` (Site Key Cloudflare Turnstile, bật mục "Thành quả của bạn đọc", xem `ops/BAT-THANH-QUA.md`); `google_site_verification` (mã xác minh Google Search Console, xem mục SEO trong `ops/DAC-TA.md`) |
 | `categories` | Một danh mục | slug, ten, mo_ta, bieu_tuong (một emoji), anh (link ảnh tròn, có thể trống), thu_tu |
-| `recipes` | Một món | slug, ten, danh_muc (slug danh mục), tom_tat, khau_phan (số người), phut_chuan_bi, phut_nau, do_kho (Dễ / Vừa / Khó), bua (sáng, trưa, tối – cách nhau dấu phẩy), nguyen_lieu_chinh (Thịt heo, Gà, Cá, Trứng…), calo (kcal mỗi phần, để trống nếu chưa biết), chi_phi (đồng, để trống nếu chưa biết), anh, video, kenh, tags (cách nhau dấu phẩy), meo (bí quyết), an_kem (slug món ăn kèm, cách nhau dấu phẩy), trang_thai (nháp / duyệt), cap_nhat (2026-11-16), anh_nguon (ghi công ảnh không tự chụp: tên tác giả, giấy phép, link trang ảnh; ảnh tự chụp thì để trống) |
+| `recipes` | Một món | slug, ten, danh_muc (slug danh mục), tom_tat, khau_phan (số người), phut_chuan_bi, phut_nau, do_kho (Dễ / Vừa / Khó), bua (sáng, trưa, tối – cách nhau dấu phẩy), nguyen_lieu_chinh (Thịt heo, Gà, Cá, Trứng…), calo (kcal mỗi phần, để trống nếu chưa biết), chi_phi (đồng, để trống nếu chưa biết), anh, video, kenh, tags (cách nhau dấu phẩy), meo (bí quyết), an_kem (slug món ăn kèm, cách nhau dấu phẩy), trang_thai (nháp / duyệt), cap_nhat (2026-11-16), anh_nguon (ghi công ảnh không tự chụp: tên tác giả, giấy phép, link trang ảnh; ảnh tự chụp thì để trống), ngay_video (ngày đăng video trên YouTube, dạng 2022-01-12; có video thì phải điền) |
 | `ingredients` | Một nguyên liệu | recipe_slug, nhom (ví dụ "Ướp thịt", có thể trống), ten, so_luong (số; ½ ghi `0.5`), don_vi, ghi_chu |
 | `steps` | Một bước | recipe_slug, buoc, tieu_de, noi_dung, anh (ảnh bước, có thể trống), giay_video (có thể trống), hen_gio_phut (hiện nút hẹn giờ, có thể trống), giai_doan (ví dụ Sơ chế / Nấu / Hoàn thiện, có thể trống), dau_hieu (nấu tới đâu là được, có thể trống), luu_y (lỗi hay gặp hoặc mẹo riêng của bước, có thể trống) |
 
