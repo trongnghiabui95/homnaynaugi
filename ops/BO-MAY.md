@@ -13,7 +13,7 @@ Bốn "nhân viên AI" làm việc qua GitHub Issues: Dev, BA, Checker, Marketin
 | Giờ | Ai | Việc |
 | --- | --- | --- |
 | 13:30 | BA | Tham khảo nguồn, tự viết 3 món mới vào Sheet ở trạng thái `nháp`, tạo Issue `noi-dung` "BA – món mới <ngày>" |
-| 16:40 | Checker | Kiểm tra món BA vừa viết: dữ liệu đủ, tự viết, an toàn thực phẩm, nấu được, video/ảnh, không bịa số. Đạt thì đổi sang `duyệt`, chưa đạt thì trả về BA kèm lý do |
+| 16:40 | Checker | Kiểm tra món BA vừa viết: dữ liệu đủ, tự viết, an toàn thực phẩm, nấu được, video/ảnh (có video thì có `ngay_video` đúng ngày đăng), không bịa số. Đạt thì đổi sang `duyệt`, chưa đạt thì trả về BA kèm lý do |
 | 4:47–6:40 sáng hôm sau | GitHub Actions | Web tự dựng lại từ Sheet; món đã `duyệt` lên web; báo cáo nội dung (lịch chi tiết ở dưới) |
 
 ## Vận hành mỗi sáng

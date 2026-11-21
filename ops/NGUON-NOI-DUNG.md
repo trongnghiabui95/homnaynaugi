@@ -19,7 +19,7 @@ Mẹo chụp bằng điện thoại: gần cửa sổ, ánh sáng ban ngày, t�
 
 - Quy trình cho mỗi món: xem 2–3 nguồn để nắm tỉ lệ và kỹ thuật → **nấu thử** → ghi lại định lượng, thời gian, mẹo theo đúng lần nấu của mình → viết bằng lời mình.
 - Nguồn tham khảo (chỉ để đối chiếu, không chép câu chữ, không chép ảnh): sách dạy nấu ăn gia đình, công thức của người nhà, các kênh YouTube nấu ăn Việt, trang công thức lớn.
-- Video: chỉ nhúng bằng trình phát YouTube, ghi tên kênh. Ưu tiên video của chính mình (kênh riêng) để không phụ thuộc người khác xoá video.
+- Video: chỉ nhúng bằng trình phát YouTube, ghi tên kênh (cột `kenh`) và ngày đăng thật trên YouTube (cột `ngay_video`, dạng 2022-01-12; Google bắt buộc ngày này cho dữ liệu video, không đoán ngày). Ưu tiên video của chính mình (kênh riêng) để không phụ thuộc người khác xoá video.
 - Điều làm trang "có giá trị riêng": định lượng theo khẩu phần, mẹo đã thử, lỗi hay gặp, món ăn kèm, thời gian thật.
 
 ## 3. Calo và chi phí
